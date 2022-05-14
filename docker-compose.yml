@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  api:
+    container_name: "omochi_api"
+    build:
+      context: .
+      dockerfile: ./docker/api/Dockerfile
+    ports:
+      - "8081:8000"
+    restart: always
+    networks:
+      - omochi_network
+    depends_on:
+      - omochi_db
+    volumes:
+      - ./app:/go/github.com/YadaYuki/omochi/app
+      - ./shell:/go/github.com/YadaYuki/omochi/shell
+    command: sh /go/github.com/YadaYuki/omochi/shell/start-server.sh
+    env_file:
+      - .env.development
+
+  omochi_db:
+    container_name: "omochi_db"
+    build:
+      context: .
+      dockerfile: ./docker/db/Dockerfile
+    restart: always
+    ports:
+      - "3306:3306"
+    networks:
+      - omochi_network
+    command: --default-authentication-plugin=mysql_native_password
+    volumes:
+      - ./docker/db/init:/docker-entrypoint-initdb.d:cached
+      - ./docker/db/conf.d:/etc/mysql/conf.d:cached
+    env_file:
+      - .env.development
+
+networks:
+  omochi_network:
+    name: omochi_network
+    driver: bridge
+    external: true
