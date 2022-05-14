@@ -15,10 +15,4 @@ RUN apk update \
 
 RUN go mod download
 
-COPY ./ ./ 
-
-RUN pwd
-
-EXPOSE 8081
-
-CMD ["sh","./shell/start-server.sh"]
+COPY ./ ./

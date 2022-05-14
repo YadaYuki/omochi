@@ -7,12 +7,13 @@ services:
       context: .
       dockerfile: ./docker/api/Dockerfile
     ports:
-      - "8082:8082"
+      - "8081:8000"
     restart: always
     networks:
       - omochi_network
     depends_on:
       - omochi_db
+    command: sh ./shell/start-server.sh
     env_file:
       - .env.development
 
@@ -21,6 +22,7 @@ services:
     build:
       context: .
       dockerfile: ./docker/db/Dockerfile
+    restart: always
     ports:
       - "3306:3306"
     networks:

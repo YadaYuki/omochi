@@ -5,3 +5,5 @@ CREATE TABLE IF NOT EXISTS words (
   content VARBINARY(1024) NOT NULL,
   created_at datetime default current_timestamp
 ) ENGINE = InnoDB DEFAULT CHARSET=utf8;
+
+insert into words (content) VALUES ('hello');
