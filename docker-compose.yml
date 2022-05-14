@@ -13,7 +13,10 @@ services:
       - omochi_network
     depends_on:
       - omochi_db
-    command: sh ./shell/start-server.sh
+    volumes:
+      - ./app:/go/github.com/YadaYuki/omochi/app
+      - ./shell:/go/github.com/YadaYuki/omochi/shell
+    command: sh /go/github.com/YadaYuki/omochi/shell/start-server.sh
     env_file:
       - .env.development
 

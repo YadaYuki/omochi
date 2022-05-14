@@ -2,17 +2,13 @@ FROM golang:1.18-alpine3.14 AS build
 
 ENV GO111MODULE=on
 
-WORKDIR /go/github.com/YadaYuki/omochi
+WORKDIR /go/github.com/YadaYuki/omochi/app
 
-COPY ./go.mod ./go.sum ./
-
-RUN mkdir shell
-COPY ./shell ./shell
-
+COPY ./app/go.mod ./app/go.sum ./
 
 RUN apk update \
-    && apk add mariadb-client
+    && apk add mariadb-client \
+    && apk add bash
 
 RUN go mod download
 
-COPY ./ ./
