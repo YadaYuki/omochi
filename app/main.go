@@ -1,13 +1,13 @@
 package main
 
 import (
-	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/YadaYuki/omochi/app/ent"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -28,18 +28,15 @@ func main() {
 	DB_NAME := os.Getenv("MYSQL_DATABASE")
 	DB_PORT := os.Getenv("DB_PORT")
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=true&loc=Local", DB_USER, DB_PASSWORD, DB_HOST, DB_PORT, DB_NAME)
-	db, err := sql.Open("mysql", connectionString)
+	db, err := ent.Open("mysql", connectionString)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	if err := db.Ping(); err != nil {
-		log.Fatal(err)
-	}
 
-	fmt.Println("Successfully connected to MySQL")
+	log.Println("Successfully connected to MySQL")
 	log.Println("application started")
 
 	http.HandleFunc("/", hello)
-	http.ListenAndServe(":8082", nil)
+	http.ListenAndServe(":8081", nil)
 }

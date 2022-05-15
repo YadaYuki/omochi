@@ -1,4 +1,4 @@
-module github.com/YadaYuki/omochi
+module github.com/YadaYuki/omochi/app
 
 go 1.18
 

@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: ./docker/api/Dockerfile
     ports:
-      - "8081:8000"
+      - "8081:8081"
     restart: always
     networks:
       - omochi_network
