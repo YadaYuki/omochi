@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -33,10 +34,33 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+	if err := db.Schema.Create(context.Background()); err != nil {
+		log.Fatalf("failed creating schema resources: %v", err)
+	}
+
+	terms := []string{"hello", "world", "omochi"}
+	for _, term := range terms {
+		_, err := CreateTerm(term, context.Background(), db)
+		if err != nil {
+			log.Fatal(err)
+		}
+	}
 
 	log.Println("Successfully connected to MySQL")
 	log.Println("application started")
 
 	http.HandleFunc("/", hello)
 	http.ListenAndServe(":8081", nil)
+}
+
+func CreateTerm(word string, ctx context.Context, client *ent.Client) (*ent.Term, error) {
+	u, err := client.Term.
+		Create().
+		SetWord(word).
+		Save(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed creating term: %w", err)
+	}
+	log.Println("term was created: ", u)
+	return u, nil
 }
