@@ -10,9 +10,9 @@ import (
 var (
 	// TermsColumns holds the columns for the "terms" table.
 	TermsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "age", Type: field.TypeInt},
-		{Name: "name", Type: field.TypeString, Default: "unknown"},
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "word", Type: field.TypeString},
+		{Name: "created_at", Type: field.TypeTime},
 	}
 	// TermsTable holds the schema information for the "terms" table.
 	TermsTable = &schema.Table{

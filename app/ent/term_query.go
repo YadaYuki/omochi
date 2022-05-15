@@ -13,6 +13,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/YadaYuki/omochi/app/ent/term"
+	"github.com/google/uuid"
 )
 
 // TermQuery is the builder for querying Term entities.
@@ -84,8 +85,8 @@ func (tq *TermQuery) FirstX(ctx context.Context) *Term {
 
 // FirstID returns the first Term ID from the query.
 // Returns a *NotFoundError when no Term ID was found.
-func (tq *TermQuery) FirstID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (tq *TermQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = tq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -97,7 +98,7 @@ func (tq *TermQuery) FirstID(ctx context.Context) (id int, err error) {
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (tq *TermQuery) FirstIDX(ctx context.Context) int {
+func (tq *TermQuery) FirstIDX(ctx context.Context) uuid.UUID {
 	id, err := tq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -135,8 +136,8 @@ func (tq *TermQuery) OnlyX(ctx context.Context) *Term {
 // OnlyID is like Only, but returns the only Term ID in the query.
 // Returns a *NotSingularError when more than one Term ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (tq *TermQuery) OnlyID(ctx context.Context) (id int, err error) {
-	var ids []int
+func (tq *TermQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
+	var ids []uuid.UUID
 	if ids, err = tq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -152,7 +153,7 @@ func (tq *TermQuery) OnlyID(ctx context.Context) (id int, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (tq *TermQuery) OnlyIDX(ctx context.Context) int {
+func (tq *TermQuery) OnlyIDX(ctx context.Context) uuid.UUID {
 	id, err := tq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -178,8 +179,8 @@ func (tq *TermQuery) AllX(ctx context.Context) []*Term {
 }
 
 // IDs executes the query and returns a list of Term IDs.
-func (tq *TermQuery) IDs(ctx context.Context) ([]int, error) {
-	var ids []int
+func (tq *TermQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	var ids []uuid.UUID
 	if err := tq.Select(term.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -187,7 +188,7 @@ func (tq *TermQuery) IDs(ctx context.Context) ([]int, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (tq *TermQuery) IDsX(ctx context.Context) []int {
+func (tq *TermQuery) IDsX(ctx context.Context) []uuid.UUID {
 	ids, err := tq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -254,12 +255,12 @@ func (tq *TermQuery) Clone() *TermQuery {
 // Example:
 //
 //	var v []struct {
-//		Age int `json:"age,omitempty"`
+//		Word string `json:"word,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Term.Query().
-//		GroupBy(term.FieldAge).
+//		GroupBy(term.FieldWord).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -281,11 +282,11 @@ func (tq *TermQuery) GroupBy(field string, fields ...string) *TermGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Age int `json:"age,omitempty"`
+//		Word string `json:"word,omitempty"`
 //	}
 //
 //	client.Term.Query().
-//		Select(term.FieldAge).
+//		Select(term.FieldWord).
 //		Scan(ctx, &v)
 //
 func (tq *TermQuery) Select(fields ...string) *TermSelect {
@@ -358,7 +359,7 @@ func (tq *TermQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   term.Table,
 			Columns: term.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: term.FieldID,
 			},
 		},

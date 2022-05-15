@@ -8,6 +8,7 @@ import (
 	"log"
 
 	"github.com/YadaYuki/omochi/app/ent/migrate"
+	"github.com/google/uuid"
 
 	"github.com/YadaYuki/omochi/app/ent/term"
 
@@ -162,7 +163,7 @@ func (c *TermClient) UpdateOne(t *Term) *TermUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *TermClient) UpdateOneID(id int) *TermUpdateOne {
+func (c *TermClient) UpdateOneID(id uuid.UUID) *TermUpdateOne {
 	mutation := newTermMutation(c.config, OpUpdateOne, withTermID(id))
 	return &TermUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -179,7 +180,7 @@ func (c *TermClient) DeleteOne(t *Term) *TermDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *TermClient) DeleteOneID(id int) *TermDeleteOne {
+func (c *TermClient) DeleteOneID(id uuid.UUID) *TermDeleteOne {
 	builder := c.Delete().Where(term.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -194,12 +195,12 @@ func (c *TermClient) Query() *TermQuery {
 }
 
 // Get returns a Term entity by its id.
-func (c *TermClient) Get(ctx context.Context, id int) (*Term, error) {
+func (c *TermClient) Get(ctx context.Context, id uuid.UUID) (*Term, error) {
 	return c.Query().Where(term.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *TermClient) GetX(ctx context.Context, id int) *Term {
+func (c *TermClient) GetX(ctx context.Context, id uuid.UUID) *Term {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

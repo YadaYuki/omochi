@@ -7,9 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/YadaYuki/omochi/app/ent/term"
+	"github.com/google/uuid"
 
 	"entgo.io/ent"
 )
@@ -31,10 +33,9 @@ type TermMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
-	age           *int
-	addage        *int
-	name          *string
+	id            *uuid.UUID
+	word          *string
+	created_at    *time.Time
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Term, error)
@@ -61,7 +62,7 @@ func newTermMutation(c config, op Op, opts ...termOption) *TermMutation {
 }
 
 // withTermID sets the ID field of the mutation.
-func withTermID(id int) termOption {
+func withTermID(id uuid.UUID) termOption {
 	return func(m *TermMutation) {
 		var (
 			err   error
@@ -111,9 +112,15 @@ func (m TermMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Term entities.
+func (m *TermMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *TermMutation) ID() (id int, exists bool) {
+func (m *TermMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -124,12 +131,12 @@ func (m *TermMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *TermMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *TermMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -139,96 +146,76 @@ func (m *TermMutation) IDs(ctx context.Context) ([]int, error) {
 	}
 }
 
-// SetAge sets the "age" field.
-func (m *TermMutation) SetAge(i int) {
-	m.age = &i
-	m.addage = nil
+// SetWord sets the "word" field.
+func (m *TermMutation) SetWord(s string) {
+	m.word = &s
 }
 
-// Age returns the value of the "age" field in the mutation.
-func (m *TermMutation) Age() (r int, exists bool) {
-	v := m.age
+// Word returns the value of the "word" field in the mutation.
+func (m *TermMutation) Word() (r string, exists bool) {
+	v := m.word
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldAge returns the old "age" field's value of the Term entity.
+// OldWord returns the old "word" field's value of the Term entity.
 // If the Term object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TermMutation) OldAge(ctx context.Context) (v int, err error) {
+func (m *TermMutation) OldWord(ctx context.Context) (v string, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldAge is only allowed on UpdateOne operations")
+		return v, errors.New("OldWord is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldAge requires an ID field in the mutation")
+		return v, errors.New("OldWord requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldAge: %w", err)
+		return v, fmt.Errorf("querying old value for OldWord: %w", err)
 	}
-	return oldValue.Age, nil
+	return oldValue.Word, nil
 }
 
-// AddAge adds i to the "age" field.
-func (m *TermMutation) AddAge(i int) {
-	if m.addage != nil {
-		*m.addage += i
-	} else {
-		m.addage = &i
-	}
+// ResetWord resets all changes to the "word" field.
+func (m *TermMutation) ResetWord() {
+	m.word = nil
 }
 
-// AddedAge returns the value that was added to the "age" field in this mutation.
-func (m *TermMutation) AddedAge() (r int, exists bool) {
-	v := m.addage
+// SetCreatedAt sets the "created_at" field.
+func (m *TermMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *TermMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetAge resets all changes to the "age" field.
-func (m *TermMutation) ResetAge() {
-	m.age = nil
-	m.addage = nil
-}
-
-// SetName sets the "name" field.
-func (m *TermMutation) SetName(s string) {
-	m.name = &s
-}
-
-// Name returns the value of the "name" field in the mutation.
-func (m *TermMutation) Name() (r string, exists bool) {
-	v := m.name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldName returns the old "name" field's value of the Term entity.
+// OldCreatedAt returns the old "created_at" field's value of the Term entity.
 // If the Term object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TermMutation) OldName(ctx context.Context) (v string, err error) {
+func (m *TermMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldName is only allowed on UpdateOne operations")
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldName requires an ID field in the mutation")
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldName: %w", err)
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
 	}
-	return oldValue.Name, nil
+	return oldValue.CreatedAt, nil
 }
 
-// ResetName resets all changes to the "name" field.
-func (m *TermMutation) ResetName() {
-	m.name = nil
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *TermMutation) ResetCreatedAt() {
+	m.created_at = nil
 }
 
 // Where appends a list predicates to the TermMutation builder.
@@ -251,11 +238,11 @@ func (m *TermMutation) Type() string {
 // AddedFields().
 func (m *TermMutation) Fields() []string {
 	fields := make([]string, 0, 2)
-	if m.age != nil {
-		fields = append(fields, term.FieldAge)
+	if m.word != nil {
+		fields = append(fields, term.FieldWord)
 	}
-	if m.name != nil {
-		fields = append(fields, term.FieldName)
+	if m.created_at != nil {
+		fields = append(fields, term.FieldCreatedAt)
 	}
 	return fields
 }
@@ -265,10 +252,10 @@ func (m *TermMutation) Fields() []string {
 // schema.
 func (m *TermMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case term.FieldAge:
-		return m.Age()
-	case term.FieldName:
-		return m.Name()
+	case term.FieldWord:
+		return m.Word()
+	case term.FieldCreatedAt:
+		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -278,10 +265,10 @@ func (m *TermMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *TermMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case term.FieldAge:
-		return m.OldAge(ctx)
-	case term.FieldName:
-		return m.OldName(ctx)
+	case term.FieldWord:
+		return m.OldWord(ctx)
+	case term.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Term field %s", name)
 }
@@ -291,19 +278,19 @@ func (m *TermMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *TermMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case term.FieldAge:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetAge(v)
-		return nil
-	case term.FieldName:
+	case term.FieldWord:
 		v, ok := value.(string)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetName(v)
+		m.SetWord(v)
+		return nil
+	case term.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Term field %s", name)
@@ -312,21 +299,13 @@ func (m *TermMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *TermMutation) AddedFields() []string {
-	var fields []string
-	if m.addage != nil {
-		fields = append(fields, term.FieldAge)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *TermMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case term.FieldAge:
-		return m.AddedAge()
-	}
 	return nil, false
 }
 
@@ -335,13 +314,6 @@ func (m *TermMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *TermMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case term.FieldAge:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddAge(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Term numeric field %s", name)
 }
@@ -369,11 +341,11 @@ func (m *TermMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *TermMutation) ResetField(name string) error {
 	switch name {
-	case term.FieldAge:
-		m.ResetAge()
+	case term.FieldWord:
+		m.ResetWord()
 		return nil
-	case term.FieldName:
-		m.ResetName()
+	case term.FieldCreatedAt:
+		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Term field %s", name)

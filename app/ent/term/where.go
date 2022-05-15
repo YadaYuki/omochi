@@ -3,33 +3,36 @@
 package term
 
 import (
+	"time"
+
 	"entgo.io/ent/dialect/sql"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Term {
+func ID(id uuid.UUID) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Term {
+func IDEQ(id uuid.UUID) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldID), id))
 	})
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Term {
+func IDNEQ(id uuid.UUID) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.NEQ(s.C(FieldID), id))
 	})
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Term {
+func IDIn(ids ...uuid.UUID) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -46,7 +49,7 @@ func IDIn(ids ...int) predicate.Term {
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Term {
+func IDNotIn(ids ...uuid.UUID) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		// if not arguments were provided, append the FALSE constants,
 		// since we can't apply "IN ()". This will make this predicate falsy.
@@ -63,63 +66,63 @@ func IDNotIn(ids ...int) predicate.Term {
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Term {
+func IDGT(id uuid.UUID) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.GT(s.C(FieldID), id))
 	})
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Term {
+func IDGTE(id uuid.UUID) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.GTE(s.C(FieldID), id))
 	})
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Term {
+func IDLT(id uuid.UUID) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.LT(s.C(FieldID), id))
 	})
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Term {
+func IDLTE(id uuid.UUID) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldID), id))
 	})
 }
 
-// Age applies equality check predicate on the "age" field. It's identical to AgeEQ.
-func Age(v int) predicate.Term {
+// Word applies equality check predicate on the "word" field. It's identical to WordEQ.
+func Word(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldAge), v))
+		s.Where(sql.EQ(s.C(FieldWord), v))
 	})
 }
 
-// Name applies equality check predicate on the "name" field. It's identical to NameEQ.
-func Name(v string) predicate.Term {
+// CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
+func CreatedAt(v time.Time) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldName), v))
+		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
 	})
 }
 
-// AgeEQ applies the EQ predicate on the "age" field.
-func AgeEQ(v int) predicate.Term {
+// WordEQ applies the EQ predicate on the "word" field.
+func WordEQ(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldAge), v))
+		s.Where(sql.EQ(s.C(FieldWord), v))
 	})
 }
 
-// AgeNEQ applies the NEQ predicate on the "age" field.
-func AgeNEQ(v int) predicate.Term {
+// WordNEQ applies the NEQ predicate on the "word" field.
+func WordNEQ(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldAge), v))
+		s.Where(sql.NEQ(s.C(FieldWord), v))
 	})
 }
 
-// AgeIn applies the In predicate on the "age" field.
-func AgeIn(vs ...int) predicate.Term {
+// WordIn applies the In predicate on the "word" field.
+func WordIn(vs ...string) predicate.Term {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -131,12 +134,12 @@ func AgeIn(vs ...int) predicate.Term {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldAge), v...))
+		s.Where(sql.In(s.C(FieldWord), v...))
 	})
 }
 
-// AgeNotIn applies the NotIn predicate on the "age" field.
-func AgeNotIn(vs ...int) predicate.Term {
+// WordNotIn applies the NotIn predicate on the "word" field.
+func WordNotIn(vs ...string) predicate.Term {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -148,54 +151,89 @@ func AgeNotIn(vs ...int) predicate.Term {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldAge), v...))
+		s.Where(sql.NotIn(s.C(FieldWord), v...))
 	})
 }
 
-// AgeGT applies the GT predicate on the "age" field.
-func AgeGT(v int) predicate.Term {
+// WordGT applies the GT predicate on the "word" field.
+func WordGT(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldAge), v))
+		s.Where(sql.GT(s.C(FieldWord), v))
 	})
 }
 
-// AgeGTE applies the GTE predicate on the "age" field.
-func AgeGTE(v int) predicate.Term {
+// WordGTE applies the GTE predicate on the "word" field.
+func WordGTE(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldAge), v))
+		s.Where(sql.GTE(s.C(FieldWord), v))
 	})
 }
 
-// AgeLT applies the LT predicate on the "age" field.
-func AgeLT(v int) predicate.Term {
+// WordLT applies the LT predicate on the "word" field.
+func WordLT(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldAge), v))
+		s.Where(sql.LT(s.C(FieldWord), v))
 	})
 }
 
-// AgeLTE applies the LTE predicate on the "age" field.
-func AgeLTE(v int) predicate.Term {
+// WordLTE applies the LTE predicate on the "word" field.
+func WordLTE(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldAge), v))
+		s.Where(sql.LTE(s.C(FieldWord), v))
 	})
 }
 
-// NameEQ applies the EQ predicate on the "name" field.
-func NameEQ(v string) predicate.Term {
+// WordContains applies the Contains predicate on the "word" field.
+func WordContains(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldName), v))
+		s.Where(sql.Contains(s.C(FieldWord), v))
 	})
 }
 
-// NameNEQ applies the NEQ predicate on the "name" field.
-func NameNEQ(v string) predicate.Term {
+// WordHasPrefix applies the HasPrefix predicate on the "word" field.
+func WordHasPrefix(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldName), v))
+		s.Where(sql.HasPrefix(s.C(FieldWord), v))
 	})
 }
 
-// NameIn applies the In predicate on the "name" field.
-func NameIn(vs ...string) predicate.Term {
+// WordHasSuffix applies the HasSuffix predicate on the "word" field.
+func WordHasSuffix(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldWord), v))
+	})
+}
+
+// WordEqualFold applies the EqualFold predicate on the "word" field.
+func WordEqualFold(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldWord), v))
+	})
+}
+
+// WordContainsFold applies the ContainsFold predicate on the "word" field.
+func WordContainsFold(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldWord), v))
+	})
+}
+
+// CreatedAtEQ applies the EQ predicate on the "created_at" field.
+func CreatedAtEQ(v time.Time) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldCreatedAt), v))
+	})
+}
+
+// CreatedAtNEQ applies the NEQ predicate on the "created_at" field.
+func CreatedAtNEQ(v time.Time) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldCreatedAt), v))
+	})
+}
+
+// CreatedAtIn applies the In predicate on the "created_at" field.
+func CreatedAtIn(vs ...time.Time) predicate.Term {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -207,12 +245,12 @@ func NameIn(vs ...string) predicate.Term {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.In(s.C(FieldName), v...))
+		s.Where(sql.In(s.C(FieldCreatedAt), v...))
 	})
 }
 
-// NameNotIn applies the NotIn predicate on the "name" field.
-func NameNotIn(vs ...string) predicate.Term {
+// CreatedAtNotIn applies the NotIn predicate on the "created_at" field.
+func CreatedAtNotIn(vs ...time.Time) predicate.Term {
 	v := make([]interface{}, len(vs))
 	for i := range v {
 		v[i] = vs[i]
@@ -224,70 +262,35 @@ func NameNotIn(vs ...string) predicate.Term {
 			s.Where(sql.False())
 			return
 		}
-		s.Where(sql.NotIn(s.C(FieldName), v...))
+		s.Where(sql.NotIn(s.C(FieldCreatedAt), v...))
 	})
 }
 
-// NameGT applies the GT predicate on the "name" field.
-func NameGT(v string) predicate.Term {
+// CreatedAtGT applies the GT predicate on the "created_at" field.
+func CreatedAtGT(v time.Time) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldName), v))
+		s.Where(sql.GT(s.C(FieldCreatedAt), v))
 	})
 }
 
-// NameGTE applies the GTE predicate on the "name" field.
-func NameGTE(v string) predicate.Term {
+// CreatedAtGTE applies the GTE predicate on the "created_at" field.
+func CreatedAtGTE(v time.Time) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldName), v))
+		s.Where(sql.GTE(s.C(FieldCreatedAt), v))
 	})
 }
 
-// NameLT applies the LT predicate on the "name" field.
-func NameLT(v string) predicate.Term {
+// CreatedAtLT applies the LT predicate on the "created_at" field.
+func CreatedAtLT(v time.Time) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldName), v))
+		s.Where(sql.LT(s.C(FieldCreatedAt), v))
 	})
 }
 
-// NameLTE applies the LTE predicate on the "name" field.
-func NameLTE(v string) predicate.Term {
+// CreatedAtLTE applies the LTE predicate on the "created_at" field.
+func CreatedAtLTE(v time.Time) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldName), v))
-	})
-}
-
-// NameContains applies the Contains predicate on the "name" field.
-func NameContains(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldName), v))
-	})
-}
-
-// NameHasPrefix applies the HasPrefix predicate on the "name" field.
-func NameHasPrefix(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldName), v))
-	})
-}
-
-// NameHasSuffix applies the HasSuffix predicate on the "name" field.
-func NameHasSuffix(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldName), v))
-	})
-}
-
-// NameEqualFold applies the EqualFold predicate on the "name" field.
-func NameEqualFold(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldName), v))
-	})
-}
-
-// NameContainsFold applies the ContainsFold predicate on the "name" field.
-func NameContainsFold(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldName), v))
+		s.Where(sql.LTE(s.C(FieldCreatedAt), v))
 	})
 }
 

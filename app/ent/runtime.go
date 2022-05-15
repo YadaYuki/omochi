@@ -3,8 +3,11 @@
 package ent
 
 import (
+	"time"
+
 	"github.com/YadaYuki/omochi/app/ent/schema"
 	"github.com/YadaYuki/omochi/app/ent/term"
+	"github.com/google/uuid"
 )
 
 // The init function reads all schema descriptors with runtime code
@@ -13,12 +16,12 @@ import (
 func init() {
 	termFields := schema.Term{}.Fields()
 	_ = termFields
-	// termDescAge is the schema descriptor for age field.
-	termDescAge := termFields[0].Descriptor()
-	// term.AgeValidator is a validator for the "age" field. It is called by the builders before save.
-	term.AgeValidator = termDescAge.Validators[0].(func(int) error)
-	// termDescName is the schema descriptor for name field.
-	termDescName := termFields[1].Descriptor()
-	// term.DefaultName holds the default value on creation for the name field.
-	term.DefaultName = termDescName.Default.(string)
+	// termDescCreatedAt is the schema descriptor for created_at field.
+	termDescCreatedAt := termFields[2].Descriptor()
+	// term.DefaultCreatedAt holds the default value on creation for the created_at field.
+	term.DefaultCreatedAt = termDescCreatedAt.Default.(time.Time)
+	// termDescID is the schema descriptor for id field.
+	termDescID := termFields[0].Descriptor()
+	// term.DefaultID holds the default value on creation for the id field.
+	term.DefaultID = termDescID.Default.(func() uuid.UUID)
 }

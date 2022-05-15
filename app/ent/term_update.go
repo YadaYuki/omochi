@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
@@ -27,29 +28,22 @@ func (tu *TermUpdate) Where(ps ...predicate.Term) *TermUpdate {
 	return tu
 }
 
-// SetAge sets the "age" field.
-func (tu *TermUpdate) SetAge(i int) *TermUpdate {
-	tu.mutation.ResetAge()
-	tu.mutation.SetAge(i)
+// SetWord sets the "word" field.
+func (tu *TermUpdate) SetWord(s string) *TermUpdate {
+	tu.mutation.SetWord(s)
 	return tu
 }
 
-// AddAge adds i to the "age" field.
-func (tu *TermUpdate) AddAge(i int) *TermUpdate {
-	tu.mutation.AddAge(i)
+// SetCreatedAt sets the "created_at" field.
+func (tu *TermUpdate) SetCreatedAt(t time.Time) *TermUpdate {
+	tu.mutation.SetCreatedAt(t)
 	return tu
 }
 
-// SetName sets the "name" field.
-func (tu *TermUpdate) SetName(s string) *TermUpdate {
-	tu.mutation.SetName(s)
-	return tu
-}
-
-// SetNillableName sets the "name" field if the given value is not nil.
-func (tu *TermUpdate) SetNillableName(s *string) *TermUpdate {
-	if s != nil {
-		tu.SetName(*s)
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (tu *TermUpdate) SetNillableCreatedAt(t *time.Time) *TermUpdate {
+	if t != nil {
+		tu.SetCreatedAt(*t)
 	}
 	return tu
 }
@@ -66,18 +60,12 @@ func (tu *TermUpdate) Save(ctx context.Context) (int, error) {
 		affected int
 	)
 	if len(tu.hooks) == 0 {
-		if err = tu.check(); err != nil {
-			return 0, err
-		}
 		affected, err = tu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*TermMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = tu.check(); err != nil {
-				return 0, err
 			}
 			tu.mutation = mutation
 			affected, err = tu.sqlSave(ctx)
@@ -119,23 +107,13 @@ func (tu *TermUpdate) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (tu *TermUpdate) check() error {
-	if v, ok := tu.mutation.Age(); ok {
-		if err := term.AgeValidator(v); err != nil {
-			return &ValidationError{Name: "age", err: fmt.Errorf(`ent: validator failed for field "Term.age": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   term.Table,
 			Columns: term.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: term.FieldID,
 			},
 		},
@@ -147,25 +125,18 @@ func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := tu.mutation.Age(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: term.FieldAge,
-		})
-	}
-	if value, ok := tu.mutation.AddedAge(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: term.FieldAge,
-		})
-	}
-	if value, ok := tu.mutation.Name(); ok {
+	if value, ok := tu.mutation.Word(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: term.FieldName,
+			Column: term.FieldWord,
+		})
+	}
+	if value, ok := tu.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: term.FieldCreatedAt,
 		})
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
@@ -187,29 +158,22 @@ type TermUpdateOne struct {
 	mutation *TermMutation
 }
 
-// SetAge sets the "age" field.
-func (tuo *TermUpdateOne) SetAge(i int) *TermUpdateOne {
-	tuo.mutation.ResetAge()
-	tuo.mutation.SetAge(i)
+// SetWord sets the "word" field.
+func (tuo *TermUpdateOne) SetWord(s string) *TermUpdateOne {
+	tuo.mutation.SetWord(s)
 	return tuo
 }
 
-// AddAge adds i to the "age" field.
-func (tuo *TermUpdateOne) AddAge(i int) *TermUpdateOne {
-	tuo.mutation.AddAge(i)
+// SetCreatedAt sets the "created_at" field.
+func (tuo *TermUpdateOne) SetCreatedAt(t time.Time) *TermUpdateOne {
+	tuo.mutation.SetCreatedAt(t)
 	return tuo
 }
 
-// SetName sets the "name" field.
-func (tuo *TermUpdateOne) SetName(s string) *TermUpdateOne {
-	tuo.mutation.SetName(s)
-	return tuo
-}
-
-// SetNillableName sets the "name" field if the given value is not nil.
-func (tuo *TermUpdateOne) SetNillableName(s *string) *TermUpdateOne {
-	if s != nil {
-		tuo.SetName(*s)
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (tuo *TermUpdateOne) SetNillableCreatedAt(t *time.Time) *TermUpdateOne {
+	if t != nil {
+		tuo.SetCreatedAt(*t)
 	}
 	return tuo
 }
@@ -233,18 +197,12 @@ func (tuo *TermUpdateOne) Save(ctx context.Context) (*Term, error) {
 		node *Term
 	)
 	if len(tuo.hooks) == 0 {
-		if err = tuo.check(); err != nil {
-			return nil, err
-		}
 		node, err = tuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*TermMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
-			}
-			if err = tuo.check(); err != nil {
-				return nil, err
 			}
 			tuo.mutation = mutation
 			node, err = tuo.sqlSave(ctx)
@@ -286,23 +244,13 @@ func (tuo *TermUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
-// check runs all checks and user-defined validators on the builder.
-func (tuo *TermUpdateOne) check() error {
-	if v, ok := tuo.mutation.Age(); ok {
-		if err := term.AgeValidator(v); err != nil {
-			return &ValidationError{Name: "age", err: fmt.Errorf(`ent: validator failed for field "Term.age": %w`, err)}
-		}
-	}
-	return nil
-}
-
 func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
 			Table:   term.Table,
 			Columns: term.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: term.FieldID,
 			},
 		},
@@ -331,25 +279,18 @@ func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) 
 			}
 		}
 	}
-	if value, ok := tuo.mutation.Age(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: term.FieldAge,
-		})
-	}
-	if value, ok := tuo.mutation.AddedAge(); ok {
-		_spec.Fields.Add = append(_spec.Fields.Add, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: term.FieldAge,
-		})
-	}
-	if value, ok := tuo.mutation.Name(); ok {
+	if value, ok := tuo.mutation.Word(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: term.FieldName,
+			Column: term.FieldWord,
+		})
+	}
+	if value, ok := tuo.mutation.CreatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: term.FieldCreatedAt,
 		})
 	}
 	_node = &Term{config: tuo.config}

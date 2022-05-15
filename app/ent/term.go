@@ -5,20 +5,22 @@ package ent
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/YadaYuki/omochi/app/ent/term"
+	"github.com/google/uuid"
 )
 
 // Term is the model entity for the Term schema.
 type Term struct {
 	config `json:"-"`
 	// ID of the ent.
-	ID int `json:"id,omitempty"`
-	// Age holds the value of the "age" field.
-	Age int `json:"age,omitempty"`
-	// Name holds the value of the "name" field.
-	Name string `json:"name,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
+	// Word holds the value of the "word" field.
+	Word string `json:"word,omitempty"`
+	// CreatedAt holds the value of the "created_at" field.
+	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -26,10 +28,12 @@ func (*Term) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case term.FieldID, term.FieldAge:
-			values[i] = new(sql.NullInt64)
-		case term.FieldName:
+		case term.FieldWord:
 			values[i] = new(sql.NullString)
+		case term.FieldCreatedAt:
+			values[i] = new(sql.NullTime)
+		case term.FieldID:
+			values[i] = new(uuid.UUID)
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Term", columns[i])
 		}
@@ -46,22 +50,22 @@ func (t *Term) assignValues(columns []string, values []interface{}) error {
 	for i := range columns {
 		switch columns[i] {
 		case term.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				t.ID = *value
 			}
-			t.ID = int(value.Int64)
-		case term.FieldAge:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field age", values[i])
-			} else if value.Valid {
-				t.Age = int(value.Int64)
-			}
-		case term.FieldName:
+		case term.FieldWord:
 			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field name", values[i])
+				return fmt.Errorf("unexpected type %T for field word", values[i])
 			} else if value.Valid {
-				t.Name = value.String
+				t.Word = value.String
+			}
+		case term.FieldCreatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field created_at", values[i])
+			} else if value.Valid {
+				t.CreatedAt = value.Time
 			}
 		}
 	}
@@ -91,10 +95,10 @@ func (t *Term) String() string {
 	var builder strings.Builder
 	builder.WriteString("Term(")
 	builder.WriteString(fmt.Sprintf("id=%v", t.ID))
-	builder.WriteString(", age=")
-	builder.WriteString(fmt.Sprintf("%v", t.Age))
-	builder.WriteString(", name=")
-	builder.WriteString(t.Name)
+	builder.WriteString(", word=")
+	builder.WriteString(t.Word)
+	builder.WriteString(", created_at=")
+	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

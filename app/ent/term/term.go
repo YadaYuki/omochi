@@ -2,15 +2,21 @@
 
 package term
 
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
+
 const (
 	// Label holds the string label denoting the term type in the database.
 	Label = "term"
 	// FieldID holds the string denoting the id field in the database.
-	FieldID = "id"
-	// FieldAge holds the string denoting the age field in the database.
-	FieldAge = "age"
-	// FieldName holds the string denoting the name field in the database.
-	FieldName = "name"
+	FieldID = "uuid"
+	// FieldWord holds the string denoting the word field in the database.
+	FieldWord = "word"
+	// FieldCreatedAt holds the string denoting the created_at field in the database.
+	FieldCreatedAt = "created_at"
 	// Table holds the table name of the term in the database.
 	Table = "terms"
 )
@@ -18,8 +24,8 @@ const (
 // Columns holds all SQL columns for term fields.
 var Columns = []string{
 	FieldID,
-	FieldAge,
-	FieldName,
+	FieldWord,
+	FieldCreatedAt,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -33,8 +39,8 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// AgeValidator is a validator for the "age" field. It is called by the builders before save.
-	AgeValidator func(int) error
-	// DefaultName holds the default value on creation for the "name" field.
-	DefaultName string
+	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
+	DefaultCreatedAt time.Time
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
 )

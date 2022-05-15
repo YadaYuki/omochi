@@ -6,10 +6,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/YadaYuki/omochi/app/ent/term"
+	"github.com/google/uuid"
 )
 
 // TermCreate is the builder for creating a Term entity.
@@ -19,22 +21,36 @@ type TermCreate struct {
 	hooks    []Hook
 }
 
-// SetAge sets the "age" field.
-func (tc *TermCreate) SetAge(i int) *TermCreate {
-	tc.mutation.SetAge(i)
+// SetWord sets the "word" field.
+func (tc *TermCreate) SetWord(s string) *TermCreate {
+	tc.mutation.SetWord(s)
 	return tc
 }
 
-// SetName sets the "name" field.
-func (tc *TermCreate) SetName(s string) *TermCreate {
-	tc.mutation.SetName(s)
+// SetCreatedAt sets the "created_at" field.
+func (tc *TermCreate) SetCreatedAt(t time.Time) *TermCreate {
+	tc.mutation.SetCreatedAt(t)
 	return tc
 }
 
-// SetNillableName sets the "name" field if the given value is not nil.
-func (tc *TermCreate) SetNillableName(s *string) *TermCreate {
-	if s != nil {
-		tc.SetName(*s)
+// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
+func (tc *TermCreate) SetNillableCreatedAt(t *time.Time) *TermCreate {
+	if t != nil {
+		tc.SetCreatedAt(*t)
+	}
+	return tc
+}
+
+// SetID sets the "id" field.
+func (tc *TermCreate) SetID(u uuid.UUID) *TermCreate {
+	tc.mutation.SetID(u)
+	return tc
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (tc *TermCreate) SetNillableID(u *uuid.UUID) *TermCreate {
+	if u != nil {
+		tc.SetID(*u)
 	}
 	return tc
 }
@@ -110,24 +126,23 @@ func (tc *TermCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (tc *TermCreate) defaults() {
-	if _, ok := tc.mutation.Name(); !ok {
-		v := term.DefaultName
-		tc.mutation.SetName(v)
+	if _, ok := tc.mutation.CreatedAt(); !ok {
+		v := term.DefaultCreatedAt
+		tc.mutation.SetCreatedAt(v)
+	}
+	if _, ok := tc.mutation.ID(); !ok {
+		v := term.DefaultID()
+		tc.mutation.SetID(v)
 	}
 }
 
 // check runs all checks and user-defined validators on the builder.
 func (tc *TermCreate) check() error {
-	if _, ok := tc.mutation.Age(); !ok {
-		return &ValidationError{Name: "age", err: errors.New(`ent: missing required field "Term.age"`)}
+	if _, ok := tc.mutation.Word(); !ok {
+		return &ValidationError{Name: "word", err: errors.New(`ent: missing required field "Term.word"`)}
 	}
-	if v, ok := tc.mutation.Age(); ok {
-		if err := term.AgeValidator(v); err != nil {
-			return &ValidationError{Name: "age", err: fmt.Errorf(`ent: validator failed for field "Term.age": %w`, err)}
-		}
-	}
-	if _, ok := tc.mutation.Name(); !ok {
-		return &ValidationError{Name: "name", err: errors.New(`ent: missing required field "Term.name"`)}
+	if _, ok := tc.mutation.CreatedAt(); !ok {
+		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Term.created_at"`)}
 	}
 	return nil
 }
@@ -140,8 +155,13 @@ func (tc *TermCreate) sqlSave(ctx context.Context) (*Term, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	return _node, nil
 }
 
@@ -151,26 +171,30 @@ func (tc *TermCreate) createSpec() (*Term, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: term.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeInt,
+				Type:   field.TypeUUID,
 				Column: term.FieldID,
 			},
 		}
 	)
-	if value, ok := tc.mutation.Age(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeInt,
-			Value:  value,
-			Column: term.FieldAge,
-		})
-		_node.Age = value
+	if id, ok := tc.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
 	}
-	if value, ok := tc.mutation.Name(); ok {
+	if value, ok := tc.mutation.Word(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
 			Value:  value,
-			Column: term.FieldName,
+			Column: term.FieldWord,
 		})
-		_node.Name = value
+		_node.Word = value
+	}
+	if value, ok := tc.mutation.CreatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: term.FieldCreatedAt,
+		})
+		_node.CreatedAt = value
 	}
 	return _node, _spec
 }
@@ -217,10 +241,6 @@ func (tcb *TermCreateBulk) Save(ctx context.Context) ([]*Term, error) {
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {
