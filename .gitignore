@@ -22,4 +22,4 @@ go.work
 
 .env
 .env.*
-!env.example
+!.env.example

@@ -7,7 +7,7 @@ services:
       context: .
       dockerfile: ./docker/api/Dockerfile
     ports:
-      - "8081:8000"
+      - "8081:8081"
     restart: always
     networks:
       - omochi_network
@@ -17,6 +17,9 @@ services:
       - ./app:/go/github.com/YadaYuki/omochi/app
       - ./shell:/go/github.com/YadaYuki/omochi/shell
     command: sh /go/github.com/YadaYuki/omochi/shell/start-server.sh
+    environment:
+      APP_ENV: "development"
+      TZ: "Asia/Tokyo"
     env_file:
       - .env.development
 
@@ -32,8 +35,10 @@ services:
       - omochi_network
     command: --default-authentication-plugin=mysql_native_password
     volumes:
-      - ./docker/db/init:/docker-entrypoint-initdb.d:cached
       - ./docker/db/conf.d:/etc/mysql/conf.d:cached
+    environment:
+      APP_ENV: "development"
+      TZ: "Asia/Tokyo"
     env_file:
       - .env.development
 
