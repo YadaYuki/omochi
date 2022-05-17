@@ -8,4 +8,4 @@ done
 
 
 
-cd /go/github.com/YadaYuki/omochi/app && go build -o main && ./main
+cd /go/github.com/YadaYuki/omochi/app && go run main.go
