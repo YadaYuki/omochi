@@ -2,6 +2,6 @@ package repository
 
 import "github.com/YadaYuki/omochi/app/domain/entities"
 
-type TermRepository interface {
+type ITermRepository interface {
 	FindTermById(uuid string) (*entities.Term, error)
 }
