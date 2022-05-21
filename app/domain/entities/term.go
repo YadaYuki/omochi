@@ -1,12 +1,16 @@
 package entities
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type Term struct {
-	Uuid      string
-	Word      string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	Uuid      uuid.UUID `json:"uuid"`
+	Word      string    `json:"word"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 type Terms = []Term

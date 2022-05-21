@@ -20,6 +20,10 @@ func init() {
 	termDescCreatedAt := termFields[2].Descriptor()
 	// term.DefaultCreatedAt holds the default value on creation for the created_at field.
 	term.DefaultCreatedAt = termDescCreatedAt.Default.(time.Time)
+	// termDescUpdatedAt is the schema descriptor for updated_at field.
+	termDescUpdatedAt := termFields[3].Descriptor()
+	// term.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	term.DefaultUpdatedAt = termDescUpdatedAt.Default.(time.Time)
 	// termDescID is the schema descriptor for id field.
 	termDescID := termFields[0].Descriptor()
 	// term.DefaultID holds the default value on creation for the id field.

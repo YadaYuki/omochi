@@ -1,7 +1,12 @@
 package repository
 
-import "github.com/YadaYuki/omochi/app/domain/entities"
+import (
+	"context"
 
-type TermRepository interface {
-	FindTermById(uuid string) (*entities.Term, error)
+	"github.com/YadaYuki/omochi/app/domain/entities"
+	"github.com/google/uuid"
+)
+
+type ITermRepository interface {
+	FindTermById(ctx context.Context, uuid uuid.UUID) (*entities.Term, error)
 }
