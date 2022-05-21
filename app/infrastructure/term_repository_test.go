@@ -10,19 +10,25 @@ import (
 )
 
 func TestFindTermById(t *testing.T) {
-	ctx := context.Background()
 	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 	defer client.Close()
 	termRepository := NewTermRepository(client)
-
-	termCreated, _ := client.Term.
-		Create().
-		SetWord("sample").
-		Save(ctx)
-
-	term, err := termRepository.FindTermById(termCreated.ID)
-	if err != nil {
-		t.Fatal(err)
+	testCases := []struct {
+		word string
+	}{
+		{"sample"},
 	}
-	t.Log("found term", term)
+	for _, tc := range testCases {
+		termCreated, _ := client.Term.
+			Create().
+			SetWord(tc.word).
+			Save(context.Background())
+		term, err := termRepository.FindTermById(context.Background(), termCreated.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if term.Word != tc.word {
+			t.Fatalf("expected %s, but got %s", tc.word, term.Word)
+		}
+	}
 }

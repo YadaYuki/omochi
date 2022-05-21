@@ -19,7 +19,7 @@ func NewTermRepository(db *ent.Client) repository.ITermRepository {
 	return &TermRepository{db: db}
 }
 
-func (r *TermRepository) FindTermById(id uuid.UUID) (*entities.Term, error) {
+func (r *TermRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, error) {
 	term, err := r.db.Term.Query().Where(term.ID(uuid.UUID(id))).Only(context.Background())
 	if err != nil {
 		return nil, fmt.Errorf("failed to find term by id: %w", err)
