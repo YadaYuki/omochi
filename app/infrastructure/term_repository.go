@@ -7,11 +7,11 @@ import (
 )
 
 type TermRepository struct {
-	*ent.Client
+	db *ent.Client
 }
 
 func NewTermRepository(db *ent.Client) repository.ITermRepository {
-	return &TermRepository{db}
+	return &TermRepository{db: db}
 }
 
 func (r *TermRepository) FindTermById(uuid string) (*entities.Term, error) {

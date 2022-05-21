@@ -41,6 +41,20 @@ func (tc *TermCreate) SetNillableCreatedAt(t *time.Time) *TermCreate {
 	return tc
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (tc *TermCreate) SetUpdatedAt(t time.Time) *TermCreate {
+	tc.mutation.SetUpdatedAt(t)
+	return tc
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (tc *TermCreate) SetNillableUpdatedAt(t *time.Time) *TermCreate {
+	if t != nil {
+		tc.SetUpdatedAt(*t)
+	}
+	return tc
+}
+
 // SetID sets the "id" field.
 func (tc *TermCreate) SetID(u uuid.UUID) *TermCreate {
 	tc.mutation.SetID(u)
@@ -130,6 +144,10 @@ func (tc *TermCreate) defaults() {
 		v := term.DefaultCreatedAt
 		tc.mutation.SetCreatedAt(v)
 	}
+	if _, ok := tc.mutation.UpdatedAt(); !ok {
+		v := term.DefaultUpdatedAt
+		tc.mutation.SetUpdatedAt(v)
+	}
 	if _, ok := tc.mutation.ID(); !ok {
 		v := term.DefaultID()
 		tc.mutation.SetID(v)
@@ -143,6 +161,9 @@ func (tc *TermCreate) check() error {
 	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Term.created_at"`)}
+	}
+	if _, ok := tc.mutation.UpdatedAt(); !ok {
+		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Term.updated_at"`)}
 	}
 	return nil
 }
@@ -195,6 +216,14 @@ func (tc *TermCreate) createSpec() (*Term, *sqlgraph.CreateSpec) {
 			Column: term.FieldCreatedAt,
 		})
 		_node.CreatedAt = value
+	}
+	if value, ok := tc.mutation.UpdatedAt(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: term.FieldUpdatedAt,
+		})
+		_node.UpdatedAt = value
 	}
 	return _node, _spec
 }

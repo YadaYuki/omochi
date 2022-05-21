@@ -20,6 +20,8 @@ func (Term) Fields() []ent.Field {
 		field.String("word"),
 		field.Time("created_at").
 			Default(time.Now()),
+		field.Time("updated_at").
+			Default(time.Now()),
 	}
 }
 

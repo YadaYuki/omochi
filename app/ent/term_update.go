@@ -48,6 +48,20 @@ func (tu *TermUpdate) SetNillableCreatedAt(t *time.Time) *TermUpdate {
 	return tu
 }
 
+// SetUpdatedAt sets the "updated_at" field.
+func (tu *TermUpdate) SetUpdatedAt(t time.Time) *TermUpdate {
+	tu.mutation.SetUpdatedAt(t)
+	return tu
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (tu *TermUpdate) SetNillableUpdatedAt(t *time.Time) *TermUpdate {
+	if t != nil {
+		tu.SetUpdatedAt(*t)
+	}
+	return tu
+}
+
 // Mutation returns the TermMutation object of the builder.
 func (tu *TermUpdate) Mutation() *TermMutation {
 	return tu.mutation
@@ -139,6 +153,13 @@ func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: term.FieldCreatedAt,
 		})
 	}
+	if value, ok := tu.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: term.FieldUpdatedAt,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{term.Label}
@@ -174,6 +195,20 @@ func (tuo *TermUpdateOne) SetCreatedAt(t time.Time) *TermUpdateOne {
 func (tuo *TermUpdateOne) SetNillableCreatedAt(t *time.Time) *TermUpdateOne {
 	if t != nil {
 		tuo.SetCreatedAt(*t)
+	}
+	return tuo
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (tuo *TermUpdateOne) SetUpdatedAt(t time.Time) *TermUpdateOne {
+	tuo.mutation.SetUpdatedAt(t)
+	return tuo
+}
+
+// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
+func (tuo *TermUpdateOne) SetNillableUpdatedAt(t *time.Time) *TermUpdateOne {
+	if t != nil {
+		tuo.SetUpdatedAt(*t)
 	}
 	return tuo
 }
@@ -291,6 +326,13 @@ func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) 
 			Type:   field.TypeTime,
 			Value:  value,
 			Column: term.FieldCreatedAt,
+		})
+	}
+	if value, ok := tuo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: term.FieldUpdatedAt,
 		})
 	}
 	_node = &Term{config: tuo.config}

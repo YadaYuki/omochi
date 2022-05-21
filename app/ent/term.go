@@ -21,6 +21,8 @@ type Term struct {
 	Word string `json:"word,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
+	// UpdatedAt holds the value of the "updated_at" field.
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -30,7 +32,7 @@ func (*Term) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case term.FieldWord:
 			values[i] = new(sql.NullString)
-		case term.FieldCreatedAt:
+		case term.FieldCreatedAt, term.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
 		case term.FieldID:
 			values[i] = new(uuid.UUID)
@@ -67,6 +69,12 @@ func (t *Term) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				t.CreatedAt = value.Time
 			}
+		case term.FieldUpdatedAt:
+			if value, ok := values[i].(*sql.NullTime); !ok {
+				return fmt.Errorf("unexpected type %T for field updated_at", values[i])
+			} else if value.Valid {
+				t.UpdatedAt = value.Time
+			}
 		}
 	}
 	return nil
@@ -99,6 +107,8 @@ func (t *Term) String() string {
 	builder.WriteString(t.Word)
 	builder.WriteString(", created_at=")
 	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
+	builder.WriteString(", updated_at=")
+	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }
