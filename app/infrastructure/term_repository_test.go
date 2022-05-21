@@ -15,20 +15,14 @@ func TestFindTermById(t *testing.T) {
 	defer client.Close()
 	termRepository := NewTermRepository(client)
 
-	termCreated, err := client.Term.
+	termCreated, _ := client.Term.
 		Create().
 		SetWord("sample").
 		Save(ctx)
-	if err != nil {
-		t.Fatal("failed creating user using UserService", err)
-	}
-	t.Log("created term", termCreated)
 
-	term, err := termRepository.FindTermById(termCreated.ID.String())
+	term, err := termRepository.FindTermById(termCreated.ID)
 	if err != nil {
-		t.Fatal("failed finding user using UserService", err)
+		t.Fatal(err)
 	}
-	if term.Word != "sample" {
-		t.Fatal("failed finding user using UserService")
-	}
+	t.Log("found term", term)
 }

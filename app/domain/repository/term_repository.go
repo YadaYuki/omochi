@@ -1,7 +1,10 @@
 package repository
 
-import "github.com/YadaYuki/omochi/app/domain/entities"
+import (
+	"github.com/YadaYuki/omochi/app/domain/entities"
+	"github.com/google/uuid"
+)
 
 type ITermRepository interface {
-	FindTermById(uuid string) (*entities.Term, error)
+	FindTermById(uuid uuid.UUID) (*entities.Term, error)
 }
