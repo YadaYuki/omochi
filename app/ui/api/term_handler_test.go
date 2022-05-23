@@ -9,6 +9,7 @@ import (
 	"testing"
 
 	"github.com/YadaYuki/omochi/app/domain/entities"
+	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/ent/enttest"
 	"github.com/YadaYuki/omochi/app/infrastructure"
 	"github.com/YadaYuki/omochi/app/usecase"
@@ -19,10 +20,7 @@ import (
 func TestTermHandler_FindTermByIdHandler(t *testing.T) {
 	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 	defer client.Close()
-	termRepository := infrastructure.NewTermRepository(client)
-	useCase := usecase.NewTermUseCase(termRepository)
-	termHandler := NewTermHandler(useCase)
-
+	termHandler := createTermHandler(t, client)
 	testCases := []struct {
 		word string
 	}{
@@ -55,4 +53,9 @@ func TestTermHandler_FindTermByIdHandler(t *testing.T) {
 	}
 }
 
-// サーバを立てる
+func createTermHandler(t testing.TB, client *ent.Client) *TermHandler {
+	termRepository := infrastructure.NewTermRepository(client)
+	useCase := usecase.NewTermUseCase(termRepository)
+	termHandler := NewTermHandler(useCase)
+	return termHandler
+}
