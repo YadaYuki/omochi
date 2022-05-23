@@ -2,6 +2,7 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/YadaYuki/omochi/app/usecase"
@@ -21,16 +22,17 @@ func (h *TermHandler) FindTermByIdHandler(w http.ResponseWriter, r *http.Request
 	vars := mux.Vars(r)
 	uuidStr, ok := vars["uuid"]
 	if !ok { // TODO:
-		return
+		fmt.Println("uuid is not found")
 	}
 	term, err := h.u.FindTermById(r.Context(), uuid.MustParse(uuidStr))
 	if err != nil { // TODO:
-		return
+		panic(err)
 	}
 
 	termBody, err := json.Marshal(term)
 	if err != nil { // TODO:
-		return
+		panic(err)
+		// return
 	}
 	w.Write(termBody)
 }
