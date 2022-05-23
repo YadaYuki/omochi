@@ -13,15 +13,15 @@ type ITermUseCase interface {
 	FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, error)
 }
 
-type TermUseCase struct {
+type termUseCase struct {
 	r repository.ITermRepository
 }
 
 func NewTermUseCase(repository repository.ITermRepository) ITermUseCase {
-	return &TermUseCase{r: repository}
+	return &termUseCase{r: repository}
 }
 
-func (u *TermUseCase) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, error) {
+func (u *termUseCase) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, error) {
 	term, err := u.r.FindTermById(ctx, id)
 	if err != nil {
 		return nil, fmt.Errorf("failed to find term by id: %w", err)

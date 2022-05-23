@@ -9,7 +9,11 @@ import (
 	"os"
 
 	"github.com/YadaYuki/omochi/app/ent"
+	"github.com/YadaYuki/omochi/app/infrastructure"
+	"github.com/YadaYuki/omochi/app/ui/api"
+	"github.com/YadaYuki/omochi/app/usecase"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/gorilla/mux"
 )
 
 type ResponseBody struct {
@@ -34,6 +38,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
+
 	if err := db.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
@@ -44,13 +49,17 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
+
 	}
+	termRepository := infrastructure.NewTermRepository(db)
+	useCase := usecase.NewTermUseCase(termRepository)
+	termHandler := api.NewTermHandler(useCase)
 
 	log.Println("Successfully connected to MySQL")
 	log.Println("application started")
-
-	http.HandleFunc("/", hello)
-	http.ListenAndServe(":8081", nil)
+	r := mux.NewRouter()
+	r.HandleFunc("/term/{uuid}", termHandler.FindTermByIdHandler)
+	http.ListenAndServe(":8081", r)
 }
 
 func CreateTerm(word string, ctx context.Context, client *ent.Client) (*ent.Term, error) {
