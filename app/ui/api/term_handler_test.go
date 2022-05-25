@@ -11,7 +11,7 @@ import (
 	"github.com/YadaYuki/omochi/app/domain/entities"
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/ent/enttest"
-	"github.com/YadaYuki/omochi/app/infrastructure"
+	"github.com/YadaYuki/omochi/app/infrastructure/datastore"
 	"github.com/YadaYuki/omochi/app/usecase"
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
@@ -54,7 +54,7 @@ func TestTermHandler_FindTermByIdHandler(t *testing.T) {
 }
 
 func createTermHandler(t testing.TB, client *ent.Client) *TermHandler {
-	termRepository := infrastructure.NewTermRepository(client)
+	termRepository := datastore.NewTermRepository(client)
 	useCase := usecase.NewTermUseCase(termRepository)
 	termHandler := NewTermHandler(useCase)
 	return termHandler

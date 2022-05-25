@@ -1,13 +1,14 @@
-package infrastructure
+package datastore
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/YadaYuki/omochi/app/domain/entities"
 	"github.com/YadaYuki/omochi/app/domain/repository"
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/ent/term"
+	"github.com/YadaYuki/omochi/app/errors"
+	"github.com/YadaYuki/omochi/app/errors/code"
 	"github.com/google/uuid"
 )
 
@@ -19,11 +20,17 @@ func NewTermRepository(db *ent.Client) repository.ITermRepository {
 	return &TermRepository{db: db}
 }
 
-func (r *TermRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, error) {
+func (r *TermRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, *errors.Error) {
 	term, err := r.db.Term.Query().Where(term.ID(uuid.UUID(id))).Only(ctx)
+
 	if err != nil {
-		return nil, fmt.Errorf("failed to find term by id: %w", err)
+		_, ok := err.(*ent.NotFoundError)
+		if ok {
+			return nil, errors.NewError(code.NotExist, err)
+		}
+		return nil, errors.NewError(code.Unknown, err)
 	}
+
 	return convertEntSchemaToEntity(term), nil
 }
 
