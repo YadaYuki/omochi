@@ -28,7 +28,6 @@ func (h *TermHandler) FindTermByIdHandler(w http.ResponseWriter, r *http.Request
 	if err != nil { // TODO:
 		panic(err)
 	}
-
 	termBody, err := json.Marshal(term)
 	if err != nil { // TODO:
 		panic(err)
