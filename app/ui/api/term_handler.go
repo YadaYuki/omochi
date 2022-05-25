@@ -2,9 +2,9 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 
+	"github.com/YadaYuki/omochi/app/errors/code"
 	"github.com/YadaYuki/omochi/app/usecase"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
@@ -21,17 +21,19 @@ func NewTermHandler(u usecase.ITermUseCase) *TermHandler {
 func (h *TermHandler) FindTermByIdHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuidStr, ok := vars["uuid"]
-	if !ok { // TODO:
-		fmt.Println("uuid is not found")
+	if !ok {
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 	term, err := h.u.FindTermById(r.Context(), uuid.MustParse(uuidStr))
-	if err != nil { // TODO:
-		panic(err)
+	if err != nil {
+		if err.Code == code.NotExist {
+			w.WriteHeader(http.StatusNotFound)
+		} else {
+			w.WriteHeader(http.StatusInternalServerError)
+		}
+		return
 	}
-	termBody, err := json.Marshal(term)
-	if err != nil { // TODO:
-		panic(err)
-		// return
-	}
+	termBody, _ := json.Marshal(term)
 	w.Write(termBody)
 }

@@ -5,7 +5,7 @@ package code
 type Code string
 
 const (
-	NotExist       Code = "NOT_EXIST"
-	InvalidRequest Code = "INVALID_REQUEST"
-	InternalServer Code = "INTERNAL_SERVER"
+	NotExist     Code = "NotExist"
+	AlreadyExist Code = "AlreadyExist"
+	Unknown      Code = "Unknown"
 )
