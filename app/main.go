@@ -51,7 +51,7 @@ func main() {
 		}
 
 	}
-	termRepository := entdb.NewTermRepository(db)
+	termRepository := entdb.NewTermEntRepository(db)
 	useCase := usecase.NewTermUseCase(termRepository)
 	termHandler := api.NewTermHandler(useCase)
 

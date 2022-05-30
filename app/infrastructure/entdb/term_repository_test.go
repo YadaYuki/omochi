@@ -12,7 +12,7 @@ import (
 func TestFindTermById(t *testing.T) {
 	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 	defer client.Close()
-	termRepository := NewTermRepository(client)
+	termRepository := NewTermEntRepository(client)
 	testCases := []struct {
 		word string
 	}{

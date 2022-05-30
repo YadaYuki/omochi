@@ -72,7 +72,7 @@ func TestTermHandler_FindTermByIdHandlerError(t *testing.T) {
 }
 
 func createTermHandler(t testing.TB, client *ent.Client) *TermHandler {
-	termRepository := entdb.NewTermRepository(client)
+	termRepository := entdb.NewTermEntRepository(client)
 	useCase := usecase.NewTermUseCase(termRepository)
 	termHandler := NewTermHandler(useCase)
 	return termHandler

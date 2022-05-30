@@ -12,15 +12,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type TermRepository struct {
+type TermEntRepository struct {
 	db *ent.Client
 }
 
-func NewTermRepository(db *ent.Client) repository.ITermRepository {
-	return &TermRepository{db: db}
+func NewTermEntRepository(db *ent.Client) repository.ITermRepository {
+	return &TermEntRepository{db: db}
 }
 
-func (r *TermRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, *errors.Error) {
+func (r *TermEntRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, *errors.Error) {
 	term, err := r.db.Term.Query().Where(term.ID(uuid.UUID(id))).Only(ctx)
 	if err != nil {
 		_, ok := err.(*ent.NotFoundError)
