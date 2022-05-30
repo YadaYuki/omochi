@@ -13,4 +13,8 @@ type Term struct {
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
+type TermCreate struct {
+	Word string `json:"word"`
+}
+
 type Terms = []Term
