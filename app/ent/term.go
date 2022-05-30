@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
 )
@@ -17,12 +18,39 @@ type Term struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// Word holds the value of the "word" field.
-	Word string `json:"word,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Word holds the value of the "word" field.
+	Word string `json:"word,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the TermQuery when eager-loading is set.
+	Edges                        TermEdges `json:"edges"`
+	invert_index_compressed_term *uuid.UUID
+}
+
+// TermEdges holds the relations/edges for other nodes in the graph.
+type TermEdges struct {
+	// InvertIndex holds the value of the invert_index edge.
+	InvertIndex *InvertIndexCompressed `json:"invert_index,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// InvertIndexOrErr returns the InvertIndex value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e TermEdges) InvertIndexOrErr() (*InvertIndexCompressed, error) {
+	if e.loadedTypes[0] {
+		if e.InvertIndex == nil {
+			// The edge invert_index was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: invertindexcompressed.Label}
+		}
+		return e.InvertIndex, nil
+	}
+	return nil, &NotLoadedError{edge: "invert_index"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -36,6 +64,8 @@ func (*Term) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullTime)
 		case term.FieldID:
 			values[i] = new(uuid.UUID)
+		case term.ForeignKeys[0]: // invert_index_compressed_term
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Term", columns[i])
 		}
@@ -57,12 +87,6 @@ func (t *Term) assignValues(columns []string, values []interface{}) error {
 			} else if value != nil {
 				t.ID = *value
 			}
-		case term.FieldWord:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field word", values[i])
-			} else if value.Valid {
-				t.Word = value.String
-			}
 		case term.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
 				return fmt.Errorf("unexpected type %T for field created_at", values[i])
@@ -75,9 +99,27 @@ func (t *Term) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				t.UpdatedAt = value.Time
 			}
+		case term.FieldWord:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field word", values[i])
+			} else if value.Valid {
+				t.Word = value.String
+			}
+		case term.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field invert_index_compressed_term", values[i])
+			} else if value.Valid {
+				t.invert_index_compressed_term = new(uuid.UUID)
+				*t.invert_index_compressed_term = *value.S.(*uuid.UUID)
+			}
 		}
 	}
 	return nil
+}
+
+// QueryInvertIndex queries the "invert_index" edge of the Term entity.
+func (t *Term) QueryInvertIndex() *InvertIndexCompressedQuery {
+	return (&TermClient{config: t.config}).QueryInvertIndex(t)
 }
 
 // Update returns a builder for updating this Term.
@@ -103,12 +145,12 @@ func (t *Term) String() string {
 	var builder strings.Builder
 	builder.WriteString("Term(")
 	builder.WriteString(fmt.Sprintf("id=%v", t.ID))
-	builder.WriteString(", word=")
-	builder.WriteString(t.Word)
 	builder.WriteString(", created_at=")
 	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
 	builder.WriteString(", updated_at=")
 	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
+	builder.WriteString(", word=")
+	builder.WriteString(t.Word)
 	builder.WriteByte(')')
 	return builder.String()
 }

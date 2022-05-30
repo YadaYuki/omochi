@@ -1,9 +1,8 @@
 package schema
 
 import (
-	"time"
-
 	"entgo.io/ent"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 )
@@ -18,14 +17,21 @@ func (Term) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).StorageKey("uuid").Default(uuid.New),
 		field.String("word"),
-		field.Time("created_at").
-			Default(time.Now()),
-		field.Time("updated_at").
-			Default(time.Now()),
+	}
+}
+
+// Mixin of the Term.
+func (Term) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		TimeStampMixin{},
 	}
 }
 
 // Edges of the Term.
 func (Term) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.From("invert_index", InvertIndexCompressed.Type).
+			Ref("term").
+			Unique(),
+	}
 }

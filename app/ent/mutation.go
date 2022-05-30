@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/YadaYuki/omochi/app/ent/document"
+	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
@@ -25,22 +27,969 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeTerm = "Term"
+	TypeDocument              = "Document"
+	TypeInvertIndexCompressed = "InvertIndexCompressed"
+	TypeTerm                  = "Term"
 )
 
-// TermMutation represents an operation that mutates the Term nodes in the graph.
-type TermMutation struct {
+// DocumentMutation represents an operation that mutates the Document nodes in the graph.
+type DocumentMutation struct {
 	config
 	op            Op
 	typ           string
 	id            *uuid.UUID
-	word          *string
 	created_at    *time.Time
 	updated_at    *time.Time
+	content       *string
 	clearedFields map[string]struct{}
 	done          bool
-	oldValue      func(context.Context) (*Term, error)
-	predicates    []predicate.Term
+	oldValue      func(context.Context) (*Document, error)
+	predicates    []predicate.Document
+}
+
+var _ ent.Mutation = (*DocumentMutation)(nil)
+
+// documentOption allows management of the mutation configuration using functional options.
+type documentOption func(*DocumentMutation)
+
+// newDocumentMutation creates new mutation for the Document entity.
+func newDocumentMutation(c config, op Op, opts ...documentOption) *DocumentMutation {
+	m := &DocumentMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeDocument,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withDocumentID sets the ID field of the mutation.
+func withDocumentID(id uuid.UUID) documentOption {
+	return func(m *DocumentMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *Document
+		)
+		m.oldValue = func(ctx context.Context) (*Document, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().Document.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withDocument sets the old Document of the mutation.
+func withDocument(node *Document) documentOption {
+	return func(m *DocumentMutation) {
+		m.oldValue = func(context.Context) (*Document, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m DocumentMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m DocumentMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Document entities.
+func (m *DocumentMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *DocumentMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *DocumentMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().Document.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *DocumentMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *DocumentMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the Document entity.
+// If the Document object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *DocumentMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *DocumentMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *DocumentMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the Document entity.
+// If the Document object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *DocumentMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetContent sets the "content" field.
+func (m *DocumentMutation) SetContent(s string) {
+	m.content = &s
+}
+
+// Content returns the value of the "content" field in the mutation.
+func (m *DocumentMutation) Content() (r string, exists bool) {
+	v := m.content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldContent returns the old "content" field's value of the Document entity.
+// If the Document object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentMutation) OldContent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldContent: %w", err)
+	}
+	return oldValue.Content, nil
+}
+
+// ResetContent resets all changes to the "content" field.
+func (m *DocumentMutation) ResetContent() {
+	m.content = nil
+}
+
+// Where appends a list predicates to the DocumentMutation builder.
+func (m *DocumentMutation) Where(ps ...predicate.Document) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *DocumentMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (Document).
+func (m *DocumentMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *DocumentMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.created_at != nil {
+		fields = append(fields, document.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, document.FieldUpdatedAt)
+	}
+	if m.content != nil {
+		fields = append(fields, document.FieldContent)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *DocumentMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case document.FieldCreatedAt:
+		return m.CreatedAt()
+	case document.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case document.FieldContent:
+		return m.Content()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *DocumentMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case document.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case document.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case document.FieldContent:
+		return m.OldContent(ctx)
+	}
+	return nil, fmt.Errorf("unknown Document field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DocumentMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case document.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case document.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case document.FieldContent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetContent(v)
+		return nil
+	}
+	return fmt.Errorf("unknown Document field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *DocumentMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *DocumentMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *DocumentMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown Document numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *DocumentMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *DocumentMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *DocumentMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown Document nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *DocumentMutation) ResetField(name string) error {
+	switch name {
+	case document.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case document.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case document.FieldContent:
+		m.ResetContent()
+		return nil
+	}
+	return fmt.Errorf("unknown Document field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *DocumentMutation) AddedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *DocumentMutation) AddedIDs(name string) []ent.Value {
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *DocumentMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *DocumentMutation) RemovedIDs(name string) []ent.Value {
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *DocumentMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 0)
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *DocumentMutation) EdgeCleared(name string) bool {
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *DocumentMutation) ClearEdge(name string) error {
+	return fmt.Errorf("unknown Document unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *DocumentMutation) ResetEdge(name string) error {
+	return fmt.Errorf("unknown Document edge %s", name)
+}
+
+// InvertIndexCompressedMutation represents an operation that mutates the InvertIndexCompressed nodes in the graph.
+type InvertIndexCompressedMutation struct {
+	config
+	op                      Op
+	typ                     string
+	id                      *uuid.UUID
+	created_at              *time.Time
+	updated_at              *time.Time
+	posting_list_compressed *[]byte
+	clearedFields           map[string]struct{}
+	term                    map[uuid.UUID]struct{}
+	removedterm             map[uuid.UUID]struct{}
+	clearedterm             bool
+	done                    bool
+	oldValue                func(context.Context) (*InvertIndexCompressed, error)
+	predicates              []predicate.InvertIndexCompressed
+}
+
+var _ ent.Mutation = (*InvertIndexCompressedMutation)(nil)
+
+// invertindexcompressedOption allows management of the mutation configuration using functional options.
+type invertindexcompressedOption func(*InvertIndexCompressedMutation)
+
+// newInvertIndexCompressedMutation creates new mutation for the InvertIndexCompressed entity.
+func newInvertIndexCompressedMutation(c config, op Op, opts ...invertindexcompressedOption) *InvertIndexCompressedMutation {
+	m := &InvertIndexCompressedMutation{
+		config:        c,
+		op:            op,
+		typ:           TypeInvertIndexCompressed,
+		clearedFields: make(map[string]struct{}),
+	}
+	for _, opt := range opts {
+		opt(m)
+	}
+	return m
+}
+
+// withInvertIndexCompressedID sets the ID field of the mutation.
+func withInvertIndexCompressedID(id uuid.UUID) invertindexcompressedOption {
+	return func(m *InvertIndexCompressedMutation) {
+		var (
+			err   error
+			once  sync.Once
+			value *InvertIndexCompressed
+		)
+		m.oldValue = func(ctx context.Context) (*InvertIndexCompressed, error) {
+			once.Do(func() {
+				if m.done {
+					err = errors.New("querying old values post mutation is not allowed")
+				} else {
+					value, err = m.Client().InvertIndexCompressed.Get(ctx, id)
+				}
+			})
+			return value, err
+		}
+		m.id = &id
+	}
+}
+
+// withInvertIndexCompressed sets the old InvertIndexCompressed of the mutation.
+func withInvertIndexCompressed(node *InvertIndexCompressed) invertindexcompressedOption {
+	return func(m *InvertIndexCompressedMutation) {
+		m.oldValue = func(context.Context) (*InvertIndexCompressed, error) {
+			return node, nil
+		}
+		m.id = &node.ID
+	}
+}
+
+// Client returns a new `ent.Client` from the mutation. If the mutation was
+// executed in a transaction (ent.Tx), a transactional client is returned.
+func (m InvertIndexCompressedMutation) Client() *Client {
+	client := &Client{config: m.config}
+	client.init()
+	return client
+}
+
+// Tx returns an `ent.Tx` for mutations that were executed in transactions;
+// it returns an error otherwise.
+func (m InvertIndexCompressedMutation) Tx() (*Tx, error) {
+	if _, ok := m.driver.(*txDriver); !ok {
+		return nil, errors.New("ent: mutation is not running in a transaction")
+	}
+	tx := &Tx{config: m.config}
+	tx.init()
+	return tx, nil
+}
+
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of InvertIndexCompressed entities.
+func (m *InvertIndexCompressedMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
+// ID returns the ID value in the mutation. Note that the ID is only available
+// if it was provided to the builder or after it was returned from the database.
+func (m *InvertIndexCompressedMutation) ID() (id uuid.UUID, exists bool) {
+	if m.id == nil {
+		return
+	}
+	return *m.id, true
+}
+
+// IDs queries the database and returns the entity ids that match the mutation's predicate.
+// That means, if the mutation is applied within a transaction with an isolation level such
+// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
+// or updated by the mutation.
+func (m *InvertIndexCompressedMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+	switch {
+	case m.op.Is(OpUpdateOne | OpDeleteOne):
+		id, exists := m.ID()
+		if exists {
+			return []uuid.UUID{id}, nil
+		}
+		fallthrough
+	case m.op.Is(OpUpdate | OpDelete):
+		return m.Client().InvertIndexCompressed.Query().Where(m.predicates...).IDs(ctx)
+	default:
+		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
+	}
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (m *InvertIndexCompressedMutation) SetCreatedAt(t time.Time) {
+	m.created_at = &t
+}
+
+// CreatedAt returns the value of the "created_at" field in the mutation.
+func (m *InvertIndexCompressedMutation) CreatedAt() (r time.Time, exists bool) {
+	v := m.created_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCreatedAt returns the old "created_at" field's value of the InvertIndexCompressed entity.
+// If the InvertIndexCompressed object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvertIndexCompressedMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
+	}
+	return oldValue.CreatedAt, nil
+}
+
+// ResetCreatedAt resets all changes to the "created_at" field.
+func (m *InvertIndexCompressedMutation) ResetCreatedAt() {
+	m.created_at = nil
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (m *InvertIndexCompressedMutation) SetUpdatedAt(t time.Time) {
+	m.updated_at = &t
+}
+
+// UpdatedAt returns the value of the "updated_at" field in the mutation.
+func (m *InvertIndexCompressedMutation) UpdatedAt() (r time.Time, exists bool) {
+	v := m.updated_at
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldUpdatedAt returns the old "updated_at" field's value of the InvertIndexCompressed entity.
+// If the InvertIndexCompressed object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvertIndexCompressedMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
+	}
+	return oldValue.UpdatedAt, nil
+}
+
+// ResetUpdatedAt resets all changes to the "updated_at" field.
+func (m *InvertIndexCompressedMutation) ResetUpdatedAt() {
+	m.updated_at = nil
+}
+
+// SetPostingListCompressed sets the "posting_list_compressed" field.
+func (m *InvertIndexCompressedMutation) SetPostingListCompressed(b []byte) {
+	m.posting_list_compressed = &b
+}
+
+// PostingListCompressed returns the value of the "posting_list_compressed" field in the mutation.
+func (m *InvertIndexCompressedMutation) PostingListCompressed() (r []byte, exists bool) {
+	v := m.posting_list_compressed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldPostingListCompressed returns the old "posting_list_compressed" field's value of the InvertIndexCompressed entity.
+// If the InvertIndexCompressed object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *InvertIndexCompressedMutation) OldPostingListCompressed(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPostingListCompressed is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPostingListCompressed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPostingListCompressed: %w", err)
+	}
+	return oldValue.PostingListCompressed, nil
+}
+
+// ResetPostingListCompressed resets all changes to the "posting_list_compressed" field.
+func (m *InvertIndexCompressedMutation) ResetPostingListCompressed() {
+	m.posting_list_compressed = nil
+}
+
+// AddTermIDs adds the "term" edge to the Term entity by ids.
+func (m *InvertIndexCompressedMutation) AddTermIDs(ids ...uuid.UUID) {
+	if m.term == nil {
+		m.term = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		m.term[ids[i]] = struct{}{}
+	}
+}
+
+// ClearTerm clears the "term" edge to the Term entity.
+func (m *InvertIndexCompressedMutation) ClearTerm() {
+	m.clearedterm = true
+}
+
+// TermCleared reports if the "term" edge to the Term entity was cleared.
+func (m *InvertIndexCompressedMutation) TermCleared() bool {
+	return m.clearedterm
+}
+
+// RemoveTermIDs removes the "term" edge to the Term entity by IDs.
+func (m *InvertIndexCompressedMutation) RemoveTermIDs(ids ...uuid.UUID) {
+	if m.removedterm == nil {
+		m.removedterm = make(map[uuid.UUID]struct{})
+	}
+	for i := range ids {
+		delete(m.term, ids[i])
+		m.removedterm[ids[i]] = struct{}{}
+	}
+}
+
+// RemovedTerm returns the removed IDs of the "term" edge to the Term entity.
+func (m *InvertIndexCompressedMutation) RemovedTermIDs() (ids []uuid.UUID) {
+	for id := range m.removedterm {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// TermIDs returns the "term" edge IDs in the mutation.
+func (m *InvertIndexCompressedMutation) TermIDs() (ids []uuid.UUID) {
+	for id := range m.term {
+		ids = append(ids, id)
+	}
+	return
+}
+
+// ResetTerm resets all changes to the "term" edge.
+func (m *InvertIndexCompressedMutation) ResetTerm() {
+	m.term = nil
+	m.clearedterm = false
+	m.removedterm = nil
+}
+
+// Where appends a list predicates to the InvertIndexCompressedMutation builder.
+func (m *InvertIndexCompressedMutation) Where(ps ...predicate.InvertIndexCompressed) {
+	m.predicates = append(m.predicates, ps...)
+}
+
+// Op returns the operation name.
+func (m *InvertIndexCompressedMutation) Op() Op {
+	return m.op
+}
+
+// Type returns the node type of this mutation (InvertIndexCompressed).
+func (m *InvertIndexCompressedMutation) Type() string {
+	return m.typ
+}
+
+// Fields returns all fields that were changed during this mutation. Note that in
+// order to get all numeric fields that were incremented/decremented, call
+// AddedFields().
+func (m *InvertIndexCompressedMutation) Fields() []string {
+	fields := make([]string, 0, 3)
+	if m.created_at != nil {
+		fields = append(fields, invertindexcompressed.FieldCreatedAt)
+	}
+	if m.updated_at != nil {
+		fields = append(fields, invertindexcompressed.FieldUpdatedAt)
+	}
+	if m.posting_list_compressed != nil {
+		fields = append(fields, invertindexcompressed.FieldPostingListCompressed)
+	}
+	return fields
+}
+
+// Field returns the value of a field with the given name. The second boolean
+// return value indicates that this field was not set, or was not defined in the
+// schema.
+func (m *InvertIndexCompressedMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case invertindexcompressed.FieldCreatedAt:
+		return m.CreatedAt()
+	case invertindexcompressed.FieldUpdatedAt:
+		return m.UpdatedAt()
+	case invertindexcompressed.FieldPostingListCompressed:
+		return m.PostingListCompressed()
+	}
+	return nil, false
+}
+
+// OldField returns the old value of the field from the database. An error is
+// returned if the mutation operation is not UpdateOne, or the query to the
+// database failed.
+func (m *InvertIndexCompressedMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case invertindexcompressed.FieldCreatedAt:
+		return m.OldCreatedAt(ctx)
+	case invertindexcompressed.FieldUpdatedAt:
+		return m.OldUpdatedAt(ctx)
+	case invertindexcompressed.FieldPostingListCompressed:
+		return m.OldPostingListCompressed(ctx)
+	}
+	return nil, fmt.Errorf("unknown InvertIndexCompressed field %s", name)
+}
+
+// SetField sets the value of a field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvertIndexCompressedMutation) SetField(name string, value ent.Value) error {
+	switch name {
+	case invertindexcompressed.FieldCreatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCreatedAt(v)
+		return nil
+	case invertindexcompressed.FieldUpdatedAt:
+		v, ok := value.(time.Time)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetUpdatedAt(v)
+		return nil
+	case invertindexcompressed.FieldPostingListCompressed:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPostingListCompressed(v)
+		return nil
+	}
+	return fmt.Errorf("unknown InvertIndexCompressed field %s", name)
+}
+
+// AddedFields returns all numeric fields that were incremented/decremented during
+// this mutation.
+func (m *InvertIndexCompressedMutation) AddedFields() []string {
+	return nil
+}
+
+// AddedField returns the numeric value that was incremented/decremented on a field
+// with the given name. The second boolean return value indicates that this field
+// was not set, or was not defined in the schema.
+func (m *InvertIndexCompressedMutation) AddedField(name string) (ent.Value, bool) {
+	return nil, false
+}
+
+// AddField adds the value to the field with the given name. It returns an error if
+// the field is not defined in the schema, or if the type mismatched the field
+// type.
+func (m *InvertIndexCompressedMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown InvertIndexCompressed numeric field %s", name)
+}
+
+// ClearedFields returns all nullable fields that were cleared during this
+// mutation.
+func (m *InvertIndexCompressedMutation) ClearedFields() []string {
+	return nil
+}
+
+// FieldCleared returns a boolean indicating if a field with the given name was
+// cleared in this mutation.
+func (m *InvertIndexCompressedMutation) FieldCleared(name string) bool {
+	_, ok := m.clearedFields[name]
+	return ok
+}
+
+// ClearField clears the value of the field with the given name. It returns an
+// error if the field is not defined in the schema.
+func (m *InvertIndexCompressedMutation) ClearField(name string) error {
+	return fmt.Errorf("unknown InvertIndexCompressed nullable field %s", name)
+}
+
+// ResetField resets all changes in the mutation for the field with the given name.
+// It returns an error if the field is not defined in the schema.
+func (m *InvertIndexCompressedMutation) ResetField(name string) error {
+	switch name {
+	case invertindexcompressed.FieldCreatedAt:
+		m.ResetCreatedAt()
+		return nil
+	case invertindexcompressed.FieldUpdatedAt:
+		m.ResetUpdatedAt()
+		return nil
+	case invertindexcompressed.FieldPostingListCompressed:
+		m.ResetPostingListCompressed()
+		return nil
+	}
+	return fmt.Errorf("unknown InvertIndexCompressed field %s", name)
+}
+
+// AddedEdges returns all edge names that were set/added in this mutation.
+func (m *InvertIndexCompressedMutation) AddedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.term != nil {
+		edges = append(edges, invertindexcompressed.EdgeTerm)
+	}
+	return edges
+}
+
+// AddedIDs returns all IDs (to other nodes) that were added for the given edge
+// name in this mutation.
+func (m *InvertIndexCompressedMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case invertindexcompressed.EdgeTerm:
+		ids := make([]ent.Value, 0, len(m.term))
+		for id := range m.term {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// RemovedEdges returns all edge names that were removed in this mutation.
+func (m *InvertIndexCompressedMutation) RemovedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.removedterm != nil {
+		edges = append(edges, invertindexcompressed.EdgeTerm)
+	}
+	return edges
+}
+
+// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
+// the given name in this mutation.
+func (m *InvertIndexCompressedMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	case invertindexcompressed.EdgeTerm:
+		ids := make([]ent.Value, 0, len(m.removedterm))
+		for id := range m.removedterm {
+			ids = append(ids, id)
+		}
+		return ids
+	}
+	return nil
+}
+
+// ClearedEdges returns all edge names that were cleared in this mutation.
+func (m *InvertIndexCompressedMutation) ClearedEdges() []string {
+	edges := make([]string, 0, 1)
+	if m.clearedterm {
+		edges = append(edges, invertindexcompressed.EdgeTerm)
+	}
+	return edges
+}
+
+// EdgeCleared returns a boolean which indicates if the edge with the given name
+// was cleared in this mutation.
+func (m *InvertIndexCompressedMutation) EdgeCleared(name string) bool {
+	switch name {
+	case invertindexcompressed.EdgeTerm:
+		return m.clearedterm
+	}
+	return false
+}
+
+// ClearEdge clears the value of the edge with the given name. It returns an error
+// if that edge is not defined in the schema.
+func (m *InvertIndexCompressedMutation) ClearEdge(name string) error {
+	switch name {
+	}
+	return fmt.Errorf("unknown InvertIndexCompressed unique edge %s", name)
+}
+
+// ResetEdge resets all changes to the edge with the given name in this mutation.
+// It returns an error if the edge is not defined in the schema.
+func (m *InvertIndexCompressedMutation) ResetEdge(name string) error {
+	switch name {
+	case invertindexcompressed.EdgeTerm:
+		m.ResetTerm()
+		return nil
+	}
+	return fmt.Errorf("unknown InvertIndexCompressed edge %s", name)
+}
+
+// TermMutation represents an operation that mutates the Term nodes in the graph.
+type TermMutation struct {
+	config
+	op                  Op
+	typ                 string
+	id                  *uuid.UUID
+	created_at          *time.Time
+	updated_at          *time.Time
+	word                *string
+	clearedFields       map[string]struct{}
+	invert_index        *uuid.UUID
+	clearedinvert_index bool
+	done                bool
+	oldValue            func(context.Context) (*Term, error)
+	predicates          []predicate.Term
 }
 
 var _ ent.Mutation = (*TermMutation)(nil)
@@ -147,42 +1096,6 @@ func (m *TermMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetWord sets the "word" field.
-func (m *TermMutation) SetWord(s string) {
-	m.word = &s
-}
-
-// Word returns the value of the "word" field in the mutation.
-func (m *TermMutation) Word() (r string, exists bool) {
-	v := m.word
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldWord returns the old "word" field's value of the Term entity.
-// If the Term object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *TermMutation) OldWord(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldWord is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldWord requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldWord: %w", err)
-	}
-	return oldValue.Word, nil
-}
-
-// ResetWord resets all changes to the "word" field.
-func (m *TermMutation) ResetWord() {
-	m.word = nil
-}
-
 // SetCreatedAt sets the "created_at" field.
 func (m *TermMutation) SetCreatedAt(t time.Time) {
 	m.created_at = &t
@@ -255,6 +1168,81 @@ func (m *TermMutation) ResetUpdatedAt() {
 	m.updated_at = nil
 }
 
+// SetWord sets the "word" field.
+func (m *TermMutation) SetWord(s string) {
+	m.word = &s
+}
+
+// Word returns the value of the "word" field in the mutation.
+func (m *TermMutation) Word() (r string, exists bool) {
+	v := m.word
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldWord returns the old "word" field's value of the Term entity.
+// If the Term object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TermMutation) OldWord(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldWord is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldWord requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldWord: %w", err)
+	}
+	return oldValue.Word, nil
+}
+
+// ResetWord resets all changes to the "word" field.
+func (m *TermMutation) ResetWord() {
+	m.word = nil
+}
+
+// SetInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by id.
+func (m *TermMutation) SetInvertIndexID(id uuid.UUID) {
+	m.invert_index = &id
+}
+
+// ClearInvertIndex clears the "invert_index" edge to the InvertIndexCompressed entity.
+func (m *TermMutation) ClearInvertIndex() {
+	m.clearedinvert_index = true
+}
+
+// InvertIndexCleared reports if the "invert_index" edge to the InvertIndexCompressed entity was cleared.
+func (m *TermMutation) InvertIndexCleared() bool {
+	return m.clearedinvert_index
+}
+
+// InvertIndexID returns the "invert_index" edge ID in the mutation.
+func (m *TermMutation) InvertIndexID() (id uuid.UUID, exists bool) {
+	if m.invert_index != nil {
+		return *m.invert_index, true
+	}
+	return
+}
+
+// InvertIndexIDs returns the "invert_index" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// InvertIndexID instead. It exists only for internal usage by the builders.
+func (m *TermMutation) InvertIndexIDs() (ids []uuid.UUID) {
+	if id := m.invert_index; id != nil {
+		ids = append(ids, *id)
+	}
+	return
+}
+
+// ResetInvertIndex resets all changes to the "invert_index" edge.
+func (m *TermMutation) ResetInvertIndex() {
+	m.invert_index = nil
+	m.clearedinvert_index = false
+}
+
 // Where appends a list predicates to the TermMutation builder.
 func (m *TermMutation) Where(ps ...predicate.Term) {
 	m.predicates = append(m.predicates, ps...)
@@ -275,14 +1263,14 @@ func (m *TermMutation) Type() string {
 // AddedFields().
 func (m *TermMutation) Fields() []string {
 	fields := make([]string, 0, 3)
-	if m.word != nil {
-		fields = append(fields, term.FieldWord)
-	}
 	if m.created_at != nil {
 		fields = append(fields, term.FieldCreatedAt)
 	}
 	if m.updated_at != nil {
 		fields = append(fields, term.FieldUpdatedAt)
+	}
+	if m.word != nil {
+		fields = append(fields, term.FieldWord)
 	}
 	return fields
 }
@@ -292,12 +1280,12 @@ func (m *TermMutation) Fields() []string {
 // schema.
 func (m *TermMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case term.FieldWord:
-		return m.Word()
 	case term.FieldCreatedAt:
 		return m.CreatedAt()
 	case term.FieldUpdatedAt:
 		return m.UpdatedAt()
+	case term.FieldWord:
+		return m.Word()
 	}
 	return nil, false
 }
@@ -307,12 +1295,12 @@ func (m *TermMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *TermMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case term.FieldWord:
-		return m.OldWord(ctx)
 	case term.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case term.FieldUpdatedAt:
 		return m.OldUpdatedAt(ctx)
+	case term.FieldWord:
+		return m.OldWord(ctx)
 	}
 	return nil, fmt.Errorf("unknown Term field %s", name)
 }
@@ -322,13 +1310,6 @@ func (m *TermMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *TermMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case term.FieldWord:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetWord(v)
-		return nil
 	case term.FieldCreatedAt:
 		v, ok := value.(time.Time)
 		if !ok {
@@ -342,6 +1323,13 @@ func (m *TermMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetUpdatedAt(v)
+		return nil
+	case term.FieldWord:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetWord(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Term field %s", name)
@@ -392,14 +1380,14 @@ func (m *TermMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *TermMutation) ResetField(name string) error {
 	switch name {
-	case term.FieldWord:
-		m.ResetWord()
-		return nil
 	case term.FieldCreatedAt:
 		m.ResetCreatedAt()
 		return nil
 	case term.FieldUpdatedAt:
 		m.ResetUpdatedAt()
+		return nil
+	case term.FieldWord:
+		m.ResetWord()
 		return nil
 	}
 	return fmt.Errorf("unknown Term field %s", name)
@@ -407,48 +1395,76 @@ func (m *TermMutation) ResetField(name string) error {
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TermMutation) AddedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.invert_index != nil {
+		edges = append(edges, term.EdgeInvertIndex)
+	}
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TermMutation) AddedIDs(name string) []ent.Value {
+	switch name {
+	case term.EdgeInvertIndex:
+		if id := m.invert_index; id != nil {
+			return []ent.Value{*id}
+		}
+	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TermMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TermMutation) RemovedIDs(name string) []ent.Value {
+	switch name {
+	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TermMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 0)
+	edges := make([]string, 0, 1)
+	if m.clearedinvert_index {
+		edges = append(edges, term.EdgeInvertIndex)
+	}
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TermMutation) EdgeCleared(name string) bool {
+	switch name {
+	case term.EdgeInvertIndex:
+		return m.clearedinvert_index
+	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TermMutation) ClearEdge(name string) error {
+	switch name {
+	case term.EdgeInvertIndex:
+		m.ClearInvertIndex()
+		return nil
+	}
 	return fmt.Errorf("unknown Term unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TermMutation) ResetEdge(name string) error {
+	switch name {
+	case term.EdgeInvertIndex:
+		m.ResetInvertIndex()
+		return nil
+	}
 	return fmt.Errorf("unknown Term edge %s", name)
 }

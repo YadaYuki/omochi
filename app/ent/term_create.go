@@ -10,6 +10,7 @@ import (
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
 )
@@ -19,12 +20,6 @@ type TermCreate struct {
 	config
 	mutation *TermMutation
 	hooks    []Hook
-}
-
-// SetWord sets the "word" field.
-func (tc *TermCreate) SetWord(s string) *TermCreate {
-	tc.mutation.SetWord(s)
-	return tc
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -55,6 +50,12 @@ func (tc *TermCreate) SetNillableUpdatedAt(t *time.Time) *TermCreate {
 	return tc
 }
 
+// SetWord sets the "word" field.
+func (tc *TermCreate) SetWord(s string) *TermCreate {
+	tc.mutation.SetWord(s)
+	return tc
+}
+
 // SetID sets the "id" field.
 func (tc *TermCreate) SetID(u uuid.UUID) *TermCreate {
 	tc.mutation.SetID(u)
@@ -67,6 +68,25 @@ func (tc *TermCreate) SetNillableID(u *uuid.UUID) *TermCreate {
 		tc.SetID(*u)
 	}
 	return tc
+}
+
+// SetInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID.
+func (tc *TermCreate) SetInvertIndexID(id uuid.UUID) *TermCreate {
+	tc.mutation.SetInvertIndexID(id)
+	return tc
+}
+
+// SetNillableInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
+func (tc *TermCreate) SetNillableInvertIndexID(id *uuid.UUID) *TermCreate {
+	if id != nil {
+		tc = tc.SetInvertIndexID(*id)
+	}
+	return tc
+}
+
+// SetInvertIndex sets the "invert_index" edge to the InvertIndexCompressed entity.
+func (tc *TermCreate) SetInvertIndex(i *InvertIndexCompressed) *TermCreate {
+	return tc.SetInvertIndexID(i.ID)
 }
 
 // Mutation returns the TermMutation object of the builder.
@@ -141,11 +161,11 @@ func (tc *TermCreate) ExecX(ctx context.Context) {
 // defaults sets the default values of the builder before save.
 func (tc *TermCreate) defaults() {
 	if _, ok := tc.mutation.CreatedAt(); !ok {
-		v := term.DefaultCreatedAt
+		v := term.DefaultCreatedAt()
 		tc.mutation.SetCreatedAt(v)
 	}
 	if _, ok := tc.mutation.UpdatedAt(); !ok {
-		v := term.DefaultUpdatedAt
+		v := term.DefaultUpdatedAt()
 		tc.mutation.SetUpdatedAt(v)
 	}
 	if _, ok := tc.mutation.ID(); !ok {
@@ -156,14 +176,14 @@ func (tc *TermCreate) defaults() {
 
 // check runs all checks and user-defined validators on the builder.
 func (tc *TermCreate) check() error {
-	if _, ok := tc.mutation.Word(); !ok {
-		return &ValidationError{Name: "word", err: errors.New(`ent: missing required field "Term.word"`)}
-	}
 	if _, ok := tc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`ent: missing required field "Term.created_at"`)}
 	}
 	if _, ok := tc.mutation.UpdatedAt(); !ok {
 		return &ValidationError{Name: "updated_at", err: errors.New(`ent: missing required field "Term.updated_at"`)}
+	}
+	if _, ok := tc.mutation.Word(); !ok {
+		return &ValidationError{Name: "word", err: errors.New(`ent: missing required field "Term.word"`)}
 	}
 	return nil
 }
@@ -201,14 +221,6 @@ func (tc *TermCreate) createSpec() (*Term, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := tc.mutation.Word(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeString,
-			Value:  value,
-			Column: term.FieldWord,
-		})
-		_node.Word = value
-	}
 	if value, ok := tc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -224,6 +236,34 @@ func (tc *TermCreate) createSpec() (*Term, *sqlgraph.CreateSpec) {
 			Column: term.FieldUpdatedAt,
 		})
 		_node.UpdatedAt = value
+	}
+	if value, ok := tc.mutation.Word(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: term.FieldWord,
+		})
+		_node.Word = value
+	}
+	if nodes := tc.mutation.InvertIndexIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   term.InvertIndexTable,
+			Columns: []string{term.InvertIndexColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: invertindexcompressed.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_node.invert_index_compressed_term = &nodes[0]
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }

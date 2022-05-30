@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
@@ -25,6 +26,9 @@ type TermQuery struct {
 	order      []OrderFunc
 	fields     []string
 	predicates []predicate.Term
+	// eager-loading edges.
+	withInvertIndex *InvertIndexCompressedQuery
+	withFKs         bool
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,6 +63,28 @@ func (tq *TermQuery) Unique(unique bool) *TermQuery {
 func (tq *TermQuery) Order(o ...OrderFunc) *TermQuery {
 	tq.order = append(tq.order, o...)
 	return tq
+}
+
+// QueryInvertIndex chains the current query on the "invert_index" edge.
+func (tq *TermQuery) QueryInvertIndex() *InvertIndexCompressedQuery {
+	query := &InvertIndexCompressedQuery{config: tq.config}
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := tq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := tq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(term.Table, term.FieldID, selector),
+			sqlgraph.To(invertindexcompressed.Table, invertindexcompressed.FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, term.InvertIndexTable, term.InvertIndexColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Term entity from the query.
@@ -237,16 +263,28 @@ func (tq *TermQuery) Clone() *TermQuery {
 		return nil
 	}
 	return &TermQuery{
-		config:     tq.config,
-		limit:      tq.limit,
-		offset:     tq.offset,
-		order:      append([]OrderFunc{}, tq.order...),
-		predicates: append([]predicate.Term{}, tq.predicates...),
+		config:          tq.config,
+		limit:           tq.limit,
+		offset:          tq.offset,
+		order:           append([]OrderFunc{}, tq.order...),
+		predicates:      append([]predicate.Term{}, tq.predicates...),
+		withInvertIndex: tq.withInvertIndex.Clone(),
 		// clone intermediate query.
 		sql:    tq.sql.Clone(),
 		path:   tq.path,
 		unique: tq.unique,
 	}
+}
+
+// WithInvertIndex tells the query-builder to eager-load the nodes that are connected to
+// the "invert_index" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TermQuery) WithInvertIndex(opts ...func(*InvertIndexCompressedQuery)) *TermQuery {
+	query := &InvertIndexCompressedQuery{config: tq.config}
+	for _, opt := range opts {
+		opt(query)
+	}
+	tq.withInvertIndex = query
+	return tq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -255,12 +293,12 @@ func (tq *TermQuery) Clone() *TermQuery {
 // Example:
 //
 //	var v []struct {
-//		Word string `json:"word,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Term.Query().
-//		GroupBy(term.FieldWord).
+//		GroupBy(term.FieldCreatedAt).
 //		Aggregate(ent.Count()).
 //		Scan(ctx, &v)
 //
@@ -282,11 +320,11 @@ func (tq *TermQuery) GroupBy(field string, fields ...string) *TermGroupBy {
 // Example:
 //
 //	var v []struct {
-//		Word string `json:"word,omitempty"`
+//		CreatedAt time.Time `json:"created_at,omitempty"`
 //	}
 //
 //	client.Term.Query().
-//		Select(term.FieldWord).
+//		Select(term.FieldCreatedAt).
 //		Scan(ctx, &v)
 //
 func (tq *TermQuery) Select(fields ...string) *TermSelect {
@@ -312,9 +350,19 @@ func (tq *TermQuery) prepareQuery(ctx context.Context) error {
 
 func (tq *TermQuery) sqlAll(ctx context.Context) ([]*Term, error) {
 	var (
-		nodes = []*Term{}
-		_spec = tq.querySpec()
+		nodes       = []*Term{}
+		withFKs     = tq.withFKs
+		_spec       = tq.querySpec()
+		loadedTypes = [1]bool{
+			tq.withInvertIndex != nil,
+		}
 	)
+	if tq.withInvertIndex != nil {
+		withFKs = true
+	}
+	if withFKs {
+		_spec.Node.Columns = append(_spec.Node.Columns, term.ForeignKeys...)
+	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Term{config: tq.config}
 		nodes = append(nodes, node)
@@ -325,6 +373,7 @@ func (tq *TermQuery) sqlAll(ctx context.Context) ([]*Term, error) {
 			return fmt.Errorf("ent: Assign called without calling ScanValues")
 		}
 		node := nodes[len(nodes)-1]
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if err := sqlgraph.QueryNodes(ctx, tq.driver, _spec); err != nil {
@@ -333,6 +382,36 @@ func (tq *TermQuery) sqlAll(ctx context.Context) ([]*Term, error) {
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+
+	if query := tq.withInvertIndex; query != nil {
+		ids := make([]uuid.UUID, 0, len(nodes))
+		nodeids := make(map[uuid.UUID][]*Term)
+		for i := range nodes {
+			if nodes[i].invert_index_compressed_term == nil {
+				continue
+			}
+			fk := *nodes[i].invert_index_compressed_term
+			if _, ok := nodeids[fk]; !ok {
+				ids = append(ids, fk)
+			}
+			nodeids[fk] = append(nodeids[fk], nodes[i])
+		}
+		query.Where(invertindexcompressed.IDIn(ids...))
+		neighbors, err := query.All(ctx)
+		if err != nil {
+			return nil, err
+		}
+		for _, n := range neighbors {
+			nodes, ok := nodeids[n.ID]
+			if !ok {
+				return nil, fmt.Errorf(`unexpected foreign-key "invert_index_compressed_term" returned %v`, n.ID)
+			}
+			for i := range nodes {
+				nodes[i].Edges.InvertIndex = n
+			}
+		}
+	}
+
 	return nodes, nil
 }
 
