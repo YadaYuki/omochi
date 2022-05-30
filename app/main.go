@@ -9,7 +9,7 @@ import (
 	"os"
 
 	"github.com/YadaYuki/omochi/app/ent"
-	"github.com/YadaYuki/omochi/app/infrastructure"
+	"github.com/YadaYuki/omochi/app/infrastructure/entdb"
 	"github.com/YadaYuki/omochi/app/ui/api"
 	"github.com/YadaYuki/omochi/app/usecase"
 	_ "github.com/go-sql-driver/mysql"
@@ -51,7 +51,7 @@ func main() {
 		}
 
 	}
-	termRepository := infrastructure.NewTermRepository(db)
+	termRepository := entdb.NewTermEntRepository(db)
 	useCase := usecase.NewTermUseCase(termRepository)
 	termHandler := api.NewTermHandler(useCase)
 

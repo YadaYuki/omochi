@@ -11,7 +11,7 @@ import (
 	"github.com/YadaYuki/omochi/app/domain/entities"
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/ent/enttest"
-	"github.com/YadaYuki/omochi/app/infrastructure/datastore"
+	"github.com/YadaYuki/omochi/app/infrastructure/entdb"
 	"github.com/YadaYuki/omochi/app/usecase"
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
@@ -53,8 +53,26 @@ func TestTermHandler_FindTermByIdHandler(t *testing.T) {
 	}
 }
 
+func TestTermHandler_FindTermByIdHandlerError(t *testing.T) {
+	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+	defer client.Close()
+	termHandler := createTermHandler(t, client)
+
+	req, err := http.NewRequest("GET", fmt.Sprintf("/term/%s", ""), nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	res := httptest.NewRecorder()
+	router := mux.NewRouter()
+	router.HandleFunc("/term/{uuid}", termHandler.FindTermByIdHandler)
+	router.ServeHTTP(res, req)
+	if res.Code != http.StatusBadRequest {
+		t.Fatalf("expected %d, but got %d", http.StatusBadRequest, res.Code)
+	}
+}
+
 func createTermHandler(t testing.TB, client *ent.Client) *TermHandler {
-	termRepository := datastore.NewTermRepository(client)
+	termRepository := entdb.NewTermEntRepository(client)
 	useCase := usecase.NewTermUseCase(termRepository)
 	termHandler := NewTermHandler(useCase)
 	return termHandler

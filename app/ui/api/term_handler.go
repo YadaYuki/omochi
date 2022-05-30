@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/YadaYuki/omochi/app/errors"
 	"github.com/YadaYuki/omochi/app/errors/code"
 	"github.com/YadaYuki/omochi/app/usecase"
 	"github.com/google/uuid"
@@ -25,15 +26,25 @@ func (h *TermHandler) FindTermByIdHandler(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	term, err := h.u.FindTermById(r.Context(), uuid.MustParse(uuidStr))
+	id, errId := uuid.Parse(uuidStr)
+	if errId != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	term, err := h.u.FindTermById(r.Context(), id)
 	if err != nil {
-		if err.Code == code.NotExist {
-			w.WriteHeader(http.StatusNotFound)
-		} else {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
+		covertErrorToResponse(err, w)
 		return
 	}
 	termBody, _ := json.Marshal(term)
 	w.Write(termBody)
+}
+
+func covertErrorToResponse(err *errors.Error, w http.ResponseWriter) {
+	switch err.Code {
+	case code.NotExist:
+		w.WriteHeader(http.StatusNotFound)
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
+	}
 }
