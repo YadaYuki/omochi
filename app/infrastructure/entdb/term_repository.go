@@ -1,4 +1,4 @@
-package datastore
+package entdb
 
 import (
 	"context"
@@ -22,7 +22,6 @@ func NewTermRepository(db *ent.Client) repository.ITermRepository {
 
 func (r *TermRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, *errors.Error) {
 	term, err := r.db.Term.Query().Where(term.ID(uuid.UUID(id))).Only(ctx)
-
 	if err != nil {
 		_, ok := err.(*ent.NotFoundError)
 		if ok {
@@ -30,7 +29,6 @@ func (r *TermRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entit
 		}
 		return nil, errors.NewError(code.Unknown, err)
 	}
-
 	return convertEntSchemaToEntity(term), nil
 }
 
