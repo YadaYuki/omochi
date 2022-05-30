@@ -26,3 +26,8 @@ type InvertedIndexCompressed struct {
 	CreatedAt             time.Time `json:"created_at"`
 	UpdatedAt             time.Time `json:"updated_at"`
 }
+
+type InvertedIndexCompressedCreate struct {
+	TermId                uuid.UUID `json:"term_id"` // REVIEW: TermCreate may be better ?
+	PostingListCompressed []byte    `json:"posting_list_compressed"`
+}
