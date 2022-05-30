@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -18,12 +17,6 @@ import (
 
 type ResponseBody struct {
 	Message string `json:"message"`
-}
-
-func hello(w http.ResponseWriter, req *http.Request) {
-	r := ResponseBody{Message: "Hello World"}
-	resBody, _ := json.Marshal(r)
-	w.Write(resBody)
 }
 
 func main() {
@@ -49,7 +42,6 @@ func main() {
 		if err != nil {
 			log.Fatal(err)
 		}
-
 	}
 	termRepository := entdb.NewTermEntRepository(db)
 	useCase := usecase.NewTermUseCase(termRepository)
