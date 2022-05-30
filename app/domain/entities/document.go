@@ -6,15 +6,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type Term struct {
+type Document struct {
 	Uuid      uuid.UUID `json:"uuid"`
-	Word      string    `json:"word"`
+	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type TermCreate struct {
-	Word string `json:"word"`
+type DocumentCreate struct {
+	Content string `json:"content"`
 }
 
-type Terms = []Term
+type Documents = []Document

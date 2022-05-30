@@ -15,10 +15,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-type ResponseBody struct {
-	Message string `json:"message"`
-}
-
 func main() {
 	DB_USER := os.Getenv("MYSQL_USER")
 	DB_PASSWORD := os.Getenv("MYSQL_PASSWORD")
