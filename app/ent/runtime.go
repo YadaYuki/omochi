@@ -5,6 +5,8 @@ package ent
 import (
 	"time"
 
+	"github.com/YadaYuki/omochi/app/ent/document"
+	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/schema"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
@@ -14,16 +16,63 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	documentMixin := schema.Document{}.Mixin()
+	documentMixinFields0 := documentMixin[0].Fields()
+	_ = documentMixinFields0
+	documentFields := schema.Document{}.Fields()
+	_ = documentFields
+	// documentDescCreatedAt is the schema descriptor for created_at field.
+	documentDescCreatedAt := documentMixinFields0[0].Descriptor()
+	// document.DefaultCreatedAt holds the default value on creation for the created_at field.
+	document.DefaultCreatedAt = documentDescCreatedAt.Default.(func() time.Time)
+	// documentDescUpdatedAt is the schema descriptor for updated_at field.
+	documentDescUpdatedAt := documentMixinFields0[1].Descriptor()
+	// document.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	document.DefaultUpdatedAt = documentDescUpdatedAt.Default.(func() time.Time)
+	// document.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	document.UpdateDefaultUpdatedAt = documentDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// documentDescID is the schema descriptor for id field.
+	documentDescID := documentFields[0].Descriptor()
+	// document.DefaultID holds the default value on creation for the id field.
+	document.DefaultID = documentDescID.Default.(func() uuid.UUID)
+	invertindexcompressedMixin := schema.InvertIndexCompressed{}.Mixin()
+	invertindexcompressedMixinFields0 := invertindexcompressedMixin[0].Fields()
+	_ = invertindexcompressedMixinFields0
+	invertindexcompressedFields := schema.InvertIndexCompressed{}.Fields()
+	_ = invertindexcompressedFields
+	// invertindexcompressedDescCreatedAt is the schema descriptor for created_at field.
+	invertindexcompressedDescCreatedAt := invertindexcompressedMixinFields0[0].Descriptor()
+	// invertindexcompressed.DefaultCreatedAt holds the default value on creation for the created_at field.
+	invertindexcompressed.DefaultCreatedAt = invertindexcompressedDescCreatedAt.Default.(func() time.Time)
+	// invertindexcompressedDescUpdatedAt is the schema descriptor for updated_at field.
+	invertindexcompressedDescUpdatedAt := invertindexcompressedMixinFields0[1].Descriptor()
+	// invertindexcompressed.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	invertindexcompressed.DefaultUpdatedAt = invertindexcompressedDescUpdatedAt.Default.(func() time.Time)
+	// invertindexcompressed.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	invertindexcompressed.UpdateDefaultUpdatedAt = invertindexcompressedDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// invertindexcompressedDescPostingListCompressed is the schema descriptor for posting_list_compressed field.
+	invertindexcompressedDescPostingListCompressed := invertindexcompressedFields[1].Descriptor()
+	// invertindexcompressed.PostingListCompressedValidator is a validator for the "posting_list_compressed" field. It is called by the builders before save.
+	invertindexcompressed.PostingListCompressedValidator = invertindexcompressedDescPostingListCompressed.Validators[0].(func([]byte) error)
+	// invertindexcompressedDescID is the schema descriptor for id field.
+	invertindexcompressedDescID := invertindexcompressedFields[0].Descriptor()
+	// invertindexcompressed.DefaultID holds the default value on creation for the id field.
+	invertindexcompressed.DefaultID = invertindexcompressedDescID.Default.(func() uuid.UUID)
+	termMixin := schema.Term{}.Mixin()
+	termMixinFields0 := termMixin[0].Fields()
+	_ = termMixinFields0
 	termFields := schema.Term{}.Fields()
 	_ = termFields
 	// termDescCreatedAt is the schema descriptor for created_at field.
-	termDescCreatedAt := termFields[2].Descriptor()
+	termDescCreatedAt := termMixinFields0[0].Descriptor()
 	// term.DefaultCreatedAt holds the default value on creation for the created_at field.
-	term.DefaultCreatedAt = termDescCreatedAt.Default.(time.Time)
+	term.DefaultCreatedAt = termDescCreatedAt.Default.(func() time.Time)
 	// termDescUpdatedAt is the schema descriptor for updated_at field.
-	termDescUpdatedAt := termFields[3].Descriptor()
+	termDescUpdatedAt := termMixinFields0[1].Descriptor()
 	// term.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	term.DefaultUpdatedAt = termDescUpdatedAt.Default.(time.Time)
+	term.DefaultUpdatedAt = termDescUpdatedAt.Default.(func() time.Time)
+	// term.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	term.UpdateDefaultUpdatedAt = termDescUpdatedAt.UpdateDefault.(func() time.Time)
 	// termDescID is the schema descriptor for id field.
 	termDescID := termFields[0].Descriptor()
 	// term.DefaultID holds the default value on creation for the id field.

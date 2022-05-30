@@ -13,22 +13,37 @@ const (
 	Label = "term"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "uuid"
-	// FieldWord holds the string denoting the word field in the database.
-	FieldWord = "word"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// FieldWord holds the string denoting the word field in the database.
+	FieldWord = "word"
+	// EdgeInvertIndex holds the string denoting the invert_index edge name in mutations.
+	EdgeInvertIndex = "invert_index"
 	// Table holds the table name of the term in the database.
 	Table = "terms"
+	// InvertIndexTable is the table that holds the invert_index relation/edge.
+	InvertIndexTable = "terms"
+	// InvertIndexInverseTable is the table name for the InvertIndexCompressed entity.
+	// It exists in this package in order to avoid circular dependency with the "invertindexcompressed" package.
+	InvertIndexInverseTable = "invert_index_compresseds"
+	// InvertIndexColumn is the table column denoting the invert_index relation/edge.
+	InvertIndexColumn = "invert_index_compressed_term"
 )
 
 // Columns holds all SQL columns for term fields.
 var Columns = []string{
 	FieldID,
-	FieldWord,
 	FieldCreatedAt,
 	FieldUpdatedAt,
+	FieldWord,
+}
+
+// ForeignKeys holds the SQL foreign-keys that are owned by the "terms"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"invert_index_compressed_term",
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -38,14 +53,21 @@ func ValidColumn(column string) bool {
 			return true
 		}
 	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
+			return true
+		}
+	}
 	return false
 }
 
 var (
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
-	DefaultCreatedAt time.Time
+	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
-	DefaultUpdatedAt time.Time
+	DefaultUpdatedAt func() time.Time
+	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
+	UpdateDefaultUpdatedAt func() time.Time
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

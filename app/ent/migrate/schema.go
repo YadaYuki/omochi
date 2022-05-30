@@ -8,24 +8,62 @@ import (
 )
 
 var (
+	// DocumentsColumns holds the columns for the "documents" table.
+	DocumentsColumns = []*schema.Column{
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "content", Type: field.TypeString},
+	}
+	// DocumentsTable holds the schema information for the "documents" table.
+	DocumentsTable = &schema.Table{
+		Name:       "documents",
+		Columns:    DocumentsColumns,
+		PrimaryKey: []*schema.Column{DocumentsColumns[0]},
+	}
+	// InvertIndexCompressedsColumns holds the columns for the "invert_index_compresseds" table.
+	InvertIndexCompressedsColumns = []*schema.Column{
+		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "created_at", Type: field.TypeTime},
+		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "posting_list_compressed", Type: field.TypeBytes, Size: 1073741824},
+	}
+	// InvertIndexCompressedsTable holds the schema information for the "invert_index_compresseds" table.
+	InvertIndexCompressedsTable = &schema.Table{
+		Name:       "invert_index_compresseds",
+		Columns:    InvertIndexCompressedsColumns,
+		PrimaryKey: []*schema.Column{InvertIndexCompressedsColumns[0]},
+	}
 	// TermsColumns holds the columns for the "terms" table.
 	TermsColumns = []*schema.Column{
 		{Name: "uuid", Type: field.TypeUUID},
-		{Name: "word", Type: field.TypeString},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
+		{Name: "word", Type: field.TypeString},
+		{Name: "invert_index_compressed_term", Type: field.TypeUUID, Nullable: true},
 	}
 	// TermsTable holds the schema information for the "terms" table.
 	TermsTable = &schema.Table{
 		Name:       "terms",
 		Columns:    TermsColumns,
 		PrimaryKey: []*schema.Column{TermsColumns[0]},
+		ForeignKeys: []*schema.ForeignKey{
+			{
+				Symbol:     "terms_invert_index_compresseds_term",
+				Columns:    []*schema.Column{TermsColumns[4]},
+				RefColumns: []*schema.Column{InvertIndexCompressedsColumns[0]},
+				OnDelete:   schema.SetNull,
+			},
+		},
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		DocumentsTable,
+		InvertIndexCompressedsTable,
 		TermsTable,
 	}
 )
 
 func init() {
+	TermsTable.ForeignKeys[0].RefTable = InvertIndexCompressedsTable
 }

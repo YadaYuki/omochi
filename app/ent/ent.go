@@ -8,6 +8,8 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/YadaYuki/omochi/app/ent/document"
+	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/term"
 )
 
@@ -29,7 +31,9 @@ type OrderFunc func(*sql.Selector)
 // columnChecker returns a function indicates if the column exists in the given column.
 func columnChecker(table string) func(string) error {
 	checks := map[string]func(string) bool{
-		term.Table: term.ValidColumn,
+		document.Table:              document.ValidColumn,
+		invertindexcompressed.Table: invertindexcompressed.ValidColumn,
+		term.Table:                  term.ValidColumn,
 	}
 	check, ok := checks[table]
 	if !ok {

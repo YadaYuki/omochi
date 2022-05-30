@@ -20,11 +20,16 @@ func (InvertIndexCompressed) Fields() []ent.Field {
 	}
 }
 
+// Mixin of the Term.
+func (InvertIndexCompressed) Mixin() []ent.Mixin {
+	return []ent.Mixin{
+		TimeStampMixin{},
+	}
+}
+
 // Edges of the InvertIndexCompressed.
 func (InvertIndexCompressed) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("term", Term.Type).
-			Ref("term").
-			Unique(),
+		edge.To("term", Term.Type),
 	}
 }

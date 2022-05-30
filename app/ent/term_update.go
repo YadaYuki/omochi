@@ -11,8 +11,10 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/YadaYuki/omochi/app/ent/term"
+	"github.com/google/uuid"
 )
 
 // TermUpdate is the builder for updating Term entities.
@@ -28,43 +30,46 @@ func (tu *TermUpdate) Where(ps ...predicate.Term) *TermUpdate {
 	return tu
 }
 
-// SetWord sets the "word" field.
-func (tu *TermUpdate) SetWord(s string) *TermUpdate {
-	tu.mutation.SetWord(s)
-	return tu
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (tu *TermUpdate) SetCreatedAt(t time.Time) *TermUpdate {
-	tu.mutation.SetCreatedAt(t)
-	return tu
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tu *TermUpdate) SetNillableCreatedAt(t *time.Time) *TermUpdate {
-	if t != nil {
-		tu.SetCreatedAt(*t)
-	}
-	return tu
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (tu *TermUpdate) SetUpdatedAt(t time.Time) *TermUpdate {
 	tu.mutation.SetUpdatedAt(t)
 	return tu
 }
 
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (tu *TermUpdate) SetNillableUpdatedAt(t *time.Time) *TermUpdate {
-	if t != nil {
-		tu.SetUpdatedAt(*t)
+// SetWord sets the "word" field.
+func (tu *TermUpdate) SetWord(s string) *TermUpdate {
+	tu.mutation.SetWord(s)
+	return tu
+}
+
+// SetInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID.
+func (tu *TermUpdate) SetInvertIndexID(id uuid.UUID) *TermUpdate {
+	tu.mutation.SetInvertIndexID(id)
+	return tu
+}
+
+// SetNillableInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
+func (tu *TermUpdate) SetNillableInvertIndexID(id *uuid.UUID) *TermUpdate {
+	if id != nil {
+		tu = tu.SetInvertIndexID(*id)
 	}
 	return tu
+}
+
+// SetInvertIndex sets the "invert_index" edge to the InvertIndexCompressed entity.
+func (tu *TermUpdate) SetInvertIndex(i *InvertIndexCompressed) *TermUpdate {
+	return tu.SetInvertIndexID(i.ID)
 }
 
 // Mutation returns the TermMutation object of the builder.
 func (tu *TermUpdate) Mutation() *TermMutation {
 	return tu.mutation
+}
+
+// ClearInvertIndex clears the "invert_index" edge to the InvertIndexCompressed entity.
+func (tu *TermUpdate) ClearInvertIndex() *TermUpdate {
+	tu.mutation.ClearInvertIndex()
+	return tu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -73,6 +78,7 @@ func (tu *TermUpdate) Save(ctx context.Context) (int, error) {
 		err      error
 		affected int
 	)
+	tu.defaults()
 	if len(tu.hooks) == 0 {
 		affected, err = tu.sqlSave(ctx)
 	} else {
@@ -121,6 +127,14 @@ func (tu *TermUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (tu *TermUpdate) defaults() {
+	if _, ok := tu.mutation.UpdatedAt(); !ok {
+		v := term.UpdateDefaultUpdatedAt()
+		tu.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -139,6 +153,13 @@ func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
+	if value, ok := tu.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: term.FieldUpdatedAt,
+		})
+	}
 	if value, ok := tu.mutation.Word(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -146,19 +167,40 @@ func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: term.FieldWord,
 		})
 	}
-	if value, ok := tu.mutation.CreatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: term.FieldCreatedAt,
-		})
+	if tu.mutation.InvertIndexCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   term.InvertIndexTable,
+			Columns: []string{term.InvertIndexColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: invertindexcompressed.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := tu.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: term.FieldUpdatedAt,
-		})
+	if nodes := tu.mutation.InvertIndexIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   term.InvertIndexTable,
+			Columns: []string{term.InvertIndexColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: invertindexcompressed.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -179,43 +221,46 @@ type TermUpdateOne struct {
 	mutation *TermMutation
 }
 
-// SetWord sets the "word" field.
-func (tuo *TermUpdateOne) SetWord(s string) *TermUpdateOne {
-	tuo.mutation.SetWord(s)
-	return tuo
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (tuo *TermUpdateOne) SetCreatedAt(t time.Time) *TermUpdateOne {
-	tuo.mutation.SetCreatedAt(t)
-	return tuo
-}
-
-// SetNillableCreatedAt sets the "created_at" field if the given value is not nil.
-func (tuo *TermUpdateOne) SetNillableCreatedAt(t *time.Time) *TermUpdateOne {
-	if t != nil {
-		tuo.SetCreatedAt(*t)
-	}
-	return tuo
-}
-
 // SetUpdatedAt sets the "updated_at" field.
 func (tuo *TermUpdateOne) SetUpdatedAt(t time.Time) *TermUpdateOne {
 	tuo.mutation.SetUpdatedAt(t)
 	return tuo
 }
 
-// SetNillableUpdatedAt sets the "updated_at" field if the given value is not nil.
-func (tuo *TermUpdateOne) SetNillableUpdatedAt(t *time.Time) *TermUpdateOne {
-	if t != nil {
-		tuo.SetUpdatedAt(*t)
+// SetWord sets the "word" field.
+func (tuo *TermUpdateOne) SetWord(s string) *TermUpdateOne {
+	tuo.mutation.SetWord(s)
+	return tuo
+}
+
+// SetInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID.
+func (tuo *TermUpdateOne) SetInvertIndexID(id uuid.UUID) *TermUpdateOne {
+	tuo.mutation.SetInvertIndexID(id)
+	return tuo
+}
+
+// SetNillableInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
+func (tuo *TermUpdateOne) SetNillableInvertIndexID(id *uuid.UUID) *TermUpdateOne {
+	if id != nil {
+		tuo = tuo.SetInvertIndexID(*id)
 	}
 	return tuo
+}
+
+// SetInvertIndex sets the "invert_index" edge to the InvertIndexCompressed entity.
+func (tuo *TermUpdateOne) SetInvertIndex(i *InvertIndexCompressed) *TermUpdateOne {
+	return tuo.SetInvertIndexID(i.ID)
 }
 
 // Mutation returns the TermMutation object of the builder.
 func (tuo *TermUpdateOne) Mutation() *TermMutation {
 	return tuo.mutation
+}
+
+// ClearInvertIndex clears the "invert_index" edge to the InvertIndexCompressed entity.
+func (tuo *TermUpdateOne) ClearInvertIndex() *TermUpdateOne {
+	tuo.mutation.ClearInvertIndex()
+	return tuo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -231,6 +276,7 @@ func (tuo *TermUpdateOne) Save(ctx context.Context) (*Term, error) {
 		err  error
 		node *Term
 	)
+	tuo.defaults()
 	if len(tuo.hooks) == 0 {
 		node, err = tuo.sqlSave(ctx)
 	} else {
@@ -279,6 +325,14 @@ func (tuo *TermUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (tuo *TermUpdateOne) defaults() {
+	if _, ok := tuo.mutation.UpdatedAt(); !ok {
+		v := term.UpdateDefaultUpdatedAt()
+		tuo.mutation.SetUpdatedAt(v)
+	}
+}
+
 func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -314,6 +368,13 @@ func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) 
 			}
 		}
 	}
+	if value, ok := tuo.mutation.UpdatedAt(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeTime,
+			Value:  value,
+			Column: term.FieldUpdatedAt,
+		})
+	}
 	if value, ok := tuo.mutation.Word(); ok {
 		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
 			Type:   field.TypeString,
@@ -321,19 +382,40 @@ func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) 
 			Column: term.FieldWord,
 		})
 	}
-	if value, ok := tuo.mutation.CreatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: term.FieldCreatedAt,
-		})
+	if tuo.mutation.InvertIndexCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   term.InvertIndexTable,
+			Columns: []string{term.InvertIndexColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: invertindexcompressed.FieldID,
+				},
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if value, ok := tuo.mutation.UpdatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: term.FieldUpdatedAt,
-		})
+	if nodes := tuo.mutation.InvertIndexIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.M2O,
+			Inverse: true,
+			Table:   term.InvertIndexTable,
+			Columns: []string{term.InvertIndexColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: &sqlgraph.FieldSpec{
+					Type:   field.TypeUUID,
+					Column: invertindexcompressed.FieldID,
+				},
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_node = &Term{config: tuo.config}
 	_spec.Assign = _node.assignValues

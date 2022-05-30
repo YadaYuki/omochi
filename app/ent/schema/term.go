@@ -30,7 +30,7 @@ func (Term) Mixin() []ent.Mixin {
 // Edges of the Term.
 func (Term) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("invert_index", Term.Type).
+		edge.From("invert_index", InvertIndexCompressed.Type).
 			Ref("term").
 			Unique(),
 	}

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -93,13 +94,6 @@ func IDLTE(id uuid.UUID) predicate.Term {
 	})
 }
 
-// Word applies equality check predicate on the "word" field. It's identical to WordEQ.
-func Word(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.EQ(s.C(FieldWord), v))
-	})
-}
-
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
 func CreatedAt(v time.Time) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
@@ -114,114 +108,10 @@ func UpdatedAt(v time.Time) predicate.Term {
 	})
 }
 
-// WordEQ applies the EQ predicate on the "word" field.
-func WordEQ(v string) predicate.Term {
+// Word applies equality check predicate on the "word" field. It's identical to WordEQ.
+func Word(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldWord), v))
-	})
-}
-
-// WordNEQ applies the NEQ predicate on the "word" field.
-func WordNEQ(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.NEQ(s.C(FieldWord), v))
-	})
-}
-
-// WordIn applies the In predicate on the "word" field.
-func WordIn(vs ...string) predicate.Term {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Term(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.In(s.C(FieldWord), v...))
-	})
-}
-
-// WordNotIn applies the NotIn predicate on the "word" field.
-func WordNotIn(vs ...string) predicate.Term {
-	v := make([]interface{}, len(vs))
-	for i := range v {
-		v[i] = vs[i]
-	}
-	return predicate.Term(func(s *sql.Selector) {
-		// if not arguments were provided, append the FALSE constants,
-		// since we can't apply "IN ()". This will make this predicate falsy.
-		if len(v) == 0 {
-			s.Where(sql.False())
-			return
-		}
-		s.Where(sql.NotIn(s.C(FieldWord), v...))
-	})
-}
-
-// WordGT applies the GT predicate on the "word" field.
-func WordGT(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.GT(s.C(FieldWord), v))
-	})
-}
-
-// WordGTE applies the GTE predicate on the "word" field.
-func WordGTE(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.GTE(s.C(FieldWord), v))
-	})
-}
-
-// WordLT applies the LT predicate on the "word" field.
-func WordLT(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.LT(s.C(FieldWord), v))
-	})
-}
-
-// WordLTE applies the LTE predicate on the "word" field.
-func WordLTE(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.LTE(s.C(FieldWord), v))
-	})
-}
-
-// WordContains applies the Contains predicate on the "word" field.
-func WordContains(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.Contains(s.C(FieldWord), v))
-	})
-}
-
-// WordHasPrefix applies the HasPrefix predicate on the "word" field.
-func WordHasPrefix(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.HasPrefix(s.C(FieldWord), v))
-	})
-}
-
-// WordHasSuffix applies the HasSuffix predicate on the "word" field.
-func WordHasSuffix(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.HasSuffix(s.C(FieldWord), v))
-	})
-}
-
-// WordEqualFold applies the EqualFold predicate on the "word" field.
-func WordEqualFold(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.EqualFold(s.C(FieldWord), v))
-	})
-}
-
-// WordContainsFold applies the ContainsFold predicate on the "word" field.
-func WordContainsFold(v string) predicate.Term {
-	return predicate.Term(func(s *sql.Selector) {
-		s.Where(sql.ContainsFold(s.C(FieldWord), v))
 	})
 }
 
@@ -374,6 +264,145 @@ func UpdatedAtLT(v time.Time) predicate.Term {
 func UpdatedAtLTE(v time.Time) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.LTE(s.C(FieldUpdatedAt), v))
+	})
+}
+
+// WordEQ applies the EQ predicate on the "word" field.
+func WordEQ(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldWord), v))
+	})
+}
+
+// WordNEQ applies the NEQ predicate on the "word" field.
+func WordNEQ(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldWord), v))
+	})
+}
+
+// WordIn applies the In predicate on the "word" field.
+func WordIn(vs ...string) predicate.Term {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Term(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldWord), v...))
+	})
+}
+
+// WordNotIn applies the NotIn predicate on the "word" field.
+func WordNotIn(vs ...string) predicate.Term {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Term(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldWord), v...))
+	})
+}
+
+// WordGT applies the GT predicate on the "word" field.
+func WordGT(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldWord), v))
+	})
+}
+
+// WordGTE applies the GTE predicate on the "word" field.
+func WordGTE(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldWord), v))
+	})
+}
+
+// WordLT applies the LT predicate on the "word" field.
+func WordLT(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldWord), v))
+	})
+}
+
+// WordLTE applies the LTE predicate on the "word" field.
+func WordLTE(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldWord), v))
+	})
+}
+
+// WordContains applies the Contains predicate on the "word" field.
+func WordContains(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldWord), v))
+	})
+}
+
+// WordHasPrefix applies the HasPrefix predicate on the "word" field.
+func WordHasPrefix(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldWord), v))
+	})
+}
+
+// WordHasSuffix applies the HasSuffix predicate on the "word" field.
+func WordHasSuffix(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldWord), v))
+	})
+}
+
+// WordEqualFold applies the EqualFold predicate on the "word" field.
+func WordEqualFold(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldWord), v))
+	})
+}
+
+// WordContainsFold applies the ContainsFold predicate on the "word" field.
+func WordContainsFold(v string) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldWord), v))
+	})
+}
+
+// HasInvertIndex applies the HasEdge predicate on the "invert_index" edge.
+func HasInvertIndex() predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InvertIndexTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, InvertIndexTable, InvertIndexColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasInvertIndexWith applies the HasEdge predicate on the "invert_index" edge with a given conditions (other predicates).
+func HasInvertIndexWith(preds ...predicate.InvertIndexCompressed) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.To(InvertIndexInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.M2O, true, InvertIndexTable, InvertIndexColumn),
+		)
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
 	})
 }
 
