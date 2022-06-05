@@ -11,7 +11,6 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/YadaYuki/omochi/app/ent/document"
-	"github.com/google/uuid"
 )
 
 // DocumentCreate is the builder for creating a Document entity.
@@ -52,20 +51,6 @@ func (dc *DocumentCreate) SetNillableUpdatedAt(t *time.Time) *DocumentCreate {
 // SetContent sets the "content" field.
 func (dc *DocumentCreate) SetContent(s string) *DocumentCreate {
 	dc.mutation.SetContent(s)
-	return dc
-}
-
-// SetID sets the "id" field.
-func (dc *DocumentCreate) SetID(u uuid.UUID) *DocumentCreate {
-	dc.mutation.SetID(u)
-	return dc
-}
-
-// SetNillableID sets the "id" field if the given value is not nil.
-func (dc *DocumentCreate) SetNillableID(u *uuid.UUID) *DocumentCreate {
-	if u != nil {
-		dc.SetID(*u)
-	}
 	return dc
 }
 
@@ -148,10 +133,6 @@ func (dc *DocumentCreate) defaults() {
 		v := document.DefaultUpdatedAt()
 		dc.mutation.SetUpdatedAt(v)
 	}
-	if _, ok := dc.mutation.ID(); !ok {
-		v := document.DefaultID()
-		dc.mutation.SetID(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -176,13 +157,8 @@ func (dc *DocumentCreate) sqlSave(ctx context.Context) (*Document, error) {
 		}
 		return nil, err
 	}
-	if _spec.ID.Value != nil {
-		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
-			_node.ID = *id
-		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
-			return nil, err
-		}
-	}
+	id := _spec.ID.Value.(int64)
+	_node.ID = int(id)
 	return _node, nil
 }
 
@@ -192,15 +168,11 @@ func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 		_spec = &sqlgraph.CreateSpec{
 			Table: document.Table,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeInt,
 				Column: document.FieldID,
 			},
 		}
 	)
-	if id, ok := dc.mutation.ID(); ok {
-		_node.ID = id
-		_spec.ID.Value = &id
-	}
 	if value, ok := dc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -270,6 +242,10 @@ func (dcb *DocumentCreateBulk) Save(ctx context.Context) ([]*Document, error) {
 				}
 				mutation.id = &nodes[i].ID
 				mutation.done = true
+				if specs[i].ID.Value != nil {
+					id := specs[i].ID.Value.(int64)
+					nodes[i].ID = int(id)
+				}
 				return nodes[i], nil
 			})
 			for i := len(builder.hooks) - 1; i >= 0; i-- {

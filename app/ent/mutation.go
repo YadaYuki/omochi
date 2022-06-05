@@ -37,7 +37,7 @@ type DocumentMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *uuid.UUID
+	id            *int
 	created_at    *time.Time
 	updated_at    *time.Time
 	content       *string
@@ -67,7 +67,7 @@ func newDocumentMutation(c config, op Op, opts ...documentOption) *DocumentMutat
 }
 
 // withDocumentID sets the ID field of the mutation.
-func withDocumentID(id uuid.UUID) documentOption {
+func withDocumentID(id int) documentOption {
 	return func(m *DocumentMutation) {
 		var (
 			err   error
@@ -117,15 +117,9 @@ func (m DocumentMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of Document entities.
-func (m *DocumentMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *DocumentMutation) ID() (id uuid.UUID, exists bool) {
+func (m *DocumentMutation) ID() (id int, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -136,12 +130,12 @@ func (m *DocumentMutation) ID() (id uuid.UUID, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *DocumentMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
+func (m *DocumentMutation) IDs(ctx context.Context) ([]int, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []uuid.UUID{id}, nil
+			return []int{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):

@@ -178,7 +178,7 @@ func (c *DocumentClient) UpdateOne(d *Document) *DocumentUpdateOne {
 }
 
 // UpdateOneID returns an update builder for the given id.
-func (c *DocumentClient) UpdateOneID(id uuid.UUID) *DocumentUpdateOne {
+func (c *DocumentClient) UpdateOneID(id int) *DocumentUpdateOne {
 	mutation := newDocumentMutation(c.config, OpUpdateOne, withDocumentID(id))
 	return &DocumentUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
 }
@@ -195,7 +195,7 @@ func (c *DocumentClient) DeleteOne(d *Document) *DocumentDeleteOne {
 }
 
 // DeleteOneID returns a delete builder for the given id.
-func (c *DocumentClient) DeleteOneID(id uuid.UUID) *DocumentDeleteOne {
+func (c *DocumentClient) DeleteOneID(id int) *DocumentDeleteOne {
 	builder := c.Delete().Where(document.ID(id))
 	builder.mutation.id = &id
 	builder.mutation.op = OpDeleteOne
@@ -210,12 +210,12 @@ func (c *DocumentClient) Query() *DocumentQuery {
 }
 
 // Get returns a Document entity by its id.
-func (c *DocumentClient) Get(ctx context.Context, id uuid.UUID) (*Document, error) {
+func (c *DocumentClient) Get(ctx context.Context, id int) (*Document, error) {
 	return c.Query().Where(document.ID(id)).Only(ctx)
 }
 
 // GetX is like Get, but panics if an error occurs.
-func (c *DocumentClient) GetX(ctx context.Context, id uuid.UUID) *Document {
+func (c *DocumentClient) GetX(ctx context.Context, id int) *Document {
 	obj, err := c.Get(ctx, id)
 	if err != nil {
 		panic(err)

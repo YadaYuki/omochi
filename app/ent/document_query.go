@@ -13,7 +13,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/YadaYuki/omochi/app/ent/document"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
-	"github.com/google/uuid"
 )
 
 // DocumentQuery is the builder for querying Document entities.
@@ -85,8 +84,8 @@ func (dq *DocumentQuery) FirstX(ctx context.Context) *Document {
 
 // FirstID returns the first Document ID from the query.
 // Returns a *NotFoundError when no Document ID was found.
-func (dq *DocumentQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (dq *DocumentQuery) FirstID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = dq.Limit(1).IDs(ctx); err != nil {
 		return
 	}
@@ -98,7 +97,7 @@ func (dq *DocumentQuery) FirstID(ctx context.Context) (id uuid.UUID, err error) 
 }
 
 // FirstIDX is like FirstID, but panics if an error occurs.
-func (dq *DocumentQuery) FirstIDX(ctx context.Context) uuid.UUID {
+func (dq *DocumentQuery) FirstIDX(ctx context.Context) int {
 	id, err := dq.FirstID(ctx)
 	if err != nil && !IsNotFound(err) {
 		panic(err)
@@ -136,8 +135,8 @@ func (dq *DocumentQuery) OnlyX(ctx context.Context) *Document {
 // OnlyID is like Only, but returns the only Document ID in the query.
 // Returns a *NotSingularError when more than one Document ID is found.
 // Returns a *NotFoundError when no entities are found.
-func (dq *DocumentQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
-	var ids []uuid.UUID
+func (dq *DocumentQuery) OnlyID(ctx context.Context) (id int, err error) {
+	var ids []int
 	if ids, err = dq.Limit(2).IDs(ctx); err != nil {
 		return
 	}
@@ -153,7 +152,7 @@ func (dq *DocumentQuery) OnlyID(ctx context.Context) (id uuid.UUID, err error) {
 }
 
 // OnlyIDX is like OnlyID, but panics if an error occurs.
-func (dq *DocumentQuery) OnlyIDX(ctx context.Context) uuid.UUID {
+func (dq *DocumentQuery) OnlyIDX(ctx context.Context) int {
 	id, err := dq.OnlyID(ctx)
 	if err != nil {
 		panic(err)
@@ -179,8 +178,8 @@ func (dq *DocumentQuery) AllX(ctx context.Context) []*Document {
 }
 
 // IDs executes the query and returns a list of Document IDs.
-func (dq *DocumentQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	var ids []uuid.UUID
+func (dq *DocumentQuery) IDs(ctx context.Context) ([]int, error) {
+	var ids []int
 	if err := dq.Select(document.FieldID).Scan(ctx, &ids); err != nil {
 		return nil, err
 	}
@@ -188,7 +187,7 @@ func (dq *DocumentQuery) IDs(ctx context.Context) ([]uuid.UUID, error) {
 }
 
 // IDsX is like IDs, but panics if an error occurs.
-func (dq *DocumentQuery) IDsX(ctx context.Context) []uuid.UUID {
+func (dq *DocumentQuery) IDsX(ctx context.Context) []int {
 	ids, err := dq.IDs(ctx)
 	if err != nil {
 		panic(err)
@@ -359,7 +358,7 @@ func (dq *DocumentQuery) querySpec() *sqlgraph.QuerySpec {
 			Table:   document.Table,
 			Columns: document.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeInt,
 				Column: document.FieldID,
 			},
 		},

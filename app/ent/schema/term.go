@@ -4,6 +4,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
+	"entgo.io/ent/schema/index"
 	"github.com/google/uuid"
 )
 
@@ -24,6 +25,13 @@ func (Term) Fields() []ent.Field {
 func (Term) Mixin() []ent.Mixin {
 	return []ent.Mixin{
 		TimeStampMixin{},
+	}
+}
+
+func (Term) Indexes() []ent.Index {
+	return []ent.Index{
+		// non-unique index.
+		index.Fields("word"),
 	}
 }
 

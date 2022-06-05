@@ -10,7 +10,7 @@ import (
 var (
 	// DocumentsColumns holds the columns for the "documents" table.
 	DocumentsColumns = []*schema.Column{
-		{Name: "uuid", Type: field.TypeUUID},
+		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "content", Type: field.TypeString},
@@ -53,6 +53,13 @@ var (
 				Columns:    []*schema.Column{TermsColumns[4]},
 				RefColumns: []*schema.Column{InvertIndexCompressedsColumns[0]},
 				OnDelete:   schema.SetNull,
+			},
+		},
+		Indexes: []*schema.Index{
+			{
+				Name:    "term_word",
+				Unique:  false,
+				Columns: []*schema.Column{TermsColumns[3]},
 			},
 		},
 	}
