@@ -31,10 +31,6 @@ func init() {
 	document.DefaultUpdatedAt = documentDescUpdatedAt.Default.(func() time.Time)
 	// document.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	document.UpdateDefaultUpdatedAt = documentDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// documentDescID is the schema descriptor for id field.
-	documentDescID := documentFields[0].Descriptor()
-	// document.DefaultID holds the default value on creation for the id field.
-	document.DefaultID = documentDescID.Default.(func() uuid.UUID)
 	invertindexcompressedMixin := schema.InvertIndexCompressed{}.Mixin()
 	invertindexcompressedMixinFields0 := invertindexcompressedMixin[0].Fields()
 	_ = invertindexcompressedMixinFields0

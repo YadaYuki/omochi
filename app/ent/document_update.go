@@ -114,7 +114,7 @@ func (du *DocumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Table:   document.Table,
 			Columns: document.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeInt,
 				Column: document.FieldID,
 			},
 		},
@@ -252,7 +252,7 @@ func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err
 			Table:   document.Table,
 			Columns: document.Columns,
 			ID: &sqlgraph.FieldSpec{
-				Type:   field.TypeUUID,
+				Type:   field.TypeInt,
 				Column: document.FieldID,
 			},
 		},
