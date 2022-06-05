@@ -3,7 +3,6 @@ package schema
 import (
 	"entgo.io/ent"
 	"entgo.io/ent/schema/field"
-	"github.com/google/uuid"
 )
 
 // Document holds the schema definition for the Document entity.
@@ -14,7 +13,6 @@ type Document struct {
 // Fields of the Document.
 func (Document) Fields() []ent.Field {
 	return []ent.Field{
-		field.UUID("id", uuid.UUID{}).StorageKey("uuid").Default(uuid.New),
 		field.String("content"),
 	}
 }
