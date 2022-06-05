@@ -32,13 +32,13 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	terms := []string{"hello", "world", "omochi"}
-	for _, term := range terms {
-		_, err := CreateTerm(term, context.Background(), db)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}
+	// terms := []string{"hello", "world", "omochi"}
+	// for _, term := range terms {
+	// 	_, err := CreateTerm(term, context.Background(), db)
+	// 	if err != nil {
+	// 		log.Fatal(err)
+	// 	}
+	// }
 	termRepository := entdb.NewTermEntRepository(db)
 	useCase := usecase.NewTermUseCase(termRepository)
 	termHandler := api.NewTermHandler(useCase)
