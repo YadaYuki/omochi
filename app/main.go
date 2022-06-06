@@ -8,11 +8,12 @@ import (
 
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/env"
-	"github.com/YadaYuki/omochi/app/infrastructure/entdb"
+	"github.com/YadaYuki/omochi/app/infrastructure/persistence/entdb"
 	"github.com/YadaYuki/omochi/app/ui/api"
 	"github.com/YadaYuki/omochi/app/usecase"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
+	"github.com/jdkato/prose/v2"
 )
 
 func main() {
@@ -34,6 +35,21 @@ func main() {
 	// 		log.Fatal(err)
 	// 	}
 	// }
+	doc, err := prose.NewDocument("Go is an open-source programming language created at Google.")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, tok := range doc.Tokens() {
+		fmt.Println(tok.Text, tok.Tag, tok.Label)
+	}
+	for _, ent := range doc.Entities() {
+		fmt.Println(ent.Text, ent.Label)
+	}
+
+	for _, sent := range doc.Sentences() {
+		fmt.Println(sent.Text)
+	}
 	termRepository := entdb.NewTermEntRepository(db)
 	useCase := usecase.NewTermUseCase(termRepository)
 	termHandler := api.NewTermHandler(useCase)

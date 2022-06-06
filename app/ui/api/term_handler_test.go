@@ -11,7 +11,7 @@ import (
 	"github.com/YadaYuki/omochi/app/domain/entities"
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/ent/enttest"
-	"github.com/YadaYuki/omochi/app/infrastructure/entdb"
+	"github.com/YadaYuki/omochi/app/infrastructure/persistence/entdb"
 	"github.com/YadaYuki/omochi/app/usecase"
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
