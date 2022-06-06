@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type InvertIndex struct {
+type InvertIndexDetail struct {
 	Uuid        uuid.UUID  `json:"uuid"`
 	TermId      uuid.UUID  `json:"term_id"`
 	PostingList *[]Posting `json:"posting_list"`
@@ -14,12 +14,12 @@ type InvertIndex struct {
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
-type InvertIndexCreate struct {
+type InvertIndex struct {
 	TermId      uuid.UUID  `json:"term_id"` // REVIEW: TermCreate may be better ?
 	PostingList *[]Posting `json:"posting_list"`
 }
 
-type InvertedIndexCompressed struct {
+type InvertedIndexCompressedDetail struct {
 	Uuid                  uuid.UUID `json:"uuid"`
 	TermId                uuid.UUID `json:"term_id"`
 	PostingListCompressed []byte    `json:"posting_list_compressed"`
@@ -27,7 +27,7 @@ type InvertedIndexCompressed struct {
 	UpdatedAt             time.Time `json:"updated_at"`
 }
 
-type InvertedIndexCompressedCreate struct {
+type InvertedIndexCompressed struct {
 	TermId                uuid.UUID `json:"term_id"` // REVIEW: TermCreate may be better ?
 	PostingListCompressed []byte    `json:"posting_list_compressed"`
 }

@@ -20,7 +20,7 @@ func NewTermEntRepository(db *ent.Client) repository.ITermRepository {
 	return &TermEntRepository{db: db}
 }
 
-func (r *TermEntRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, *errors.Error) {
+func (r *TermEntRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entities.TermDetail, *errors.Error) {
 	term, err := r.db.Term.Query().Where(term.ID(uuid.UUID(id))).Only(ctx)
 	if err != nil {
 		_, ok := err.(*ent.NotFoundError)
@@ -32,8 +32,8 @@ func (r *TermEntRepository) FindTermById(ctx context.Context, id uuid.UUID) (*en
 	return convertEntSchemaToEntity(term), nil
 }
 
-func convertEntSchemaToEntity(t *ent.Term) *entities.Term {
-	return &entities.Term{
+func convertEntSchemaToEntity(t *ent.Term) *entities.TermDetail {
+	return &entities.TermDetail{
 		Uuid:      t.ID,
 		Word:      t.Word,
 		CreatedAt: t.CreatedAt,

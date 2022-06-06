@@ -9,5 +9,5 @@ import (
 )
 
 type ITermRepository interface {
-	FindTermById(ctx context.Context, uuid uuid.UUID) (*entities.Term, *errors.Error)
+	FindTermById(ctx context.Context, uuid uuid.UUID) (*entities.TermDetail, *errors.Error)
 }
