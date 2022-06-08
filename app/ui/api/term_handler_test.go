@@ -12,7 +12,7 @@ import (
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/ent/enttest"
 	"github.com/YadaYuki/omochi/app/infrastructure/persistence/entdb"
-	"github.com/YadaYuki/omochi/app/usecase"
+	termUsecase "github.com/YadaYuki/omochi/app/usecase/term"
 	"github.com/gorilla/mux"
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -73,7 +73,7 @@ func TestTermHandler_FindTermByIdHandlerError(t *testing.T) {
 
 func createTermHandler(t testing.TB, client *ent.Client) *TermHandler {
 	termRepository := entdb.NewTermEntRepository(client)
-	useCase := usecase.NewTermUseCase(termRepository)
+	useCase := termUsecase.NewTermUseCase(termRepository)
 	termHandler := NewTermHandler(useCase)
 	return termHandler
 }

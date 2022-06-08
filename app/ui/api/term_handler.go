@@ -6,7 +6,7 @@ import (
 
 	"github.com/YadaYuki/omochi/app/errors"
 	"github.com/YadaYuki/omochi/app/errors/code"
-	"github.com/YadaYuki/omochi/app/usecase"
+	usecase "github.com/YadaYuki/omochi/app/usecase/term"
 	"github.com/google/uuid"
 	"github.com/gorilla/mux"
 )
