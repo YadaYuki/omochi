@@ -9,8 +9,8 @@ import (
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/env"
 	"github.com/YadaYuki/omochi/app/infrastructure/persistence/entdb"
-	"github.com/YadaYuki/omochi/app/ui/api"
-	termUsecase "github.com/YadaYuki/omochi/app/usecase/term"
+	handler "github.com/YadaYuki/omochi/app/ui/handler"
+	usecase "github.com/YadaYuki/omochi/app/usecase/term"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 	"github.com/jdkato/prose/v2"
@@ -52,8 +52,8 @@ func main() {
 		fmt.Println(sent.Text)
 	}
 	termRepository := entdb.NewTermEntRepository(db)
-	useCase := termUsecase.NewTermUseCase(termRepository)
-	termHandler := api.NewTermHandler(useCase)
+	useCase := usecase.NewTermUseCase(termRepository)
+	termHandler := handler.NewTermHandler(useCase)
 
 	log.Println("Successfully connected to MySQL")
 	log.Println("application started")
