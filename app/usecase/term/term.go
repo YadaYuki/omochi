@@ -14,10 +14,10 @@ type ITermUseCase interface {
 }
 
 type termUseCase struct {
-	r repository.ITermRepository
+	r repository.TermRepository
 }
 
-func NewTermUseCase(repository repository.ITermRepository) ITermUseCase {
+func NewTermUseCase(repository repository.TermRepository) ITermUseCase {
 	return &termUseCase{r: repository}
 }
 

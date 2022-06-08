@@ -8,6 +8,6 @@ import (
 	"github.com/google/uuid"
 )
 
-type ITermRepository interface {
+type TermRepository interface {
 	FindTermById(ctx context.Context, uuid uuid.UUID) (*entities.TermDetail, *errors.Error)
 }

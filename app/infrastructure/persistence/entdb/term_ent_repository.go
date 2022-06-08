@@ -16,7 +16,7 @@ type TermEntRepository struct {
 	db *ent.Client
 }
 
-func NewTermEntRepository(db *ent.Client) repository.ITermRepository {
+func NewTermEntRepository(db *ent.Client) repository.TermRepository {
 	return &TermEntRepository{db: db}
 }
 
