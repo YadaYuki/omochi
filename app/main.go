@@ -43,6 +43,7 @@ func main() {
 	for _, tok := range doc.Tokens() {
 		fmt.Println(tok.Text, tok.Tag, tok.Label)
 	}
+
 	for _, ent := range doc.Entities() {
 		fmt.Println(ent.Text, ent.Label)
 	}
