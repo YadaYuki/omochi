@@ -17,4 +17,8 @@ type Term struct {
 	Word string `json:"word"`
 }
 
+func NewTerm(word string) *Term {
+	return &Term{Word: word}
+}
+
 type Terms = []Term
