@@ -6,14 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type Document struct {
+type DocumentDetail struct {
 	Uuid      uuid.UUID `json:"uuid"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
 
-type DocumentCreate struct {
+type Document struct {
 	Content string `json:"content"`
 }
 

@@ -29,6 +29,10 @@ func (e *Error) Error() string {
 	return e.err.Error()
 }
 
+func (e *Error) String() string {
+	return e.Error()
+}
+
 func (e *Error) Unwrap() error {
 	return e.err
 }

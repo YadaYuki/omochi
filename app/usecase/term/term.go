@@ -1,4 +1,4 @@
-package usecase
+package term
 
 import (
 	"context"
@@ -10,18 +10,18 @@ import (
 )
 
 type ITermUseCase interface {
-	FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, *errors.Error)
+	FindTermById(ctx context.Context, id uuid.UUID) (*entities.TermDetail, *errors.Error)
 }
 
 type termUseCase struct {
-	r repository.ITermRepository
+	r repository.TermRepository
 }
 
-func NewTermUseCase(repository repository.ITermRepository) ITermUseCase {
+func NewTermUseCase(repository repository.TermRepository) ITermUseCase {
 	return &termUseCase{r: repository}
 }
 
-func (u *termUseCase) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, *errors.Error) {
+func (u *termUseCase) FindTermById(ctx context.Context, id uuid.UUID) (*entities.TermDetail, *errors.Error) {
 	term, err := u.r.FindTermById(ctx, id)
 	if err != nil {
 		return nil, err

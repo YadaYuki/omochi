@@ -8,9 +8,9 @@ import (
 
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/env"
-	"github.com/YadaYuki/omochi/app/infrastructure/entdb"
-	"github.com/YadaYuki/omochi/app/ui/api"
-	"github.com/YadaYuki/omochi/app/usecase"
+	"github.com/YadaYuki/omochi/app/infrastructure/persistence/entdb"
+	handler "github.com/YadaYuki/omochi/app/ui/handler"
+	usecase "github.com/YadaYuki/omochi/app/usecase/term"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
 )
@@ -27,16 +27,9 @@ func main() {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
 
-	// terms := []string{"hello", "world", "omochi"}
-	// for _, term := range terms {
-	// 	_, err := CreateTerm(term, context.Background(), db)
-	// 	if err != nil {
-	// 		log.Fatal(err)
-	// 	}
-	// }
 	termRepository := entdb.NewTermEntRepository(db)
 	useCase := usecase.NewTermUseCase(termRepository)
-	termHandler := api.NewTermHandler(useCase)
+	termHandler := handler.NewTermHandler(useCase)
 
 	log.Println("Successfully connected to MySQL")
 	log.Println("application started")
