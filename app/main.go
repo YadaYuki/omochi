@@ -8,7 +8,7 @@ import (
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/env"
 	"github.com/YadaYuki/omochi/app/infrastructure/persistence/entdb"
-	handler "github.com/YadaYuki/omochi/app/ui/handler"
+	handler "github.com/YadaYuki/omochi/app/interface/handler"
 	usecase "github.com/YadaYuki/omochi/app/usecase/term"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
