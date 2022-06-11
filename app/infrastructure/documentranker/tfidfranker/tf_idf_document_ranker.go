@@ -2,8 +2,8 @@ package tfidfranker
 
 import (
 	"context"
-	"fmt"
 	"math"
+	"sort"
 
 	"github.com/YadaYuki/omochi/app/common/slices"
 	"github.com/YadaYuki/omochi/app/domain/entities"
@@ -16,9 +16,24 @@ func NewTfIdfDocumentRanker() *TfIdfDocumentRanker {
 	return &TfIdfDocumentRanker{}
 }
 
-func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, query string, docs *[]entities.DocumentDetail) (*[]entities.DocumentDetail, *errors.Error) {
-	fmt.Println(ranker.calculateDocumentScores(ctx, query, docs))
-	return nil, nil
+func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, query string, docs *[]entities.DocumentDetail) *errors.Error {
+	documentScores := ranker.calculateDocumentScores(ctx, query, docs)
+	contentToScoreMap := make(map[string]float64)
+	for i := 0; i < len(*docs); i++ {
+		contentToScoreMap[(*docs)[i].Content] = documentScores[i]
+	}
+
+	sort.Slice(*docs, func(i, j int) bool {
+		// Scoreが同じだった場合は、より単語の密度が大きい、短い文章を前に.
+		scoreI := contentToScoreMap[(*docs)[i].Content]
+		scoreJ := contentToScoreMap[(*docs)[j].Content]
+		if scoreI == scoreJ {
+			return len((*docs)[i].Content) < len((*docs)[j].Content)
+		}
+		// Scoreが大きい方が前
+		return scoreI > scoreJ
+	})
+	return nil
 }
 
 func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, query string, docs *[]entities.DocumentDetail) []float64 {

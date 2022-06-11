@@ -104,3 +104,30 @@ func TestCalculateDocumentScores(t *testing.T) {
 		})
 	}
 }
+
+func TestSortDocumentByScore(t *testing.T) {
+	ranker := NewTfIdfDocumentRanker()
+	documents := []entities.DocumentDetail{
+		{Content: "sun is shining", TokenizedContent: []string{"sun", "is", "shining"}},
+		{Content: "weather is sweet", TokenizedContent: []string{"weather", "is", "sweet"}},
+		{Content: "sun is shining weather is sweet", TokenizedContent: []string{"sun", "is", "shining", "weather", "is", "sweet"}},
+	}
+	testCases := []struct {
+		word                   string
+		expectedSortedContents []string
+	}{
+		{"sun", []string{"sun is shining", "sun is shining weather is sweet", "weather is sweet"}},
+		{"is", []string{"sun is shining weather is sweet", "sun is shining", "weather is sweet"}},
+		{"weather", []string{"weather is sweet", "sun is shining weather is sweet", "sun is shining"}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.word, func(tt *testing.T) {
+			ranker.SortDocumentByScore(context.Background(), tc.word, &documents)
+			for i, doc := range documents {
+				if doc.Content != tc.expectedSortedContents[i] {
+					t.Fatalf("expected %v, but got %v", tc.expectedSortedContents[i], doc.Content)
+				}
+			}
+		})
+	}
+}
