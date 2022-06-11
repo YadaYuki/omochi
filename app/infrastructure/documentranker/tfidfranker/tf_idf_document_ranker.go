@@ -3,7 +3,9 @@ package tfidfranker
 import (
 	"context"
 	"fmt"
+	"math"
 
+	"github.com/YadaYuki/omochi/app/common/slices"
 	"github.com/YadaYuki/omochi/app/domain/entities"
 	"github.com/YadaYuki/omochi/app/errors"
 )
@@ -27,8 +29,19 @@ func (ranker *TfIdfDocumentRanker) calculateTermFrequency(query string, doc enti
 	termFrequency := 0
 	for _, term := range doc.TokenizedContent {
 		if term == query {
-			termFrequency += 1
+			termFrequency++
 		}
 	}
 	return termFrequency
+}
+func (ranker *TfIdfDocumentRanker) calculateInverseDocumentFrequency(query string, docs *[]entities.DocumentDetail) float64 {
+	nDocs := len(*docs)
+	documentFrequency := 0 // docsのうち、何個のドキュメントに、queryが含まれているか
+	for _, doc := range *docs {
+		if slices.Contains(doc.TokenizedContent, query) {
+			documentFrequency++
+		}
+	}
+	idf := math.Log10(float64(1+nDocs) / float64(1+documentFrequency))
+	return idf
 }
