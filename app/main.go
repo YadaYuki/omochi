@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -23,10 +22,6 @@ func main() {
 	}
 	defer db.Close()
 
-	if err := db.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
-	}
-
 	termRepository := entdb.NewTermEntRepository(db)
 	useCase := usecase.NewTermUseCase(termRepository)
 	termHandler := handler.NewTermHandler(useCase)
@@ -36,16 +31,4 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/term/{uuid}", termHandler.FindTermByIdHandler)
 	http.ListenAndServe(":8081", r)
-}
-
-func CreateTerm(word string, ctx context.Context, client *ent.Client) (*ent.Term, error) {
-	u, err := client.Term.
-		Create().
-		SetWord(word).
-		Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed creating term: %w", err)
-	}
-	log.Println("term was created: ", u)
-	return u, nil
 }
