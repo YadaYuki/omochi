@@ -1,6 +1,7 @@
 package tfidfranker
 
 import (
+	"fmt"
 	"math"
 	"testing"
 
@@ -49,6 +50,28 @@ func TestCalculateInverseDocumentFrequency(t *testing.T) {
 			// 小数点第3位までが一致しているかどうかで比較.
 			if math.Abs(float64(tc.expectedIdf)-float64(idf)) > 1e-3 {
 				t.Fatalf("expected %v, but got %v", tc.expectedIdf, idf)
+			}
+		})
+	}
+}
+
+func TestNormalize(t *testing.T) {
+	ranker := NewTfIdfDocumentRanker()
+
+	testCases := []struct {
+		nums               []float64
+		expectedNormalized []float64
+	}{
+		{[]float64{1.0, 1.0, 1.0}, []float64{0.577, 0.577, 0.577}},
+		{[]float64{1.0, 2.0, 3.0}, []float64{0.267, 0.535, 0.802}},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc.nums), func(tt *testing.T) {
+			normalized := ranker.normalize(tc.nums)
+			for i, item := range normalized {
+				if math.Abs(item-tc.expectedNormalized[i]) > 1e-3 {
+					t.Fatalf("expected %v, but got %v", tc.expectedNormalized[i], item)
+				}
 			}
 		})
 	}

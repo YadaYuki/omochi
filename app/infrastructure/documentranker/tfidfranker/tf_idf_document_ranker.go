@@ -34,6 +34,7 @@ func (ranker *TfIdfDocumentRanker) calculateTermFrequency(query string, doc enti
 	}
 	return termFrequency
 }
+
 func (ranker *TfIdfDocumentRanker) calculateInverseDocumentFrequency(query string, docs *[]entities.DocumentDetail) float64 {
 	nDocs := len(*docs)
 	documentFrequency := 0 // docsのうち、何個のドキュメントに、queryが含まれているか
@@ -44,4 +45,17 @@ func (ranker *TfIdfDocumentRanker) calculateInverseDocumentFrequency(query strin
 	}
 	idf := math.Log10(float64(1+nDocs) / float64(1+documentFrequency))
 	return idf
+}
+
+func (ranker *TfIdfDocumentRanker) normalize(nums []float64) []float64 {
+	norm := 0.0
+	for _, num := range nums {
+		norm += math.Pow(num, 2)
+	}
+	norm = math.Pow(norm, 0.5)
+	normalizeNums := make([]float64, len(nums))
+	for i := 0; i < len(nums); i++ {
+		normalizeNums[i] = nums[i] / norm
+	}
+	return normalizeNums
 }
