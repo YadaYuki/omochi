@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,7 +8,7 @@ import (
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/env"
 	"github.com/YadaYuki/omochi/app/infrastructure/persistence/entdb"
-	handler "github.com/YadaYuki/omochi/app/ui/handler"
+	handler "github.com/YadaYuki/omochi/app/interface/handler"
 	usecase "github.com/YadaYuki/omochi/app/usecase/term"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
@@ -23,10 +22,6 @@ func main() {
 	}
 	defer db.Close()
 
-	if err := db.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
-	}
-
 	termRepository := entdb.NewTermEntRepository(db)
 	useCase := usecase.NewTermUseCase(termRepository)
 	termHandler := handler.NewTermHandler(useCase)
@@ -36,16 +31,4 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/term/{uuid}", termHandler.FindTermByIdHandler)
 	http.ListenAndServe(":8081", r)
-}
-
-func CreateTerm(word string, ctx context.Context, client *ent.Client) (*ent.Term, error) {
-	u, err := client.Term.
-		Create().
-		SetWord(word).
-		Save(ctx)
-	if err != nil {
-		return nil, fmt.Errorf("failed creating term: %w", err)
-	}
-	log.Println("term was created: ", u)
-	return u, nil
 }
