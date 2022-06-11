@@ -1,6 +1,7 @@
 package tfidfranker
 
 import (
+	"context"
 	"fmt"
 	"math"
 	"testing"
@@ -71,6 +72,33 @@ func TestNormalize(t *testing.T) {
 			for i, item := range normalized {
 				if math.Abs(item-tc.expectedNormalized[i]) > 1e-3 {
 					t.Fatalf("expected %v, but got %v", tc.expectedNormalized[i], item)
+				}
+			}
+		})
+	}
+}
+
+func TestCalculateDocumentScores(t *testing.T) {
+	ranker := NewTfIdfDocumentRanker()
+	documents := &[]entities.DocumentDetail{
+		{TokenizedContent: []string{"sun", "is", "shining"}},
+		{TokenizedContent: []string{"weather", "is", "sweet"}},
+		{TokenizedContent: []string{"sun", "is", "shining", "weather", "is", "sweet"}},
+	}
+	testCases := []struct {
+		word           string
+		expectedScores []float64
+	}{
+		{"sun", []float64{0.707, 0.0, 0.707}},
+		{"is", []float64{0.408, 0.408, 0.816}},
+		{"shining", []float64{0.707, 0.0, 0.707}},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.word, func(tt *testing.T) {
+			documentScores := ranker.calculateDocumentScores(context.Background(), tc.word, documents)
+			for i, item := range documentScores {
+				if math.Abs(item-tc.expectedScores[i]) > 1e-3 {
+					t.Fatalf("expected %v, but got %v", tc.expectedScores[i], item)
 				}
 			}
 		})

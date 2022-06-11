@@ -21,8 +21,14 @@ func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, quer
 	return nil, nil
 }
 
-func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, query string, docs *[]entities.DocumentDetail) ([]float64, *errors.Error) {
-	return []float64{}, nil
+func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, query string, docs *[]entities.DocumentDetail) []float64 {
+	documentScores := make([]float64, len(*docs))
+	idf := ranker.calculateInverseDocumentFrequency(query, docs)
+	for i, doc := range *docs {
+		tf := ranker.calculateTermFrequency(query, doc)
+		documentScores[i] = float64(tf) * (idf + 1)
+	}
+	return ranker.normalize(documentScores)
 }
 
 func (ranker *TfIdfDocumentRanker) calculateTermFrequency(query string, doc entities.DocumentDetail) int {
