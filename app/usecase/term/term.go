@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type ITermUseCase interface {
+type TermUseCase interface {
 	FindTermById(ctx context.Context, id uuid.UUID) (*entities.TermDetail, *errors.Error)
 }
 
@@ -17,7 +17,7 @@ type termUseCase struct {
 	r repository.TermRepository
 }
 
-func NewTermUseCase(repository repository.TermRepository) ITermUseCase {
+func NewTermUseCase(repository repository.TermRepository) TermUseCase {
 	return &termUseCase{r: repository}
 }
 
