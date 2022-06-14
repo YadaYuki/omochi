@@ -35,16 +35,17 @@ const (
 // DocumentMutation represents an operation that mutates the Document nodes in the graph.
 type DocumentMutation struct {
 	config
-	op            Op
-	typ           string
-	id            *int
-	created_at    *time.Time
-	updated_at    *time.Time
-	content       *string
-	clearedFields map[string]struct{}
-	done          bool
-	oldValue      func(context.Context) (*Document, error)
-	predicates    []predicate.Document
+	op                Op
+	typ               string
+	id                *int
+	created_at        *time.Time
+	updated_at        *time.Time
+	content           *string
+	tokenized_content *string
+	clearedFields     map[string]struct{}
+	done              bool
+	oldValue          func(context.Context) (*Document, error)
+	predicates        []predicate.Document
 }
 
 var _ ent.Mutation = (*DocumentMutation)(nil)
@@ -253,6 +254,42 @@ func (m *DocumentMutation) ResetContent() {
 	m.content = nil
 }
 
+// SetTokenizedContent sets the "tokenized_content" field.
+func (m *DocumentMutation) SetTokenizedContent(s string) {
+	m.tokenized_content = &s
+}
+
+// TokenizedContent returns the value of the "tokenized_content" field in the mutation.
+func (m *DocumentMutation) TokenizedContent() (r string, exists bool) {
+	v := m.tokenized_content
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldTokenizedContent returns the old "tokenized_content" field's value of the Document entity.
+// If the Document object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *DocumentMutation) OldTokenizedContent(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldTokenizedContent is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldTokenizedContent requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldTokenizedContent: %w", err)
+	}
+	return oldValue.TokenizedContent, nil
+}
+
+// ResetTokenizedContent resets all changes to the "tokenized_content" field.
+func (m *DocumentMutation) ResetTokenizedContent() {
+	m.tokenized_content = nil
+}
+
 // Where appends a list predicates to the DocumentMutation builder.
 func (m *DocumentMutation) Where(ps ...predicate.Document) {
 	m.predicates = append(m.predicates, ps...)
@@ -272,7 +309,7 @@ func (m *DocumentMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *DocumentMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.created_at != nil {
 		fields = append(fields, document.FieldCreatedAt)
 	}
@@ -281,6 +318,9 @@ func (m *DocumentMutation) Fields() []string {
 	}
 	if m.content != nil {
 		fields = append(fields, document.FieldContent)
+	}
+	if m.tokenized_content != nil {
+		fields = append(fields, document.FieldTokenizedContent)
 	}
 	return fields
 }
@@ -296,6 +336,8 @@ func (m *DocumentMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case document.FieldContent:
 		return m.Content()
+	case document.FieldTokenizedContent:
+		return m.TokenizedContent()
 	}
 	return nil, false
 }
@@ -311,6 +353,8 @@ func (m *DocumentMutation) OldField(ctx context.Context, name string) (ent.Value
 		return m.OldUpdatedAt(ctx)
 	case document.FieldContent:
 		return m.OldContent(ctx)
+	case document.FieldTokenizedContent:
+		return m.OldTokenizedContent(ctx)
 	}
 	return nil, fmt.Errorf("unknown Document field %s", name)
 }
@@ -340,6 +384,13 @@ func (m *DocumentMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetContent(v)
+		return nil
+	case document.FieldTokenizedContent:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetTokenizedContent(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Document field %s", name)
@@ -398,6 +449,9 @@ func (m *DocumentMutation) ResetField(name string) error {
 		return nil
 	case document.FieldContent:
 		m.ResetContent()
+		return nil
+	case document.FieldTokenizedContent:
+		m.ResetTokenizedContent()
 		return nil
 	}
 	return fmt.Errorf("unknown Document field %s", name)

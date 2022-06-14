@@ -17,4 +17,8 @@ type Document struct {
 	TokenizedContent []string `json:"tokenized_content"`
 }
 
+func NewDocument(content string, tokenizedConetnt []string) *Document {
+	return &Document{Content: content, TokenizedContent: tokenizedConetnt}
+}
+
 type Documents = []Document

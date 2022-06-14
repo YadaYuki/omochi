@@ -14,6 +14,7 @@ type Document struct {
 func (Document) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("content"),
+		field.String("tokenized_content"), // トークナイズしたコンテンツを" "(WHITE_SPACE)区切りで保存する
 	}
 }
 
