@@ -17,6 +17,8 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldContent holds the string denoting the content field in the database.
 	FieldContent = "content"
+	// FieldTokenizedContent holds the string denoting the tokenized_content field in the database.
+	FieldTokenizedContent = "tokenized_content"
 	// Table holds the table name of the document in the database.
 	Table = "documents"
 )
@@ -27,6 +29,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldContent,
+	FieldTokenizedContent,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).

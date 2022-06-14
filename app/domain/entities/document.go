@@ -2,12 +2,10 @@ package entities
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type DocumentDetail struct {
-	Uuid             uuid.UUID `json:"uuid"`
+	Id               int64     `json:"id"`
 	Content          string    `json:"content"`
 	TokenizedContent []string  `json:"tokenized_content"`
 	CreatedAt        time.Time `json:"created_at"`
@@ -17,6 +15,10 @@ type DocumentDetail struct {
 type Document struct {
 	Content          string   `json:"content"`
 	TokenizedContent []string `json:"tokenized_content"`
+}
+
+func NewDocument(content string, tokenizedConetnt []string) *Document {
+	return &Document{Content: content, TokenizedContent: tokenizedConetnt}
 }
 
 type Documents = []Document

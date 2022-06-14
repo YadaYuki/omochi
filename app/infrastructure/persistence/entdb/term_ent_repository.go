@@ -29,10 +29,10 @@ func (r *TermEntRepository) FindTermById(ctx context.Context, id uuid.UUID) (*en
 		}
 		return nil, errors.NewError(code.Unknown, err)
 	}
-	return convertEntSchemaToEntity(term), nil
+	return convertTermEntSchemaToEntity(term), nil
 }
 
-func convertEntSchemaToEntity(t *ent.Term) *entities.TermDetail {
+func convertTermEntSchemaToEntity(t *ent.Term) *entities.TermDetail {
 	return &entities.TermDetail{
 		Uuid:      t.ID,
 		Word:      t.Word,

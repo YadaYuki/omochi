@@ -12,10 +12,10 @@ import (
 )
 
 type TermHandler struct {
-	u usecase.ITermUseCase
+	u usecase.TermUseCase
 }
 
-func NewTermHandler(u usecase.ITermUseCase) *TermHandler {
+func NewTermHandler(u usecase.TermUseCase) *TermHandler {
 	return &TermHandler{u: u}
 }
 

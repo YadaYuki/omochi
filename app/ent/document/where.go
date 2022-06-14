@@ -113,6 +113,13 @@ func Content(v string) predicate.Document {
 	})
 }
 
+// TokenizedContent applies equality check predicate on the "tokenized_content" field. It's identical to TokenizedContentEQ.
+func TokenizedContent(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTokenizedContent), v))
+	})
+}
+
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.
 func CreatedAtEQ(v time.Time) predicate.Document {
 	return predicate.Document(func(s *sql.Selector) {
@@ -373,6 +380,117 @@ func ContentEqualFold(v string) predicate.Document {
 func ContentContainsFold(v string) predicate.Document {
 	return predicate.Document(func(s *sql.Selector) {
 		s.Where(sql.ContainsFold(s.C(FieldContent), v))
+	})
+}
+
+// TokenizedContentEQ applies the EQ predicate on the "tokenized_content" field.
+func TokenizedContentEQ(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentNEQ applies the NEQ predicate on the "tokenized_content" field.
+func TokenizedContentNEQ(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.NEQ(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentIn applies the In predicate on the "tokenized_content" field.
+func TokenizedContentIn(vs ...string) predicate.Document {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Document(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldTokenizedContent), v...))
+	})
+}
+
+// TokenizedContentNotIn applies the NotIn predicate on the "tokenized_content" field.
+func TokenizedContentNotIn(vs ...string) predicate.Document {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Document(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldTokenizedContent), v...))
+	})
+}
+
+// TokenizedContentGT applies the GT predicate on the "tokenized_content" field.
+func TokenizedContentGT(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentGTE applies the GTE predicate on the "tokenized_content" field.
+func TokenizedContentGTE(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentLT applies the LT predicate on the "tokenized_content" field.
+func TokenizedContentLT(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentLTE applies the LTE predicate on the "tokenized_content" field.
+func TokenizedContentLTE(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentContains applies the Contains predicate on the "tokenized_content" field.
+func TokenizedContentContains(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.Contains(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentHasPrefix applies the HasPrefix predicate on the "tokenized_content" field.
+func TokenizedContentHasPrefix(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.HasPrefix(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentHasSuffix applies the HasSuffix predicate on the "tokenized_content" field.
+func TokenizedContentHasSuffix(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.HasSuffix(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentEqualFold applies the EqualFold predicate on the "tokenized_content" field.
+func TokenizedContentEqualFold(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.EqualFold(s.C(FieldTokenizedContent), v))
+	})
+}
+
+// TokenizedContentContainsFold applies the ContainsFold predicate on the "tokenized_content" field.
+func TokenizedContentContainsFold(v string) predicate.Document {
+	return predicate.Document(func(s *sql.Selector) {
+		s.Where(sql.ContainsFold(s.C(FieldTokenizedContent), v))
 	})
 }
 

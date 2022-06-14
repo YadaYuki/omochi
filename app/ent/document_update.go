@@ -40,6 +40,12 @@ func (du *DocumentUpdate) SetContent(s string) *DocumentUpdate {
 	return du
 }
 
+// SetTokenizedContent sets the "tokenized_content" field.
+func (du *DocumentUpdate) SetTokenizedContent(s string) *DocumentUpdate {
+	du.mutation.SetTokenizedContent(s)
+	return du
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (du *DocumentUpdate) Mutation() *DocumentMutation {
 	return du.mutation
@@ -140,6 +146,13 @@ func (du *DocumentUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: document.FieldContent,
 		})
 	}
+	if value, ok := du.mutation.TokenizedContent(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: document.FieldTokenizedContent,
+		})
+	}
 	if n, err = sqlgraph.UpdateNodes(ctx, du.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
 			err = &NotFoundError{document.Label}
@@ -168,6 +181,12 @@ func (duo *DocumentUpdateOne) SetUpdatedAt(t time.Time) *DocumentUpdateOne {
 // SetContent sets the "content" field.
 func (duo *DocumentUpdateOne) SetContent(s string) *DocumentUpdateOne {
 	duo.mutation.SetContent(s)
+	return duo
+}
+
+// SetTokenizedContent sets the "tokenized_content" field.
+func (duo *DocumentUpdateOne) SetTokenizedContent(s string) *DocumentUpdateOne {
+	duo.mutation.SetTokenizedContent(s)
 	return duo
 }
 
@@ -293,6 +312,13 @@ func (duo *DocumentUpdateOne) sqlSave(ctx context.Context) (_node *Document, err
 			Type:   field.TypeString,
 			Value:  value,
 			Column: document.FieldContent,
+		})
+	}
+	if value, ok := duo.mutation.TokenizedContent(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: document.FieldTokenizedContent,
 		})
 	}
 	_node = &Document{config: duo.config}

@@ -22,6 +22,8 @@ type Document struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Content holds the value of the "content" field.
 	Content string `json:"content,omitempty"`
+	// TokenizedContent holds the value of the "tokenized_content" field.
+	TokenizedContent string `json:"tokenized_content,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -31,7 +33,7 @@ func (*Document) scanValues(columns []string) ([]interface{}, error) {
 		switch columns[i] {
 		case document.FieldID:
 			values[i] = new(sql.NullInt64)
-		case document.FieldContent:
+		case document.FieldContent, document.FieldTokenizedContent:
 			values[i] = new(sql.NullString)
 		case document.FieldCreatedAt, document.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -74,6 +76,12 @@ func (d *Document) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				d.Content = value.String
 			}
+		case document.FieldTokenizedContent:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field tokenized_content", values[i])
+			} else if value.Valid {
+				d.TokenizedContent = value.String
+			}
 		}
 	}
 	return nil
@@ -108,6 +116,8 @@ func (d *Document) String() string {
 	builder.WriteString(d.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", content=")
 	builder.WriteString(d.Content)
+	builder.WriteString(", tokenized_content=")
+	builder.WriteString(d.TokenizedContent)
 	builder.WriteByte(')')
 	return builder.String()
 }

@@ -54,6 +54,12 @@ func (dc *DocumentCreate) SetContent(s string) *DocumentCreate {
 	return dc
 }
 
+// SetTokenizedContent sets the "tokenized_content" field.
+func (dc *DocumentCreate) SetTokenizedContent(s string) *DocumentCreate {
+	dc.mutation.SetTokenizedContent(s)
+	return dc
+}
+
 // Mutation returns the DocumentMutation object of the builder.
 func (dc *DocumentCreate) Mutation() *DocumentMutation {
 	return dc.mutation
@@ -146,6 +152,9 @@ func (dc *DocumentCreate) check() error {
 	if _, ok := dc.mutation.Content(); !ok {
 		return &ValidationError{Name: "content", err: errors.New(`ent: missing required field "Document.content"`)}
 	}
+	if _, ok := dc.mutation.TokenizedContent(); !ok {
+		return &ValidationError{Name: "tokenized_content", err: errors.New(`ent: missing required field "Document.tokenized_content"`)}
+	}
 	return nil
 }
 
@@ -196,6 +205,14 @@ func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 			Column: document.FieldContent,
 		})
 		_node.Content = value
+	}
+	if value, ok := dc.mutation.TokenizedContent(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeString,
+			Value:  value,
+			Column: document.FieldTokenizedContent,
+		})
+		_node.TokenizedContent = value
 	}
 	return _node, _spec
 }
