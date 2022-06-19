@@ -15,8 +15,12 @@ type InvertIndexDetail struct {
 }
 
 type InvertIndex struct {
-	TermId      uuid.UUID  `json:"term_id"` // REVIEW: TermCreate may be better ?
+	TermId      uuid.UUID  `json:"term_id"`
 	PostingList *[]Posting `json:"posting_list"`
+}
+
+func NewInvertIndex(termId uuid.UUID, postingList *[]Posting) *InvertIndex {
+	return &InvertIndex{TermId: termId, PostingList: postingList}
 }
 
 type InvertedIndexCompressedDetail struct {
@@ -28,6 +32,10 @@ type InvertedIndexCompressedDetail struct {
 }
 
 type InvertedIndexCompressed struct {
-	TermId                uuid.UUID `json:"term_id"` // REVIEW: TermCreate may be better ?
+	TermId                uuid.UUID `json:"term_id"`
 	PostingListCompressed []byte    `json:"posting_list_compressed"`
+}
+
+func NewInvertIndexCompressed(termId uuid.UUID, postingListCompressed []byte) *InvertedIndexCompressed {
+	return &InvertedIndexCompressed{TermId: termId, PostingListCompressed: postingListCompressed}
 }

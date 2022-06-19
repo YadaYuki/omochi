@@ -8,5 +8,5 @@ import (
 )
 
 type Indexer interface {
-	RegisterDocument(ctx context.Context, document *entities.Document) (*[]entities.DocumentDetail, *errors.Error)
+	IndexingDocument(ctx context.Context, document *entities.Document) (*[]entities.DocumentDetail, *errors.Error)
 }
