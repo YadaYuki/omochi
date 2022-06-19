@@ -11,6 +11,7 @@ import (
 )
 
 type Indexer struct {
+	service.Indexer
 	transactionWrapper *wrapper.EntTransactionWrapper
 	documentRepository repository.DocumentRepository
 	tokenizer          service.Tokenizer
@@ -20,22 +21,27 @@ func NewIndexer(wrapper *wrapper.EntTransactionWrapper, documentRepository repos
 	return &Indexer{transactionWrapper: wrapper}
 }
 
-func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Document) (*[]entities.DocumentDetail, *errors.Error) {
+func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Document) *errors.Error {
 
 	// Create Invert Index from document
 	tokenizedContent, tokenizeErr := i.tokenizer.Tokenize(ctx, document.Content)
 	if tokenizeErr != nil {
-		return nil, errors.NewError(tokenizeErr.Code, tokenizeErr.Error())
+		return errors.NewError(tokenizeErr.Code, tokenizeErr.Error())
 	}
 	document.TokenizedContent = make([]string, len(*tokenizedContent))
 	for i, term := range *tokenizedContent {
 		document.TokenizedContent[i] = term.Word
 	}
 	// TODO:Transaction
+	// create document
 	documentDetail, documentCreateErr := i.documentRepository.CreateDocument(ctx, document)
 	if documentCreateErr != nil {
-		return nil, errors.NewError(documentCreateErr.Code, documentCreateErr.Error())
+		return errors.NewError(documentCreateErr.Code, documentCreateErr.Error())
 	}
+
+	// create term
+
+	// create invert indexes
 	documentId := documentDetail.Id
 
 	wordToPostingMap := make(map[string]*entities.Posting)
@@ -48,5 +54,5 @@ func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Docum
 		}
 	}
 
-	return nil, nil
+	return nil
 }
