@@ -5,7 +5,6 @@ import (
 	"compress/zlib"
 	"encoding/gob"
 	"fmt"
-	"io"
 
 	"github.com/YadaYuki/omochi/app/domain/entities"
 )
@@ -25,18 +24,14 @@ func main() {
 	w.Close()
 
 	fmt.Printf("size before compress:%v, after compress:%v \n", len(network.Bytes()), len(compressedDataBuffer.Bytes()))
-	compressedDataBuffer.Reset()
-	fmt.Println(len(compressedDataBuffer.Bytes()))
-	w.Flush()
-	fmt.Println(len(compressedDataBuffer.Bytes()))
 
 	//
-	var decompressedDataBuffer bytes.Buffer
-	r, _ := zlib.NewReader(&compressedDataBuffer)
-	io.Copy(&decompressedDataBuffer, r)
-	var postingDecoded []entities.Posting
-	dec := gob.NewDecoder(&decompressedDataBuffer) // Will read from network.
-	dec.Decode(&postingDecoded)
-	fmt.Println("decompressed: ", postingDecoded)
+	// var decompressedDataBuffer bytes.Buffer
+	// r, _ := zlib.NewReader(&compressedDataBuffer)
+	// io.Copy(&decompressedDataBuffer, r)
+	// var postingDecoded []entities.Posting
+	// dec := gob.NewDecoder(&decompressedDataBuffer) // Will read from network.
+	// dec.Decode(&postingDecoded)
+	// fmt.Println("decompressed: ", postingDecoded)
 
 }
