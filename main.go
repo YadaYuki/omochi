@@ -25,7 +25,12 @@ func main() {
 	w.Close()
 
 	fmt.Printf("size before compress:%v, after compress:%v \n", len(network.Bytes()), len(compressedDataBuffer.Bytes()))
+	compressedDataBuffer.Reset()
+	fmt.Println(len(compressedDataBuffer.Bytes()))
+	w.Flush()
+	fmt.Println(len(compressedDataBuffer.Bytes()))
 
+	//
 	var decompressedDataBuffer bytes.Buffer
 	r, _ := zlib.NewReader(&compressedDataBuffer)
 	io.Copy(&decompressedDataBuffer, r)
