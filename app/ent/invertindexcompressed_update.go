@@ -42,23 +42,15 @@ func (iicu *InvertIndexCompressedUpdate) SetPostingListCompressed(b []byte) *Inv
 	return iicu
 }
 
-// SetTermID sets the "term" edge to the Term entity by ID.
-func (iicu *InvertIndexCompressedUpdate) SetTermID(id uuid.UUID) *InvertIndexCompressedUpdate {
-	iicu.mutation.SetTermID(id)
+// SetTermRelatedID sets the "term_related" edge to the Term entity by ID.
+func (iicu *InvertIndexCompressedUpdate) SetTermRelatedID(id uuid.UUID) *InvertIndexCompressedUpdate {
+	iicu.mutation.SetTermRelatedID(id)
 	return iicu
 }
 
-// SetNillableTermID sets the "term" edge to the Term entity by ID if the given value is not nil.
-func (iicu *InvertIndexCompressedUpdate) SetNillableTermID(id *uuid.UUID) *InvertIndexCompressedUpdate {
-	if id != nil {
-		iicu = iicu.SetTermID(*id)
-	}
-	return iicu
-}
-
-// SetTerm sets the "term" edge to the Term entity.
-func (iicu *InvertIndexCompressedUpdate) SetTerm(t *Term) *InvertIndexCompressedUpdate {
-	return iicu.SetTermID(t.ID)
+// SetTermRelated sets the "term_related" edge to the Term entity.
+func (iicu *InvertIndexCompressedUpdate) SetTermRelated(t *Term) *InvertIndexCompressedUpdate {
+	return iicu.SetTermRelatedID(t.ID)
 }
 
 // Mutation returns the InvertIndexCompressedMutation object of the builder.
@@ -66,9 +58,9 @@ func (iicu *InvertIndexCompressedUpdate) Mutation() *InvertIndexCompressedMutati
 	return iicu.mutation
 }
 
-// ClearTerm clears the "term" edge to the Term entity.
-func (iicu *InvertIndexCompressedUpdate) ClearTerm() *InvertIndexCompressedUpdate {
-	iicu.mutation.ClearTerm()
+// ClearTermRelated clears the "term_related" edge to the Term entity.
+func (iicu *InvertIndexCompressedUpdate) ClearTermRelated() *InvertIndexCompressedUpdate {
+	iicu.mutation.ClearTermRelated()
 	return iicu
 }
 
@@ -148,6 +140,9 @@ func (iicu *InvertIndexCompressedUpdate) check() error {
 			return &ValidationError{Name: "posting_list_compressed", err: fmt.Errorf(`ent: validator failed for field "InvertIndexCompressed.posting_list_compressed": %w`, err)}
 		}
 	}
+	if _, ok := iicu.mutation.TermRelatedID(); iicu.mutation.TermRelatedCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "InvertIndexCompressed.term_related"`)
+	}
 	return nil
 }
 
@@ -183,12 +178,12 @@ func (iicu *InvertIndexCompressedUpdate) sqlSave(ctx context.Context) (n int, er
 			Column: invertindexcompressed.FieldPostingListCompressed,
 		})
 	}
-	if iicu.mutation.TermCleared() {
+	if iicu.mutation.TermRelatedCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   invertindexcompressed.TermTable,
-			Columns: []string{invertindexcompressed.TermColumn},
+			Inverse: true,
+			Table:   invertindexcompressed.TermRelatedTable,
+			Columns: []string{invertindexcompressed.TermRelatedColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -199,12 +194,12 @@ func (iicu *InvertIndexCompressedUpdate) sqlSave(ctx context.Context) (n int, er
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iicu.mutation.TermIDs(); len(nodes) > 0 {
+	if nodes := iicu.mutation.TermRelatedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   invertindexcompressed.TermTable,
-			Columns: []string{invertindexcompressed.TermColumn},
+			Inverse: true,
+			Table:   invertindexcompressed.TermRelatedTable,
+			Columns: []string{invertindexcompressed.TermRelatedColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -249,23 +244,15 @@ func (iicuo *InvertIndexCompressedUpdateOne) SetPostingListCompressed(b []byte) 
 	return iicuo
 }
 
-// SetTermID sets the "term" edge to the Term entity by ID.
-func (iicuo *InvertIndexCompressedUpdateOne) SetTermID(id uuid.UUID) *InvertIndexCompressedUpdateOne {
-	iicuo.mutation.SetTermID(id)
+// SetTermRelatedID sets the "term_related" edge to the Term entity by ID.
+func (iicuo *InvertIndexCompressedUpdateOne) SetTermRelatedID(id uuid.UUID) *InvertIndexCompressedUpdateOne {
+	iicuo.mutation.SetTermRelatedID(id)
 	return iicuo
 }
 
-// SetNillableTermID sets the "term" edge to the Term entity by ID if the given value is not nil.
-func (iicuo *InvertIndexCompressedUpdateOne) SetNillableTermID(id *uuid.UUID) *InvertIndexCompressedUpdateOne {
-	if id != nil {
-		iicuo = iicuo.SetTermID(*id)
-	}
-	return iicuo
-}
-
-// SetTerm sets the "term" edge to the Term entity.
-func (iicuo *InvertIndexCompressedUpdateOne) SetTerm(t *Term) *InvertIndexCompressedUpdateOne {
-	return iicuo.SetTermID(t.ID)
+// SetTermRelated sets the "term_related" edge to the Term entity.
+func (iicuo *InvertIndexCompressedUpdateOne) SetTermRelated(t *Term) *InvertIndexCompressedUpdateOne {
+	return iicuo.SetTermRelatedID(t.ID)
 }
 
 // Mutation returns the InvertIndexCompressedMutation object of the builder.
@@ -273,9 +260,9 @@ func (iicuo *InvertIndexCompressedUpdateOne) Mutation() *InvertIndexCompressedMu
 	return iicuo.mutation
 }
 
-// ClearTerm clears the "term" edge to the Term entity.
-func (iicuo *InvertIndexCompressedUpdateOne) ClearTerm() *InvertIndexCompressedUpdateOne {
-	iicuo.mutation.ClearTerm()
+// ClearTermRelated clears the "term_related" edge to the Term entity.
+func (iicuo *InvertIndexCompressedUpdateOne) ClearTermRelated() *InvertIndexCompressedUpdateOne {
+	iicuo.mutation.ClearTermRelated()
 	return iicuo
 }
 
@@ -362,6 +349,9 @@ func (iicuo *InvertIndexCompressedUpdateOne) check() error {
 			return &ValidationError{Name: "posting_list_compressed", err: fmt.Errorf(`ent: validator failed for field "InvertIndexCompressed.posting_list_compressed": %w`, err)}
 		}
 	}
+	if _, ok := iicuo.mutation.TermRelatedID(); iicuo.mutation.TermRelatedCleared() && !ok {
+		return errors.New(`ent: clearing a required unique edge "InvertIndexCompressed.term_related"`)
+	}
 	return nil
 }
 
@@ -414,12 +404,12 @@ func (iicuo *InvertIndexCompressedUpdateOne) sqlSave(ctx context.Context) (_node
 			Column: invertindexcompressed.FieldPostingListCompressed,
 		})
 	}
-	if iicuo.mutation.TermCleared() {
+	if iicuo.mutation.TermRelatedCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   invertindexcompressed.TermTable,
-			Columns: []string{invertindexcompressed.TermColumn},
+			Inverse: true,
+			Table:   invertindexcompressed.TermRelatedTable,
+			Columns: []string{invertindexcompressed.TermRelatedColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -430,12 +420,12 @@ func (iicuo *InvertIndexCompressedUpdateOne) sqlSave(ctx context.Context) (_node
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := iicuo.mutation.TermIDs(); len(nodes) > 0 {
+	if nodes := iicuo.mutation.TermRelatedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   invertindexcompressed.TermTable,
-			Columns: []string{invertindexcompressed.TermColumn},
+			Inverse: true,
+			Table:   invertindexcompressed.TermRelatedTable,
+			Columns: []string{invertindexcompressed.TermRelatedColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{

@@ -30,6 +30,6 @@ func (InvertIndexCompressed) Mixin() []ent.Mixin {
 // Edges of the InvertIndexCompressed.
 func (InvertIndexCompressed) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("term_related", Term.Type).Ref("term").Unique().Required(),
+		edge.From("term_related", Term.Type).Ref("invert_index_compressed").Unique().Required(),
 	}
 }

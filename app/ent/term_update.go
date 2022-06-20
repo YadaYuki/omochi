@@ -42,23 +42,23 @@ func (tu *TermUpdate) SetWord(s string) *TermUpdate {
 	return tu
 }
 
-// SetInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID.
-func (tu *TermUpdate) SetInvertIndexID(id uuid.UUID) *TermUpdate {
-	tu.mutation.SetInvertIndexID(id)
+// SetInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID.
+func (tu *TermUpdate) SetInvertIndexCompressedID(id uuid.UUID) *TermUpdate {
+	tu.mutation.SetInvertIndexCompressedID(id)
 	return tu
 }
 
-// SetNillableInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
-func (tu *TermUpdate) SetNillableInvertIndexID(id *uuid.UUID) *TermUpdate {
+// SetNillableInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
+func (tu *TermUpdate) SetNillableInvertIndexCompressedID(id *uuid.UUID) *TermUpdate {
 	if id != nil {
-		tu = tu.SetInvertIndexID(*id)
+		tu = tu.SetInvertIndexCompressedID(*id)
 	}
 	return tu
 }
 
-// SetInvertIndex sets the "invert_index" edge to the InvertIndexCompressed entity.
-func (tu *TermUpdate) SetInvertIndex(i *InvertIndexCompressed) *TermUpdate {
-	return tu.SetInvertIndexID(i.ID)
+// SetInvertIndexCompressed sets the "invert_index_compressed" edge to the InvertIndexCompressed entity.
+func (tu *TermUpdate) SetInvertIndexCompressed(i *InvertIndexCompressed) *TermUpdate {
+	return tu.SetInvertIndexCompressedID(i.ID)
 }
 
 // Mutation returns the TermMutation object of the builder.
@@ -66,9 +66,9 @@ func (tu *TermUpdate) Mutation() *TermMutation {
 	return tu.mutation
 }
 
-// ClearInvertIndex clears the "invert_index" edge to the InvertIndexCompressed entity.
-func (tu *TermUpdate) ClearInvertIndex() *TermUpdate {
-	tu.mutation.ClearInvertIndex()
+// ClearInvertIndexCompressed clears the "invert_index_compressed" edge to the InvertIndexCompressed entity.
+func (tu *TermUpdate) ClearInvertIndexCompressed() *TermUpdate {
+	tu.mutation.ClearInvertIndexCompressed()
 	return tu
 }
 
@@ -167,12 +167,12 @@ func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: term.FieldWord,
 		})
 	}
-	if tu.mutation.InvertIndexCleared() {
+	if tu.mutation.InvertIndexCompressedCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   term.InvertIndexTable,
-			Columns: []string{term.InvertIndexColumn},
+			Inverse: false,
+			Table:   term.InvertIndexCompressedTable,
+			Columns: []string{term.InvertIndexCompressedColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -183,12 +183,12 @@ func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tu.mutation.InvertIndexIDs(); len(nodes) > 0 {
+	if nodes := tu.mutation.InvertIndexCompressedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   term.InvertIndexTable,
-			Columns: []string{term.InvertIndexColumn},
+			Inverse: false,
+			Table:   term.InvertIndexCompressedTable,
+			Columns: []string{term.InvertIndexCompressedColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -233,23 +233,23 @@ func (tuo *TermUpdateOne) SetWord(s string) *TermUpdateOne {
 	return tuo
 }
 
-// SetInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID.
-func (tuo *TermUpdateOne) SetInvertIndexID(id uuid.UUID) *TermUpdateOne {
-	tuo.mutation.SetInvertIndexID(id)
+// SetInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID.
+func (tuo *TermUpdateOne) SetInvertIndexCompressedID(id uuid.UUID) *TermUpdateOne {
+	tuo.mutation.SetInvertIndexCompressedID(id)
 	return tuo
 }
 
-// SetNillableInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
-func (tuo *TermUpdateOne) SetNillableInvertIndexID(id *uuid.UUID) *TermUpdateOne {
+// SetNillableInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
+func (tuo *TermUpdateOne) SetNillableInvertIndexCompressedID(id *uuid.UUID) *TermUpdateOne {
 	if id != nil {
-		tuo = tuo.SetInvertIndexID(*id)
+		tuo = tuo.SetInvertIndexCompressedID(*id)
 	}
 	return tuo
 }
 
-// SetInvertIndex sets the "invert_index" edge to the InvertIndexCompressed entity.
-func (tuo *TermUpdateOne) SetInvertIndex(i *InvertIndexCompressed) *TermUpdateOne {
-	return tuo.SetInvertIndexID(i.ID)
+// SetInvertIndexCompressed sets the "invert_index_compressed" edge to the InvertIndexCompressed entity.
+func (tuo *TermUpdateOne) SetInvertIndexCompressed(i *InvertIndexCompressed) *TermUpdateOne {
+	return tuo.SetInvertIndexCompressedID(i.ID)
 }
 
 // Mutation returns the TermMutation object of the builder.
@@ -257,9 +257,9 @@ func (tuo *TermUpdateOne) Mutation() *TermMutation {
 	return tuo.mutation
 }
 
-// ClearInvertIndex clears the "invert_index" edge to the InvertIndexCompressed entity.
-func (tuo *TermUpdateOne) ClearInvertIndex() *TermUpdateOne {
-	tuo.mutation.ClearInvertIndex()
+// ClearInvertIndexCompressed clears the "invert_index_compressed" edge to the InvertIndexCompressed entity.
+func (tuo *TermUpdateOne) ClearInvertIndexCompressed() *TermUpdateOne {
+	tuo.mutation.ClearInvertIndexCompressed()
 	return tuo
 }
 
@@ -382,12 +382,12 @@ func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) 
 			Column: term.FieldWord,
 		})
 	}
-	if tuo.mutation.InvertIndexCleared() {
+	if tuo.mutation.InvertIndexCompressedCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   term.InvertIndexTable,
-			Columns: []string{term.InvertIndexColumn},
+			Inverse: false,
+			Table:   term.InvertIndexCompressedTable,
+			Columns: []string{term.InvertIndexCompressedColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -398,12 +398,12 @@ func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) 
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
-	if nodes := tuo.mutation.InvertIndexIDs(); len(nodes) > 0 {
+	if nodes := tuo.mutation.InvertIndexCompressedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.O2O,
-			Inverse: true,
-			Table:   term.InvertIndexTable,
-			Columns: []string{term.InvertIndexColumn},
+			Inverse: false,
+			Table:   term.InvertIndexCompressedTable,
+			Columns: []string{term.InvertIndexCompressedColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
