@@ -343,25 +343,25 @@ func PostingListCompressedLTE(v []byte) predicate.InvertIndexCompressed {
 	})
 }
 
-// HasTerm applies the HasEdge predicate on the "term" edge.
-func HasTerm() predicate.InvertIndexCompressed {
+// HasTermRelated applies the HasEdge predicate on the "term_related" edge.
+func HasTermRelated() predicate.InvertIndexCompressed {
 	return predicate.InvertIndexCompressed(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TermTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TermTable, TermColumn),
+			sqlgraph.To(TermRelatedTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, TermRelatedTable, TermRelatedColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasTermWith applies the HasEdge predicate on the "term" edge with a given conditions (other predicates).
-func HasTermWith(preds ...predicate.Term) predicate.InvertIndexCompressed {
+// HasTermRelatedWith applies the HasEdge predicate on the "term_related" edge with a given conditions (other predicates).
+func HasTermRelatedWith(preds ...predicate.Term) predicate.InvertIndexCompressed {
 	return predicate.InvertIndexCompressed(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(TermInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TermTable, TermColumn),
+			sqlgraph.To(TermRelatedInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, TermRelatedTable, TermRelatedColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

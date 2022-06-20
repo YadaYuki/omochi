@@ -378,25 +378,25 @@ func WordContainsFold(v string) predicate.Term {
 	})
 }
 
-// HasInvertIndex applies the HasEdge predicate on the "invert_index" edge.
-func HasInvertIndex() predicate.Term {
+// HasInvertIndexCompressed applies the HasEdge predicate on the "invert_index_compressed" edge.
+func HasInvertIndexCompressed() predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InvertIndexTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InvertIndexTable, InvertIndexColumn),
+			sqlgraph.To(InvertIndexCompressedTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, InvertIndexCompressedTable, InvertIndexCompressedColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
 }
 
-// HasInvertIndexWith applies the HasEdge predicate on the "invert_index" edge with a given conditions (other predicates).
-func HasInvertIndexWith(preds ...predicate.InvertIndexCompressed) predicate.Term {
+// HasInvertIndexCompressedWith applies the HasEdge predicate on the "invert_index_compressed" edge with a given conditions (other predicates).
+func HasInvertIndexCompressedWith(preds ...predicate.InvertIndexCompressed) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InvertIndexInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InvertIndexTable, InvertIndexColumn),
+			sqlgraph.To(InvertIndexCompressedInverseTable, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, InvertIndexCompressedTable, InvertIndexCompressedColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

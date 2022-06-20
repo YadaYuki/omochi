@@ -4,6 +4,7 @@ package ent
 
 import (
 	"context"
+	"database/sql/driver"
 	"errors"
 	"fmt"
 	"math"
@@ -27,8 +28,7 @@ type TermQuery struct {
 	fields     []string
 	predicates []predicate.Term
 	// eager-loading edges.
-	withInvertIndex *InvertIndexCompressedQuery
-	withFKs         bool
+	withInvertIndexCompressed *InvertIndexCompressedQuery
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -65,8 +65,8 @@ func (tq *TermQuery) Order(o ...OrderFunc) *TermQuery {
 	return tq
 }
 
-// QueryInvertIndex chains the current query on the "invert_index" edge.
-func (tq *TermQuery) QueryInvertIndex() *InvertIndexCompressedQuery {
+// QueryInvertIndexCompressed chains the current query on the "invert_index_compressed" edge.
+func (tq *TermQuery) QueryInvertIndexCompressed() *InvertIndexCompressedQuery {
 	query := &InvertIndexCompressedQuery{config: tq.config}
 	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
 		if err := tq.prepareQuery(ctx); err != nil {
@@ -79,7 +79,7 @@ func (tq *TermQuery) QueryInvertIndex() *InvertIndexCompressedQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(term.Table, term.FieldID, selector),
 			sqlgraph.To(invertindexcompressed.Table, invertindexcompressed.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, term.InvertIndexTable, term.InvertIndexColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, term.InvertIndexCompressedTable, term.InvertIndexCompressedColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil
@@ -263,12 +263,12 @@ func (tq *TermQuery) Clone() *TermQuery {
 		return nil
 	}
 	return &TermQuery{
-		config:          tq.config,
-		limit:           tq.limit,
-		offset:          tq.offset,
-		order:           append([]OrderFunc{}, tq.order...),
-		predicates:      append([]predicate.Term{}, tq.predicates...),
-		withInvertIndex: tq.withInvertIndex.Clone(),
+		config:                    tq.config,
+		limit:                     tq.limit,
+		offset:                    tq.offset,
+		order:                     append([]OrderFunc{}, tq.order...),
+		predicates:                append([]predicate.Term{}, tq.predicates...),
+		withInvertIndexCompressed: tq.withInvertIndexCompressed.Clone(),
 		// clone intermediate query.
 		sql:    tq.sql.Clone(),
 		path:   tq.path,
@@ -276,14 +276,14 @@ func (tq *TermQuery) Clone() *TermQuery {
 	}
 }
 
-// WithInvertIndex tells the query-builder to eager-load the nodes that are connected to
-// the "invert_index" edge. The optional arguments are used to configure the query builder of the edge.
-func (tq *TermQuery) WithInvertIndex(opts ...func(*InvertIndexCompressedQuery)) *TermQuery {
+// WithInvertIndexCompressed tells the query-builder to eager-load the nodes that are connected to
+// the "invert_index_compressed" edge. The optional arguments are used to configure the query builder of the edge.
+func (tq *TermQuery) WithInvertIndexCompressed(opts ...func(*InvertIndexCompressedQuery)) *TermQuery {
 	query := &InvertIndexCompressedQuery{config: tq.config}
 	for _, opt := range opts {
 		opt(query)
 	}
-	tq.withInvertIndex = query
+	tq.withInvertIndexCompressed = query
 	return tq
 }
 
@@ -351,18 +351,11 @@ func (tq *TermQuery) prepareQuery(ctx context.Context) error {
 func (tq *TermQuery) sqlAll(ctx context.Context) ([]*Term, error) {
 	var (
 		nodes       = []*Term{}
-		withFKs     = tq.withFKs
 		_spec       = tq.querySpec()
 		loadedTypes = [1]bool{
-			tq.withInvertIndex != nil,
+			tq.withInvertIndexCompressed != nil,
 		}
 	)
-	if tq.withInvertIndex != nil {
-		withFKs = true
-	}
-	if withFKs {
-		_spec.Node.Columns = append(_spec.Node.Columns, term.ForeignKeys...)
-	}
 	_spec.ScanValues = func(columns []string) ([]interface{}, error) {
 		node := &Term{config: tq.config}
 		nodes = append(nodes, node)
@@ -383,32 +376,31 @@ func (tq *TermQuery) sqlAll(ctx context.Context) ([]*Term, error) {
 		return nodes, nil
 	}
 
-	if query := tq.withInvertIndex; query != nil {
-		ids := make([]uuid.UUID, 0, len(nodes))
-		nodeids := make(map[uuid.UUID][]*Term)
+	if query := tq.withInvertIndexCompressed; query != nil {
+		fks := make([]driver.Value, 0, len(nodes))
+		nodeids := make(map[uuid.UUID]*Term)
 		for i := range nodes {
-			if nodes[i].invert_index_compressed_term == nil {
-				continue
-			}
-			fk := *nodes[i].invert_index_compressed_term
-			if _, ok := nodeids[fk]; !ok {
-				ids = append(ids, fk)
-			}
-			nodeids[fk] = append(nodeids[fk], nodes[i])
+			fks = append(fks, nodes[i].ID)
+			nodeids[nodes[i].ID] = nodes[i]
 		}
-		query.Where(invertindexcompressed.IDIn(ids...))
+		query.withFKs = true
+		query.Where(predicate.InvertIndexCompressed(func(s *sql.Selector) {
+			s.Where(sql.InValues(term.InvertIndexCompressedColumn, fks...))
+		}))
 		neighbors, err := query.All(ctx)
 		if err != nil {
 			return nil, err
 		}
 		for _, n := range neighbors {
-			nodes, ok := nodeids[n.ID]
+			fk := n.term_invert_index_compressed
+			if fk == nil {
+				return nil, fmt.Errorf(`foreign-key "term_invert_index_compressed" is nil for node %v`, n.ID)
+			}
+			node, ok := nodeids[*fk]
 			if !ok {
-				return nil, fmt.Errorf(`unexpected foreign-key "invert_index_compressed_term" returned %v`, n.ID)
+				return nil, fmt.Errorf(`unexpected foreign-key "term_invert_index_compressed" returned %v for node %v`, *fk, n.ID)
 			}
-			for i := range nodes {
-				nodes[i].Edges.InvertIndex = n
-			}
+			node.Edges.InvertIndexCompressed = n
 		}
 	}
 

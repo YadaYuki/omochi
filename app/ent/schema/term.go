@@ -38,8 +38,7 @@ func (Term) Indexes() []ent.Index {
 // Edges of the Term.
 func (Term) Edges() []ent.Edge {
 	return []ent.Edge{
-		edge.From("invert_index", InvertIndexCompressed.Type).
-			Ref("term").
+		edge.To("invert_index_compressed", InvertIndexCompressed.Type).
 			Unique(),
 	}
 }

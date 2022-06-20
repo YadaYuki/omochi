@@ -515,9 +515,8 @@ type InvertIndexCompressedMutation struct {
 	updated_at              *time.Time
 	posting_list_compressed *[]byte
 	clearedFields           map[string]struct{}
-	term                    map[uuid.UUID]struct{}
-	removedterm             map[uuid.UUID]struct{}
-	clearedterm             bool
+	term_related            *uuid.UUID
+	clearedterm_related     bool
 	done                    bool
 	oldValue                func(context.Context) (*InvertIndexCompressed, error)
 	predicates              []predicate.InvertIndexCompressed
@@ -735,58 +734,43 @@ func (m *InvertIndexCompressedMutation) ResetPostingListCompressed() {
 	m.posting_list_compressed = nil
 }
 
-// AddTermIDs adds the "term" edge to the Term entity by ids.
-func (m *InvertIndexCompressedMutation) AddTermIDs(ids ...uuid.UUID) {
-	if m.term == nil {
-		m.term = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.term[ids[i]] = struct{}{}
-	}
+// SetTermRelatedID sets the "term_related" edge to the Term entity by id.
+func (m *InvertIndexCompressedMutation) SetTermRelatedID(id uuid.UUID) {
+	m.term_related = &id
 }
 
-// ClearTerm clears the "term" edge to the Term entity.
-func (m *InvertIndexCompressedMutation) ClearTerm() {
-	m.clearedterm = true
+// ClearTermRelated clears the "term_related" edge to the Term entity.
+func (m *InvertIndexCompressedMutation) ClearTermRelated() {
+	m.clearedterm_related = true
 }
 
-// TermCleared reports if the "term" edge to the Term entity was cleared.
-func (m *InvertIndexCompressedMutation) TermCleared() bool {
-	return m.clearedterm
+// TermRelatedCleared reports if the "term_related" edge to the Term entity was cleared.
+func (m *InvertIndexCompressedMutation) TermRelatedCleared() bool {
+	return m.clearedterm_related
 }
 
-// RemoveTermIDs removes the "term" edge to the Term entity by IDs.
-func (m *InvertIndexCompressedMutation) RemoveTermIDs(ids ...uuid.UUID) {
-	if m.removedterm == nil {
-		m.removedterm = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.term, ids[i])
-		m.removedterm[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTerm returns the removed IDs of the "term" edge to the Term entity.
-func (m *InvertIndexCompressedMutation) RemovedTermIDs() (ids []uuid.UUID) {
-	for id := range m.removedterm {
-		ids = append(ids, id)
+// TermRelatedID returns the "term_related" edge ID in the mutation.
+func (m *InvertIndexCompressedMutation) TermRelatedID() (id uuid.UUID, exists bool) {
+	if m.term_related != nil {
+		return *m.term_related, true
 	}
 	return
 }
 
-// TermIDs returns the "term" edge IDs in the mutation.
-func (m *InvertIndexCompressedMutation) TermIDs() (ids []uuid.UUID) {
-	for id := range m.term {
-		ids = append(ids, id)
+// TermRelatedIDs returns the "term_related" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TermRelatedID instead. It exists only for internal usage by the builders.
+func (m *InvertIndexCompressedMutation) TermRelatedIDs() (ids []uuid.UUID) {
+	if id := m.term_related; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetTerm resets all changes to the "term" edge.
-func (m *InvertIndexCompressedMutation) ResetTerm() {
-	m.term = nil
-	m.clearedterm = false
-	m.removedterm = nil
+// ResetTermRelated resets all changes to the "term_related" edge.
+func (m *InvertIndexCompressedMutation) ResetTermRelated() {
+	m.term_related = nil
+	m.clearedterm_related = false
 }
 
 // Where appends a list predicates to the InvertIndexCompressedMutation builder.
@@ -942,8 +926,8 @@ func (m *InvertIndexCompressedMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *InvertIndexCompressedMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.term != nil {
-		edges = append(edges, invertindexcompressed.EdgeTerm)
+	if m.term_related != nil {
+		edges = append(edges, invertindexcompressed.EdgeTermRelated)
 	}
 	return edges
 }
@@ -952,12 +936,10 @@ func (m *InvertIndexCompressedMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *InvertIndexCompressedMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case invertindexcompressed.EdgeTerm:
-		ids := make([]ent.Value, 0, len(m.term))
-		for id := range m.term {
-			ids = append(ids, id)
+	case invertindexcompressed.EdgeTermRelated:
+		if id := m.term_related; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -965,9 +947,6 @@ func (m *InvertIndexCompressedMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InvertIndexCompressedMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedterm != nil {
-		edges = append(edges, invertindexcompressed.EdgeTerm)
-	}
 	return edges
 }
 
@@ -975,12 +954,6 @@ func (m *InvertIndexCompressedMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *InvertIndexCompressedMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case invertindexcompressed.EdgeTerm:
-		ids := make([]ent.Value, 0, len(m.removedterm))
-		for id := range m.removedterm {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
@@ -988,8 +961,8 @@ func (m *InvertIndexCompressedMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *InvertIndexCompressedMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedterm {
-		edges = append(edges, invertindexcompressed.EdgeTerm)
+	if m.clearedterm_related {
+		edges = append(edges, invertindexcompressed.EdgeTermRelated)
 	}
 	return edges
 }
@@ -998,8 +971,8 @@ func (m *InvertIndexCompressedMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *InvertIndexCompressedMutation) EdgeCleared(name string) bool {
 	switch name {
-	case invertindexcompressed.EdgeTerm:
-		return m.clearedterm
+	case invertindexcompressed.EdgeTermRelated:
+		return m.clearedterm_related
 	}
 	return false
 }
@@ -1008,6 +981,9 @@ func (m *InvertIndexCompressedMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *InvertIndexCompressedMutation) ClearEdge(name string) error {
 	switch name {
+	case invertindexcompressed.EdgeTermRelated:
+		m.ClearTermRelated()
+		return nil
 	}
 	return fmt.Errorf("unknown InvertIndexCompressed unique edge %s", name)
 }
@@ -1016,8 +992,8 @@ func (m *InvertIndexCompressedMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *InvertIndexCompressedMutation) ResetEdge(name string) error {
 	switch name {
-	case invertindexcompressed.EdgeTerm:
-		m.ResetTerm()
+	case invertindexcompressed.EdgeTermRelated:
+		m.ResetTermRelated()
 		return nil
 	}
 	return fmt.Errorf("unknown InvertIndexCompressed edge %s", name)
@@ -1026,18 +1002,18 @@ func (m *InvertIndexCompressedMutation) ResetEdge(name string) error {
 // TermMutation represents an operation that mutates the Term nodes in the graph.
 type TermMutation struct {
 	config
-	op                  Op
-	typ                 string
-	id                  *uuid.UUID
-	created_at          *time.Time
-	updated_at          *time.Time
-	word                *string
-	clearedFields       map[string]struct{}
-	invert_index        *uuid.UUID
-	clearedinvert_index bool
-	done                bool
-	oldValue            func(context.Context) (*Term, error)
-	predicates          []predicate.Term
+	op                             Op
+	typ                            string
+	id                             *uuid.UUID
+	created_at                     *time.Time
+	updated_at                     *time.Time
+	word                           *string
+	clearedFields                  map[string]struct{}
+	invert_index_compressed        *uuid.UUID
+	clearedinvert_index_compressed bool
+	done                           bool
+	oldValue                       func(context.Context) (*Term, error)
+	predicates                     []predicate.Term
 }
 
 var _ ent.Mutation = (*TermMutation)(nil)
@@ -1252,43 +1228,43 @@ func (m *TermMutation) ResetWord() {
 	m.word = nil
 }
 
-// SetInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by id.
-func (m *TermMutation) SetInvertIndexID(id uuid.UUID) {
-	m.invert_index = &id
+// SetInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by id.
+func (m *TermMutation) SetInvertIndexCompressedID(id uuid.UUID) {
+	m.invert_index_compressed = &id
 }
 
-// ClearInvertIndex clears the "invert_index" edge to the InvertIndexCompressed entity.
-func (m *TermMutation) ClearInvertIndex() {
-	m.clearedinvert_index = true
+// ClearInvertIndexCompressed clears the "invert_index_compressed" edge to the InvertIndexCompressed entity.
+func (m *TermMutation) ClearInvertIndexCompressed() {
+	m.clearedinvert_index_compressed = true
 }
 
-// InvertIndexCleared reports if the "invert_index" edge to the InvertIndexCompressed entity was cleared.
-func (m *TermMutation) InvertIndexCleared() bool {
-	return m.clearedinvert_index
+// InvertIndexCompressedCleared reports if the "invert_index_compressed" edge to the InvertIndexCompressed entity was cleared.
+func (m *TermMutation) InvertIndexCompressedCleared() bool {
+	return m.clearedinvert_index_compressed
 }
 
-// InvertIndexID returns the "invert_index" edge ID in the mutation.
-func (m *TermMutation) InvertIndexID() (id uuid.UUID, exists bool) {
-	if m.invert_index != nil {
-		return *m.invert_index, true
+// InvertIndexCompressedID returns the "invert_index_compressed" edge ID in the mutation.
+func (m *TermMutation) InvertIndexCompressedID() (id uuid.UUID, exists bool) {
+	if m.invert_index_compressed != nil {
+		return *m.invert_index_compressed, true
 	}
 	return
 }
 
-// InvertIndexIDs returns the "invert_index" edge IDs in the mutation.
+// InvertIndexCompressedIDs returns the "invert_index_compressed" edge IDs in the mutation.
 // Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// InvertIndexID instead. It exists only for internal usage by the builders.
-func (m *TermMutation) InvertIndexIDs() (ids []uuid.UUID) {
-	if id := m.invert_index; id != nil {
+// InvertIndexCompressedID instead. It exists only for internal usage by the builders.
+func (m *TermMutation) InvertIndexCompressedIDs() (ids []uuid.UUID) {
+	if id := m.invert_index_compressed; id != nil {
 		ids = append(ids, *id)
 	}
 	return
 }
 
-// ResetInvertIndex resets all changes to the "invert_index" edge.
-func (m *TermMutation) ResetInvertIndex() {
-	m.invert_index = nil
-	m.clearedinvert_index = false
+// ResetInvertIndexCompressed resets all changes to the "invert_index_compressed" edge.
+func (m *TermMutation) ResetInvertIndexCompressed() {
+	m.invert_index_compressed = nil
+	m.clearedinvert_index_compressed = false
 }
 
 // Where appends a list predicates to the TermMutation builder.
@@ -1444,8 +1420,8 @@ func (m *TermMutation) ResetField(name string) error {
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TermMutation) AddedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.invert_index != nil {
-		edges = append(edges, term.EdgeInvertIndex)
+	if m.invert_index_compressed != nil {
+		edges = append(edges, term.EdgeInvertIndexCompressed)
 	}
 	return edges
 }
@@ -1454,8 +1430,8 @@ func (m *TermMutation) AddedEdges() []string {
 // name in this mutation.
 func (m *TermMutation) AddedIDs(name string) []ent.Value {
 	switch name {
-	case term.EdgeInvertIndex:
-		if id := m.invert_index; id != nil {
+	case term.EdgeInvertIndexCompressed:
+		if id := m.invert_index_compressed; id != nil {
 			return []ent.Value{*id}
 		}
 	}
@@ -1479,8 +1455,8 @@ func (m *TermMutation) RemovedIDs(name string) []ent.Value {
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TermMutation) ClearedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.clearedinvert_index {
-		edges = append(edges, term.EdgeInvertIndex)
+	if m.clearedinvert_index_compressed {
+		edges = append(edges, term.EdgeInvertIndexCompressed)
 	}
 	return edges
 }
@@ -1489,8 +1465,8 @@ func (m *TermMutation) ClearedEdges() []string {
 // was cleared in this mutation.
 func (m *TermMutation) EdgeCleared(name string) bool {
 	switch name {
-	case term.EdgeInvertIndex:
-		return m.clearedinvert_index
+	case term.EdgeInvertIndexCompressed:
+		return m.clearedinvert_index_compressed
 	}
 	return false
 }
@@ -1499,8 +1475,8 @@ func (m *TermMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *TermMutation) ClearEdge(name string) error {
 	switch name {
-	case term.EdgeInvertIndex:
-		m.ClearInvertIndex()
+	case term.EdgeInvertIndexCompressed:
+		m.ClearInvertIndexCompressed()
 		return nil
 	}
 	return fmt.Errorf("unknown Term unique edge %s", name)
@@ -1510,8 +1486,8 @@ func (m *TermMutation) ClearEdge(name string) error {
 // It returns an error if the edge is not defined in the schema.
 func (m *TermMutation) ResetEdge(name string) error {
 	switch name {
-	case term.EdgeInvertIndex:
-		m.ResetInvertIndex()
+	case term.EdgeInvertIndexCompressed:
+		m.ResetInvertIndexCompressed()
 		return nil
 	}
 	return fmt.Errorf("unknown Term edge %s", name)

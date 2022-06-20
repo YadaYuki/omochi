@@ -70,23 +70,23 @@ func (tc *TermCreate) SetNillableID(u *uuid.UUID) *TermCreate {
 	return tc
 }
 
-// SetInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID.
-func (tc *TermCreate) SetInvertIndexID(id uuid.UUID) *TermCreate {
-	tc.mutation.SetInvertIndexID(id)
+// SetInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID.
+func (tc *TermCreate) SetInvertIndexCompressedID(id uuid.UUID) *TermCreate {
+	tc.mutation.SetInvertIndexCompressedID(id)
 	return tc
 }
 
-// SetNillableInvertIndexID sets the "invert_index" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
-func (tc *TermCreate) SetNillableInvertIndexID(id *uuid.UUID) *TermCreate {
+// SetNillableInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
+func (tc *TermCreate) SetNillableInvertIndexCompressedID(id *uuid.UUID) *TermCreate {
 	if id != nil {
-		tc = tc.SetInvertIndexID(*id)
+		tc = tc.SetInvertIndexCompressedID(*id)
 	}
 	return tc
 }
 
-// SetInvertIndex sets the "invert_index" edge to the InvertIndexCompressed entity.
-func (tc *TermCreate) SetInvertIndex(i *InvertIndexCompressed) *TermCreate {
-	return tc.SetInvertIndexID(i.ID)
+// SetInvertIndexCompressed sets the "invert_index_compressed" edge to the InvertIndexCompressed entity.
+func (tc *TermCreate) SetInvertIndexCompressed(i *InvertIndexCompressed) *TermCreate {
+	return tc.SetInvertIndexCompressedID(i.ID)
 }
 
 // Mutation returns the TermMutation object of the builder.
@@ -245,12 +245,12 @@ func (tc *TermCreate) createSpec() (*Term, *sqlgraph.CreateSpec) {
 		})
 		_node.Word = value
 	}
-	if nodes := tc.mutation.InvertIndexIDs(); len(nodes) > 0 {
+	if nodes := tc.mutation.InvertIndexCompressedIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
-			Inverse: true,
-			Table:   term.InvertIndexTable,
-			Columns: []string{term.InvertIndexColumn},
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   term.InvertIndexCompressedTable,
+			Columns: []string{term.InvertIndexCompressedColumn},
 			Bidi:    false,
 			Target: &sqlgraph.EdgeTarget{
 				IDSpec: &sqlgraph.FieldSpec{
@@ -262,7 +262,6 @@ func (tc *TermCreate) createSpec() (*Term, *sqlgraph.CreateSpec) {
 		for _, k := range nodes {
 			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
-		_node.invert_index_compressed_term = &nodes[0]
 		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec

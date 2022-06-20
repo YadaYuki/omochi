@@ -26,31 +26,30 @@ type Term struct {
 	Word string `json:"word,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TermQuery when eager-loading is set.
-	Edges                        TermEdges `json:"edges"`
-	invert_index_compressed_term *uuid.UUID
+	Edges TermEdges `json:"edges"`
 }
 
 // TermEdges holds the relations/edges for other nodes in the graph.
 type TermEdges struct {
-	// InvertIndex holds the value of the invert_index edge.
-	InvertIndex *InvertIndexCompressed `json:"invert_index,omitempty"`
+	// InvertIndexCompressed holds the value of the invert_index_compressed edge.
+	InvertIndexCompressed *InvertIndexCompressed `json:"invert_index_compressed,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// InvertIndexOrErr returns the InvertIndex value or an error if the edge
+// InvertIndexCompressedOrErr returns the InvertIndexCompressed value or an error if the edge
 // was not loaded in eager-loading, or loaded but was not found.
-func (e TermEdges) InvertIndexOrErr() (*InvertIndexCompressed, error) {
+func (e TermEdges) InvertIndexCompressedOrErr() (*InvertIndexCompressed, error) {
 	if e.loadedTypes[0] {
-		if e.InvertIndex == nil {
-			// The edge invert_index was loaded in eager-loading,
+		if e.InvertIndexCompressed == nil {
+			// The edge invert_index_compressed was loaded in eager-loading,
 			// but was not found.
 			return nil, &NotFoundError{label: invertindexcompressed.Label}
 		}
-		return e.InvertIndex, nil
+		return e.InvertIndexCompressed, nil
 	}
-	return nil, &NotLoadedError{edge: "invert_index"}
+	return nil, &NotLoadedError{edge: "invert_index_compressed"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -64,8 +63,6 @@ func (*Term) scanValues(columns []string) ([]interface{}, error) {
 			values[i] = new(sql.NullTime)
 		case term.FieldID:
 			values[i] = new(uuid.UUID)
-		case term.ForeignKeys[0]: // invert_index_compressed_term
-			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type Term", columns[i])
 		}
@@ -105,21 +102,14 @@ func (t *Term) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				t.Word = value.String
 			}
-		case term.ForeignKeys[0]:
-			if value, ok := values[i].(*sql.NullScanner); !ok {
-				return fmt.Errorf("unexpected type %T for field invert_index_compressed_term", values[i])
-			} else if value.Valid {
-				t.invert_index_compressed_term = new(uuid.UUID)
-				*t.invert_index_compressed_term = *value.S.(*uuid.UUID)
-			}
 		}
 	}
 	return nil
 }
 
-// QueryInvertIndex queries the "invert_index" edge of the Term entity.
-func (t *Term) QueryInvertIndex() *InvertIndexCompressedQuery {
-	return (&TermClient{config: t.config}).QueryInvertIndex(t)
+// QueryInvertIndexCompressed queries the "invert_index_compressed" edge of the Term entity.
+func (t *Term) QueryInvertIndexCompressed() *InvertIndexCompressedQuery {
+	return (&TermClient{config: t.config}).QueryInvertIndexCompressed(t)
 }
 
 // Update returns a builder for updating this Term.

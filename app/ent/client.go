@@ -313,15 +313,15 @@ func (c *InvertIndexCompressedClient) GetX(ctx context.Context, id uuid.UUID) *I
 	return obj
 }
 
-// QueryTerm queries the term edge of a InvertIndexCompressed.
-func (c *InvertIndexCompressedClient) QueryTerm(iic *InvertIndexCompressed) *TermQuery {
+// QueryTermRelated queries the term_related edge of a InvertIndexCompressed.
+func (c *InvertIndexCompressedClient) QueryTermRelated(iic *InvertIndexCompressed) *TermQuery {
 	query := &TermQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := iic.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(invertindexcompressed.Table, invertindexcompressed.FieldID, id),
 			sqlgraph.To(term.Table, term.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, invertindexcompressed.TermTable, invertindexcompressed.TermColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, invertindexcompressed.TermRelatedTable, invertindexcompressed.TermRelatedColumn),
 		)
 		fromV = sqlgraph.Neighbors(iic.driver.Dialect(), step)
 		return fromV, nil
@@ -419,15 +419,15 @@ func (c *TermClient) GetX(ctx context.Context, id uuid.UUID) *Term {
 	return obj
 }
 
-// QueryInvertIndex queries the invert_index edge of a Term.
-func (c *TermClient) QueryInvertIndex(t *Term) *InvertIndexCompressedQuery {
+// QueryInvertIndexCompressed queries the invert_index_compressed edge of a Term.
+func (c *TermClient) QueryInvertIndexCompressed(t *Term) *InvertIndexCompressedQuery {
 	query := &InvertIndexCompressedQuery{config: c.config}
 	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
 		id := t.ID
 		step := sqlgraph.NewStep(
 			sqlgraph.From(term.Table, term.FieldID, id),
 			sqlgraph.To(invertindexcompressed.Table, invertindexcompressed.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, term.InvertIndexTable, term.InvertIndexColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, term.InvertIndexCompressedTable, term.InvertIndexCompressedColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

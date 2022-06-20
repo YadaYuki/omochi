@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
+	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
 )
 
@@ -25,25 +26,31 @@ type InvertIndexCompressed struct {
 	PostingListCompressed []byte `json:"posting_list_compressed,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the InvertIndexCompressedQuery when eager-loading is set.
-	Edges InvertIndexCompressedEdges `json:"edges"`
+	Edges                        InvertIndexCompressedEdges `json:"edges"`
+	term_invert_index_compressed *uuid.UUID
 }
 
 // InvertIndexCompressedEdges holds the relations/edges for other nodes in the graph.
 type InvertIndexCompressedEdges struct {
-	// Term holds the value of the term edge.
-	Term []*Term `json:"term,omitempty"`
+	// TermRelated holds the value of the term_related edge.
+	TermRelated *Term `json:"term_related,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
-// TermOrErr returns the Term value or an error if the edge
-// was not loaded in eager-loading.
-func (e InvertIndexCompressedEdges) TermOrErr() ([]*Term, error) {
+// TermRelatedOrErr returns the TermRelated value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e InvertIndexCompressedEdges) TermRelatedOrErr() (*Term, error) {
 	if e.loadedTypes[0] {
-		return e.Term, nil
+		if e.TermRelated == nil {
+			// The edge term_related was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: term.Label}
+		}
+		return e.TermRelated, nil
 	}
-	return nil, &NotLoadedError{edge: "term"}
+	return nil, &NotLoadedError{edge: "term_related"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -57,6 +64,8 @@ func (*InvertIndexCompressed) scanValues(columns []string) ([]interface{}, error
 			values[i] = new(sql.NullTime)
 		case invertindexcompressed.FieldID:
 			values[i] = new(uuid.UUID)
+		case invertindexcompressed.ForeignKeys[0]: // term_invert_index_compressed
+			values[i] = &sql.NullScanner{S: new(uuid.UUID)}
 		default:
 			return nil, fmt.Errorf("unexpected column %q for type InvertIndexCompressed", columns[i])
 		}
@@ -96,14 +105,21 @@ func (iic *InvertIndexCompressed) assignValues(columns []string, values []interf
 			} else if value != nil {
 				iic.PostingListCompressed = *value
 			}
+		case invertindexcompressed.ForeignKeys[0]:
+			if value, ok := values[i].(*sql.NullScanner); !ok {
+				return fmt.Errorf("unexpected type %T for field term_invert_index_compressed", values[i])
+			} else if value.Valid {
+				iic.term_invert_index_compressed = new(uuid.UUID)
+				*iic.term_invert_index_compressed = *value.S.(*uuid.UUID)
+			}
 		}
 	}
 	return nil
 }
 
-// QueryTerm queries the "term" edge of the InvertIndexCompressed entity.
-func (iic *InvertIndexCompressed) QueryTerm() *TermQuery {
-	return (&InvertIndexCompressedClient{config: iic.config}).QueryTerm(iic)
+// QueryTermRelated queries the "term_related" edge of the InvertIndexCompressed entity.
+func (iic *InvertIndexCompressed) QueryTermRelated() *TermQuery {
+	return (&InvertIndexCompressedClient{config: iic.config}).QueryTermRelated(iic)
 }
 
 // Update returns a builder for updating this InvertIndexCompressed.

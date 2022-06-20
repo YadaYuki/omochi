@@ -19,17 +19,17 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldPostingListCompressed holds the string denoting the posting_list_compressed field in the database.
 	FieldPostingListCompressed = "posting_list_compressed"
-	// EdgeTerm holds the string denoting the term edge name in mutations.
-	EdgeTerm = "term"
+	// EdgeTermRelated holds the string denoting the term_related edge name in mutations.
+	EdgeTermRelated = "term_related"
 	// Table holds the table name of the invertindexcompressed in the database.
 	Table = "invert_index_compresseds"
-	// TermTable is the table that holds the term relation/edge.
-	TermTable = "terms"
-	// TermInverseTable is the table name for the Term entity.
+	// TermRelatedTable is the table that holds the term_related relation/edge.
+	TermRelatedTable = "invert_index_compresseds"
+	// TermRelatedInverseTable is the table name for the Term entity.
 	// It exists in this package in order to avoid circular dependency with the "term" package.
-	TermInverseTable = "terms"
-	// TermColumn is the table column denoting the term relation/edge.
-	TermColumn = "invert_index_compressed_term"
+	TermRelatedInverseTable = "terms"
+	// TermRelatedColumn is the table column denoting the term_related relation/edge.
+	TermRelatedColumn = "term_invert_index_compressed"
 )
 
 // Columns holds all SQL columns for invertindexcompressed fields.
@@ -40,10 +40,21 @@ var Columns = []string{
 	FieldPostingListCompressed,
 }
 
+// ForeignKeys holds the SQL foreign-keys that are owned by the "invert_index_compresseds"
+// table and are not defined as standalone fields in the schema.
+var ForeignKeys = []string{
+	"term_invert_index_compressed",
+}
+
 // ValidColumn reports if the column name is valid (part of the table columns).
 func ValidColumn(column string) bool {
 	for i := range Columns {
 		if column == Columns[i] {
+			return true
+		}
+	}
+	for i := range ForeignKeys {
+		if column == ForeignKeys[i] {
 			return true
 		}
 	}
