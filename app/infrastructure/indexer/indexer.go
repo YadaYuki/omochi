@@ -54,5 +54,8 @@ func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Docum
 		}
 	}
 
+	// 単語に対応する転置インデックスが存在していた場合 → 更新
+	// 存在していない場合 → 追加
+
 	return nil
 }
