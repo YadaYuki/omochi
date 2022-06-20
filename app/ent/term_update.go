@@ -169,7 +169,7 @@ func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if tu.mutation.InvertIndexCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   term.InvertIndexTable,
 			Columns: []string{term.InvertIndexColumn},
@@ -185,7 +185,7 @@ func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if nodes := tu.mutation.InvertIndexIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   term.InvertIndexTable,
 			Columns: []string{term.InvertIndexColumn},
@@ -384,7 +384,7 @@ func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) 
 	}
 	if tuo.mutation.InvertIndexCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   term.InvertIndexTable,
 			Columns: []string{term.InvertIndexColumn},
@@ -400,7 +400,7 @@ func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) 
 	}
 	if nodes := tuo.mutation.InvertIndexIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   term.InvertIndexTable,
 			Columns: []string{term.InvertIndexColumn},

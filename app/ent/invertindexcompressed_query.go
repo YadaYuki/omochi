@@ -79,7 +79,7 @@ func (iicq *InvertIndexCompressedQuery) QueryTerm() *TermQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(invertindexcompressed.Table, invertindexcompressed.FieldID, selector),
 			sqlgraph.To(term.Table, term.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, invertindexcompressed.TermTable, invertindexcompressed.TermColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, invertindexcompressed.TermTable, invertindexcompressed.TermColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(iicq.driver.Dialect(), step)
 		return fromU, nil
@@ -382,7 +382,6 @@ func (iicq *InvertIndexCompressedQuery) sqlAll(ctx context.Context) ([]*InvertIn
 		for i := range nodes {
 			fks = append(fks, nodes[i].ID)
 			nodeids[nodes[i].ID] = nodes[i]
-			nodes[i].Edges.Term = []*Term{}
 		}
 		query.withFKs = true
 		query.Where(predicate.Term(func(s *sql.Selector) {
@@ -401,7 +400,7 @@ func (iicq *InvertIndexCompressedQuery) sqlAll(ctx context.Context) ([]*InvertIn
 			if !ok {
 				return nil, fmt.Errorf(`unexpected foreign-key "invert_index_compressed_term" returned %v for node %v`, *fk, n.ID)
 			}
-			node.Edges.Term = append(node.Edges.Term, n)
+			node.Edges.Term = n
 		}
 	}
 

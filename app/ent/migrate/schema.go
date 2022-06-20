@@ -41,7 +41,7 @@ var (
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "word", Type: field.TypeString},
-		{Name: "invert_index_compressed_term", Type: field.TypeUUID, Nullable: true},
+		{Name: "invert_index_compressed_term", Type: field.TypeUUID, Unique: true, Nullable: true},
 	}
 	// TermsTable holds the schema information for the "terms" table.
 	TermsTable = &schema.Table{

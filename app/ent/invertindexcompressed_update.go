@@ -42,19 +42,23 @@ func (iicu *InvertIndexCompressedUpdate) SetPostingListCompressed(b []byte) *Inv
 	return iicu
 }
 
-// AddTermIDs adds the "term" edge to the Term entity by IDs.
-func (iicu *InvertIndexCompressedUpdate) AddTermIDs(ids ...uuid.UUID) *InvertIndexCompressedUpdate {
-	iicu.mutation.AddTermIDs(ids...)
+// SetTermID sets the "term" edge to the Term entity by ID.
+func (iicu *InvertIndexCompressedUpdate) SetTermID(id uuid.UUID) *InvertIndexCompressedUpdate {
+	iicu.mutation.SetTermID(id)
 	return iicu
 }
 
-// AddTerm adds the "term" edges to the Term entity.
-func (iicu *InvertIndexCompressedUpdate) AddTerm(t ...*Term) *InvertIndexCompressedUpdate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableTermID sets the "term" edge to the Term entity by ID if the given value is not nil.
+func (iicu *InvertIndexCompressedUpdate) SetNillableTermID(id *uuid.UUID) *InvertIndexCompressedUpdate {
+	if id != nil {
+		iicu = iicu.SetTermID(*id)
 	}
-	return iicu.AddTermIDs(ids...)
+	return iicu
+}
+
+// SetTerm sets the "term" edge to the Term entity.
+func (iicu *InvertIndexCompressedUpdate) SetTerm(t *Term) *InvertIndexCompressedUpdate {
+	return iicu.SetTermID(t.ID)
 }
 
 // Mutation returns the InvertIndexCompressedMutation object of the builder.
@@ -62,25 +66,10 @@ func (iicu *InvertIndexCompressedUpdate) Mutation() *InvertIndexCompressedMutati
 	return iicu.mutation
 }
 
-// ClearTerm clears all "term" edges to the Term entity.
+// ClearTerm clears the "term" edge to the Term entity.
 func (iicu *InvertIndexCompressedUpdate) ClearTerm() *InvertIndexCompressedUpdate {
 	iicu.mutation.ClearTerm()
 	return iicu
-}
-
-// RemoveTermIDs removes the "term" edge to Term entities by IDs.
-func (iicu *InvertIndexCompressedUpdate) RemoveTermIDs(ids ...uuid.UUID) *InvertIndexCompressedUpdate {
-	iicu.mutation.RemoveTermIDs(ids...)
-	return iicu
-}
-
-// RemoveTerm removes "term" edges to Term entities.
-func (iicu *InvertIndexCompressedUpdate) RemoveTerm(t ...*Term) *InvertIndexCompressedUpdate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return iicu.RemoveTermIDs(ids...)
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -196,7 +185,7 @@ func (iicu *InvertIndexCompressedUpdate) sqlSave(ctx context.Context) (n int, er
 	}
 	if iicu.mutation.TermCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   invertindexcompressed.TermTable,
 			Columns: []string{invertindexcompressed.TermColumn},
@@ -207,31 +196,12 @@ func (iicu *InvertIndexCompressedUpdate) sqlSave(ctx context.Context) (n int, er
 					Column: term.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iicu.mutation.RemovedTermIDs(); len(nodes) > 0 && !iicu.mutation.TermCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   invertindexcompressed.TermTable,
-			Columns: []string{invertindexcompressed.TermColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: term.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := iicu.mutation.TermIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   invertindexcompressed.TermTable,
 			Columns: []string{invertindexcompressed.TermColumn},
@@ -279,19 +249,23 @@ func (iicuo *InvertIndexCompressedUpdateOne) SetPostingListCompressed(b []byte) 
 	return iicuo
 }
 
-// AddTermIDs adds the "term" edge to the Term entity by IDs.
-func (iicuo *InvertIndexCompressedUpdateOne) AddTermIDs(ids ...uuid.UUID) *InvertIndexCompressedUpdateOne {
-	iicuo.mutation.AddTermIDs(ids...)
+// SetTermID sets the "term" edge to the Term entity by ID.
+func (iicuo *InvertIndexCompressedUpdateOne) SetTermID(id uuid.UUID) *InvertIndexCompressedUpdateOne {
+	iicuo.mutation.SetTermID(id)
 	return iicuo
 }
 
-// AddTerm adds the "term" edges to the Term entity.
-func (iicuo *InvertIndexCompressedUpdateOne) AddTerm(t ...*Term) *InvertIndexCompressedUpdateOne {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableTermID sets the "term" edge to the Term entity by ID if the given value is not nil.
+func (iicuo *InvertIndexCompressedUpdateOne) SetNillableTermID(id *uuid.UUID) *InvertIndexCompressedUpdateOne {
+	if id != nil {
+		iicuo = iicuo.SetTermID(*id)
 	}
-	return iicuo.AddTermIDs(ids...)
+	return iicuo
+}
+
+// SetTerm sets the "term" edge to the Term entity.
+func (iicuo *InvertIndexCompressedUpdateOne) SetTerm(t *Term) *InvertIndexCompressedUpdateOne {
+	return iicuo.SetTermID(t.ID)
 }
 
 // Mutation returns the InvertIndexCompressedMutation object of the builder.
@@ -299,25 +273,10 @@ func (iicuo *InvertIndexCompressedUpdateOne) Mutation() *InvertIndexCompressedMu
 	return iicuo.mutation
 }
 
-// ClearTerm clears all "term" edges to the Term entity.
+// ClearTerm clears the "term" edge to the Term entity.
 func (iicuo *InvertIndexCompressedUpdateOne) ClearTerm() *InvertIndexCompressedUpdateOne {
 	iicuo.mutation.ClearTerm()
 	return iicuo
-}
-
-// RemoveTermIDs removes the "term" edge to Term entities by IDs.
-func (iicuo *InvertIndexCompressedUpdateOne) RemoveTermIDs(ids ...uuid.UUID) *InvertIndexCompressedUpdateOne {
-	iicuo.mutation.RemoveTermIDs(ids...)
-	return iicuo
-}
-
-// RemoveTerm removes "term" edges to Term entities.
-func (iicuo *InvertIndexCompressedUpdateOne) RemoveTerm(t ...*Term) *InvertIndexCompressedUpdateOne {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
-	}
-	return iicuo.RemoveTermIDs(ids...)
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -457,7 +416,7 @@ func (iicuo *InvertIndexCompressedUpdateOne) sqlSave(ctx context.Context) (_node
 	}
 	if iicuo.mutation.TermCleared() {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   invertindexcompressed.TermTable,
 			Columns: []string{invertindexcompressed.TermColumn},
@@ -468,31 +427,12 @@ func (iicuo *InvertIndexCompressedUpdateOne) sqlSave(ctx context.Context) (_node
 					Column: term.FieldID,
 				},
 			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := iicuo.mutation.RemovedTermIDs(); len(nodes) > 0 && !iicuo.mutation.TermCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
-			Inverse: false,
-			Table:   invertindexcompressed.TermTable,
-			Columns: []string{invertindexcompressed.TermColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: term.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
 		}
 		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
 	}
 	if nodes := iicuo.mutation.TermIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   invertindexcompressed.TermTable,
 			Columns: []string{invertindexcompressed.TermColumn},

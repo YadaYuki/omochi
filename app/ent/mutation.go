@@ -515,8 +515,7 @@ type InvertIndexCompressedMutation struct {
 	updated_at              *time.Time
 	posting_list_compressed *[]byte
 	clearedFields           map[string]struct{}
-	term                    map[uuid.UUID]struct{}
-	removedterm             map[uuid.UUID]struct{}
+	term                    *uuid.UUID
 	clearedterm             bool
 	done                    bool
 	oldValue                func(context.Context) (*InvertIndexCompressed, error)
@@ -735,14 +734,9 @@ func (m *InvertIndexCompressedMutation) ResetPostingListCompressed() {
 	m.posting_list_compressed = nil
 }
 
-// AddTermIDs adds the "term" edge to the Term entity by ids.
-func (m *InvertIndexCompressedMutation) AddTermIDs(ids ...uuid.UUID) {
-	if m.term == nil {
-		m.term = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		m.term[ids[i]] = struct{}{}
-	}
+// SetTermID sets the "term" edge to the Term entity by id.
+func (m *InvertIndexCompressedMutation) SetTermID(id uuid.UUID) {
+	m.term = &id
 }
 
 // ClearTerm clears the "term" edge to the Term entity.
@@ -755,29 +749,20 @@ func (m *InvertIndexCompressedMutation) TermCleared() bool {
 	return m.clearedterm
 }
 
-// RemoveTermIDs removes the "term" edge to the Term entity by IDs.
-func (m *InvertIndexCompressedMutation) RemoveTermIDs(ids ...uuid.UUID) {
-	if m.removedterm == nil {
-		m.removedterm = make(map[uuid.UUID]struct{})
-	}
-	for i := range ids {
-		delete(m.term, ids[i])
-		m.removedterm[ids[i]] = struct{}{}
-	}
-}
-
-// RemovedTerm returns the removed IDs of the "term" edge to the Term entity.
-func (m *InvertIndexCompressedMutation) RemovedTermIDs() (ids []uuid.UUID) {
-	for id := range m.removedterm {
-		ids = append(ids, id)
+// TermID returns the "term" edge ID in the mutation.
+func (m *InvertIndexCompressedMutation) TermID() (id uuid.UUID, exists bool) {
+	if m.term != nil {
+		return *m.term, true
 	}
 	return
 }
 
 // TermIDs returns the "term" edge IDs in the mutation.
+// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
+// TermID instead. It exists only for internal usage by the builders.
 func (m *InvertIndexCompressedMutation) TermIDs() (ids []uuid.UUID) {
-	for id := range m.term {
-		ids = append(ids, id)
+	if id := m.term; id != nil {
+		ids = append(ids, *id)
 	}
 	return
 }
@@ -786,7 +771,6 @@ func (m *InvertIndexCompressedMutation) TermIDs() (ids []uuid.UUID) {
 func (m *InvertIndexCompressedMutation) ResetTerm() {
 	m.term = nil
 	m.clearedterm = false
-	m.removedterm = nil
 }
 
 // Where appends a list predicates to the InvertIndexCompressedMutation builder.
@@ -953,11 +937,9 @@ func (m *InvertIndexCompressedMutation) AddedEdges() []string {
 func (m *InvertIndexCompressedMutation) AddedIDs(name string) []ent.Value {
 	switch name {
 	case invertindexcompressed.EdgeTerm:
-		ids := make([]ent.Value, 0, len(m.term))
-		for id := range m.term {
-			ids = append(ids, id)
+		if id := m.term; id != nil {
+			return []ent.Value{*id}
 		}
-		return ids
 	}
 	return nil
 }
@@ -965,9 +947,6 @@ func (m *InvertIndexCompressedMutation) AddedIDs(name string) []ent.Value {
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *InvertIndexCompressedMutation) RemovedEdges() []string {
 	edges := make([]string, 0, 1)
-	if m.removedterm != nil {
-		edges = append(edges, invertindexcompressed.EdgeTerm)
-	}
 	return edges
 }
 
@@ -975,12 +954,6 @@ func (m *InvertIndexCompressedMutation) RemovedEdges() []string {
 // the given name in this mutation.
 func (m *InvertIndexCompressedMutation) RemovedIDs(name string) []ent.Value {
 	switch name {
-	case invertindexcompressed.EdgeTerm:
-		ids := make([]ent.Value, 0, len(m.removedterm))
-		for id := range m.removedterm {
-			ids = append(ids, id)
-		}
-		return ids
 	}
 	return nil
 }
@@ -1008,6 +981,9 @@ func (m *InvertIndexCompressedMutation) EdgeCleared(name string) bool {
 // if that edge is not defined in the schema.
 func (m *InvertIndexCompressedMutation) ClearEdge(name string) error {
 	switch name {
+	case invertindexcompressed.EdgeTerm:
+		m.ClearTerm()
+		return nil
 	}
 	return fmt.Errorf("unknown InvertIndexCompressed unique edge %s", name)
 }

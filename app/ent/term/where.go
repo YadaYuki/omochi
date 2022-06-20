@@ -384,7 +384,7 @@ func HasInvertIndex() predicate.Term {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(InvertIndexTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InvertIndexTable, InvertIndexColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, InvertIndexTable, InvertIndexColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -396,7 +396,7 @@ func HasInvertIndexWith(preds ...predicate.InvertIndexCompressed) predicate.Term
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(InvertIndexInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, InvertIndexTable, InvertIndexColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, InvertIndexTable, InvertIndexColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {

@@ -247,7 +247,7 @@ func (tc *TermCreate) createSpec() (*Term, *sqlgraph.CreateSpec) {
 	}
 	if nodes := tc.mutation.InvertIndexIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.M2O,
+			Rel:     sqlgraph.O2O,
 			Inverse: true,
 			Table:   term.InvertIndexTable,
 			Columns: []string{term.InvertIndexColumn},

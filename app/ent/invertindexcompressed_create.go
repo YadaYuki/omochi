@@ -70,19 +70,23 @@ func (iicc *InvertIndexCompressedCreate) SetNillableID(u *uuid.UUID) *InvertInde
 	return iicc
 }
 
-// AddTermIDs adds the "term" edge to the Term entity by IDs.
-func (iicc *InvertIndexCompressedCreate) AddTermIDs(ids ...uuid.UUID) *InvertIndexCompressedCreate {
-	iicc.mutation.AddTermIDs(ids...)
+// SetTermID sets the "term" edge to the Term entity by ID.
+func (iicc *InvertIndexCompressedCreate) SetTermID(id uuid.UUID) *InvertIndexCompressedCreate {
+	iicc.mutation.SetTermID(id)
 	return iicc
 }
 
-// AddTerm adds the "term" edges to the Term entity.
-func (iicc *InvertIndexCompressedCreate) AddTerm(t ...*Term) *InvertIndexCompressedCreate {
-	ids := make([]uuid.UUID, len(t))
-	for i := range t {
-		ids[i] = t[i].ID
+// SetNillableTermID sets the "term" edge to the Term entity by ID if the given value is not nil.
+func (iicc *InvertIndexCompressedCreate) SetNillableTermID(id *uuid.UUID) *InvertIndexCompressedCreate {
+	if id != nil {
+		iicc = iicc.SetTermID(*id)
 	}
-	return iicc.AddTermIDs(ids...)
+	return iicc
+}
+
+// SetTerm sets the "term" edge to the Term entity.
+func (iicc *InvertIndexCompressedCreate) SetTerm(t *Term) *InvertIndexCompressedCreate {
+	return iicc.SetTermID(t.ID)
 }
 
 // Mutation returns the InvertIndexCompressedMutation object of the builder.
@@ -248,7 +252,7 @@ func (iicc *InvertIndexCompressedCreate) createSpec() (*InvertIndexCompressed, *
 	}
 	if nodes := iicc.mutation.TermIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2M,
+			Rel:     sqlgraph.O2O,
 			Inverse: false,
 			Table:   invertindexcompressed.TermTable,
 			Columns: []string{invertindexcompressed.TermColumn},

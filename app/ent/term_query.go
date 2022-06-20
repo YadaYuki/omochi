@@ -79,7 +79,7 @@ func (tq *TermQuery) QueryInvertIndex() *InvertIndexCompressedQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(term.Table, term.FieldID, selector),
 			sqlgraph.To(invertindexcompressed.Table, invertindexcompressed.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, term.InvertIndexTable, term.InvertIndexColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, term.InvertIndexTable, term.InvertIndexColumn),
 		)
 		fromU = sqlgraph.SetNeighbors(tq.driver.Dialect(), step)
 		return fromU, nil

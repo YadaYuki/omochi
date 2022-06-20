@@ -9,6 +9,7 @@ import (
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
+	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
 )
 
@@ -31,16 +32,21 @@ type InvertIndexCompressed struct {
 // InvertIndexCompressedEdges holds the relations/edges for other nodes in the graph.
 type InvertIndexCompressedEdges struct {
 	// Term holds the value of the term edge.
-	Term []*Term `json:"term,omitempty"`
+	Term *Term `json:"term,omitempty"`
 	// loadedTypes holds the information for reporting if a
 	// type was loaded (or requested) in eager-loading or not.
 	loadedTypes [1]bool
 }
 
 // TermOrErr returns the Term value or an error if the edge
-// was not loaded in eager-loading.
-func (e InvertIndexCompressedEdges) TermOrErr() ([]*Term, error) {
+// was not loaded in eager-loading, or loaded but was not found.
+func (e InvertIndexCompressedEdges) TermOrErr() (*Term, error) {
 	if e.loadedTypes[0] {
+		if e.Term == nil {
+			// The edge term was loaded in eager-loading,
+			// but was not found.
+			return nil, &NotFoundError{label: term.Label}
+		}
 		return e.Term, nil
 	}
 	return nil, &NotLoadedError{edge: "term"}

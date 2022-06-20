@@ -321,7 +321,7 @@ func (c *InvertIndexCompressedClient) QueryTerm(iic *InvertIndexCompressed) *Ter
 		step := sqlgraph.NewStep(
 			sqlgraph.From(invertindexcompressed.Table, invertindexcompressed.FieldID, id),
 			sqlgraph.To(term.Table, term.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, invertindexcompressed.TermTable, invertindexcompressed.TermColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, invertindexcompressed.TermTable, invertindexcompressed.TermColumn),
 		)
 		fromV = sqlgraph.Neighbors(iic.driver.Dialect(), step)
 		return fromV, nil
@@ -427,7 +427,7 @@ func (c *TermClient) QueryInvertIndex(t *Term) *InvertIndexCompressedQuery {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(term.Table, term.FieldID, id),
 			sqlgraph.To(invertindexcompressed.Table, invertindexcompressed.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, term.InvertIndexTable, term.InvertIndexColumn),
+			sqlgraph.Edge(sqlgraph.O2O, true, term.InvertIndexTable, term.InvertIndexColumn),
 		)
 		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
 		return fromV, nil

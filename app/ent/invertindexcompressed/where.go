@@ -349,7 +349,7 @@ func HasTerm() predicate.InvertIndexCompressed {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(TermTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TermTable, TermColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, TermTable, TermColumn),
 		)
 		sqlgraph.HasNeighbors(s, step)
 	})
@@ -361,7 +361,7 @@ func HasTermWith(preds ...predicate.Term) predicate.InvertIndexCompressed {
 		step := sqlgraph.NewStep(
 			sqlgraph.From(Table, FieldID),
 			sqlgraph.To(TermInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, TermTable, TermColumn),
+			sqlgraph.Edge(sqlgraph.O2O, false, TermTable, TermColumn),
 		)
 		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
 			for _, p := range preds {
