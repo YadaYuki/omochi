@@ -18,7 +18,7 @@ func NewEnProseTokenizer() service.Tokenizer {
 	return &EnProseTokenizer{}
 }
 
-func (tokenizer *EnProseTokenizer) Tokenize(ctx context.Context, content string) (*[]entities.Term, *errors.Error) {
+func (tokenizer *EnProseTokenizer) Tokenize(ctx context.Context, content string) (*[]entities.TermCreate, *errors.Error) {
 	doc, err := prose.NewDocument(content)
 	if err != nil {
 		return nil, errors.NewError(code.Unknown, err)
@@ -26,7 +26,7 @@ func (tokenizer *EnProseTokenizer) Tokenize(ctx context.Context, content string)
 	INDEXABLE_TOKEN_TAG_PREFIX := []string{
 		"JJ", "MD", "NN", "PDT", "PRP", "RB", "RPP", "UH", "VB", "WP", "WRB",
 	}
-	terms := []entities.Term{}
+	terms := []entities.TermCreate{}
 	for _, token := range doc.Tokens() {
 		indexable_token := true
 		for _, prefix := range INDEXABLE_TOKEN_TAG_PREFIX {
@@ -35,7 +35,7 @@ func (tokenizer *EnProseTokenizer) Tokenize(ctx context.Context, content string)
 			}
 		}
 		if indexable_token {
-			terms = append(terms, *entities.NewTerm(strings.ToLower(token.Text)))
+			terms = append(terms, *entities.NewTermCreate(strings.ToLower(token.Text), nil))
 		}
 	}
 	return &terms, nil

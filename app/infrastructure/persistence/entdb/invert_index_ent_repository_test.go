@@ -17,7 +17,7 @@ func TestBulkCreateInvertIndexesCompressed(t *testing.T) {
 	if err := client.Schema.Create(context.Background()); err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
-	invertedIndexCompressedRepository := NewInvertedIndexCompressedEntRepository(client)
+	invertedIndexCompressedRepository := NewInvertIndexCompressedEntRepository(client)
 	dummyContent := []byte("DUMMY POSTING LIST COMPRESSED")
 	testCases := []struct {
 		postingListsCompressed [][]byte
@@ -30,7 +30,7 @@ func TestBulkCreateInvertIndexesCompressed(t *testing.T) {
 		ctx := context.Background()
 		for _, postingListCompressed := range tc.postingListsCompressed {
 			wordDummy := uuid.NewString()
-			term := entities.NewTerm(wordDummy)
+			term := entities.NewTermCreate(wordDummy, nil)
 			termCreated, _ := client.Term.Create().SetWord(term.Word).Save(ctx)
 			invertIndexesCompressed = append(invertIndexesCompressed, *entities.NewInvertIndexCompressedCreate(termCreated.ID, postingListCompressed))
 		}

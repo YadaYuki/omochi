@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type TermDetail struct {
+type Term struct {
 	Uuid        uuid.UUID    `json:"uuid"`
 	Word        string       `json:"word"`
 	InvertIndex *InvertIndex `json:"invert_index"` // タームに対応した転置インデックス.
@@ -14,20 +14,28 @@ type TermDetail struct {
 	UpdatedAt   time.Time    `json:"updated_at"`
 }
 
-type TermCompressedDetail struct {
-	Uuid        uuid.UUID                `json:"uuid"`
-	Word        string                   `json:"word"`
-	InvertIndex *InvertedIndexCompressed `json:"invert_index"` // タームに対応した転置インデックス.
-	CreatedAt   time.Time                `json:"created_at"`
-	UpdatedAt   time.Time                `json:"updated_at"`
+type TermCompressed struct {
+	Uuid                 uuid.UUID              `json:"uuid"`
+	Word                 string                 `json:"word"`
+	InvertIndexCompressd *InvertIndexCompressed `json:"invert_index_compressed"` // タームに対応した転置インデックス.
+	CreatedAt            time.Time              `json:"created_at"`
+	UpdatedAt            time.Time              `json:"updated_at"`
 }
 
-type Term struct {
-	Word string `json:"word"`
+type TermCreate struct {
+	Word              string             `json:"word"`
+	InvertIndexCreate *InvertIndexCreate `json:"invert_index"` // タームに対応した転置インデックス.
 }
 
-func NewTerm(word string) *Term {
-	return &Term{Word: word}
+type TermCompressedCreate struct {
+	Word                       string                       `json:"word"`
+	InvertIndexCompressdCreate *InvertIndexCompressedCreate `json:"invert_index_compressed"` // タームに対応した転置インデックス.
 }
 
-type Terms = []Term
+func NewTermCreate(word string, invertIndex *InvertIndexCreate) *TermCreate {
+	return &TermCreate{Word: word}
+}
+
+func NewTermCompressedCreate(word string, invertIndex *InvertIndexCompressedCreate) *TermCompressedCreate {
+	return &TermCompressedCreate{Word: word, InvertIndexCompressdCreate: invertIndex}
+}

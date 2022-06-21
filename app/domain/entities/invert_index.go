@@ -19,7 +19,7 @@ type InvertIndexCreate struct {
 	PostingList *[]Posting `json:"posting_list"`
 }
 
-type InvertedIndexCompressed struct {
+type InvertIndexCompressed struct {
 	Uuid                  uuid.UUID `json:"uuid"`
 	TermId                uuid.UUID `json:"term_id"`
 	PostingListCompressed []byte    `json:"posting_list_compressed"`
