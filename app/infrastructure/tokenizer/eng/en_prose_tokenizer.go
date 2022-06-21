@@ -28,10 +28,10 @@ func (tokenizer *EnProseTokenizer) Tokenize(ctx context.Context, content string)
 	}
 	terms := []entities.TermCreate{}
 	for _, token := range doc.Tokens() {
-		indexable_token := true
+		indexable_token := false
 		for _, prefix := range INDEXABLE_TOKEN_TAG_PREFIX {
-			if !strings.HasPrefix(token.Tag, prefix) {
-				indexable_token = false
+			if strings.HasPrefix(token.Tag, prefix) {
+				indexable_token = true
 			}
 		}
 		if indexable_token {

@@ -67,20 +67,19 @@ func (indexer *Indexer) IndexingDocument(ctx context.Context, document *entities
 		terms[i].InvertIndex = invertIndex
 		wordToTermsMap[termCompressed.Word] = &terms[i]
 	}
-
 	// PostingをAppendする
 	for wordInDocument, posting := range wordToPostingMap {
 		if _, ok := wordToTermsMap[wordInDocument]; ok {
 			*wordToTermsMap[wordInDocument].InvertIndex.PostingList = append(*wordToTermsMap[wordInDocument].InvertIndex.PostingList, *posting)
 		} else {
-			*wordToTermsMap[wordInDocument].InvertIndex.PostingList = []entities.Posting{*posting}
+			invertIndex := entities.NewInvertIndex(&[]entities.Posting{*posting})
+			wordToTermsMap[wordInDocument] = entities.NewTermCreate(wordInDocument, invertIndex)
 		}
 	}
 
-	// 再度、転置インデックスの圧縮を行う
 	upsertTermCompresseds := &[]entities.TermCompressedCreate{}
-	for wordInDocument, term := range wordToTermsMap {
-		invertIndexCompressed, compressErr := indexer.invertIndexCompresser.Compress(ctx, term.InvertIndex)
+	for wordInDocument := range wordToTermsMap {
+		invertIndexCompressed, compressErr := indexer.invertIndexCompresser.Compress(ctx, wordToTermsMap[wordInDocument].InvertIndex)
 		if compressErr != nil {
 			panic(compressErr)
 		}
