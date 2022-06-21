@@ -8,9 +8,10 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect"
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
 )
@@ -20,6 +21,7 @@ type TermCreate struct {
 	config
 	mutation *TermMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -56,6 +58,12 @@ func (tc *TermCreate) SetWord(s string) *TermCreate {
 	return tc
 }
 
+// SetPostingListCompressed sets the "posting_list_compressed" field.
+func (tc *TermCreate) SetPostingListCompressed(b []byte) *TermCreate {
+	tc.mutation.SetPostingListCompressed(b)
+	return tc
+}
+
 // SetID sets the "id" field.
 func (tc *TermCreate) SetID(u uuid.UUID) *TermCreate {
 	tc.mutation.SetID(u)
@@ -68,25 +76,6 @@ func (tc *TermCreate) SetNillableID(u *uuid.UUID) *TermCreate {
 		tc.SetID(*u)
 	}
 	return tc
-}
-
-// SetInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID.
-func (tc *TermCreate) SetInvertIndexCompressedID(id uuid.UUID) *TermCreate {
-	tc.mutation.SetInvertIndexCompressedID(id)
-	return tc
-}
-
-// SetNillableInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
-func (tc *TermCreate) SetNillableInvertIndexCompressedID(id *uuid.UUID) *TermCreate {
-	if id != nil {
-		tc = tc.SetInvertIndexCompressedID(*id)
-	}
-	return tc
-}
-
-// SetInvertIndexCompressed sets the "invert_index_compressed" edge to the InvertIndexCompressed entity.
-func (tc *TermCreate) SetInvertIndexCompressed(i *InvertIndexCompressed) *TermCreate {
-	return tc.SetInvertIndexCompressedID(i.ID)
 }
 
 // Mutation returns the TermMutation object of the builder.
@@ -185,6 +174,14 @@ func (tc *TermCreate) check() error {
 	if _, ok := tc.mutation.Word(); !ok {
 		return &ValidationError{Name: "word", err: errors.New(`ent: missing required field "Term.word"`)}
 	}
+	if _, ok := tc.mutation.PostingListCompressed(); !ok {
+		return &ValidationError{Name: "posting_list_compressed", err: errors.New(`ent: missing required field "Term.posting_list_compressed"`)}
+	}
+	if v, ok := tc.mutation.PostingListCompressed(); ok {
+		if err := term.PostingListCompressedValidator(v); err != nil {
+			return &ValidationError{Name: "posting_list_compressed", err: fmt.Errorf(`ent: validator failed for field "Term.posting_list_compressed": %w`, err)}
+		}
+	}
 	return nil
 }
 
@@ -217,6 +214,7 @@ func (tc *TermCreate) createSpec() (*Term, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = tc.conflict
 	if id, ok := tc.mutation.ID(); ok {
 		_node.ID = id
 		_spec.ID.Value = &id
@@ -245,32 +243,268 @@ func (tc *TermCreate) createSpec() (*Term, *sqlgraph.CreateSpec) {
 		})
 		_node.Word = value
 	}
-	if nodes := tc.mutation.InvertIndexCompressedIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   term.InvertIndexCompressedTable,
-			Columns: []string{term.InvertIndexCompressedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: invertindexcompressed.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges = append(_spec.Edges, edge)
+	if value, ok := tc.mutation.PostingListCompressed(); ok {
+		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: term.FieldPostingListCompressed,
+		})
+		_node.PostingListCompressed = value
 	}
 	return _node, _spec
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Term.Create().
+//		SetCreatedAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TermUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (tc *TermCreate) OnConflict(opts ...sql.ConflictOption) *TermUpsertOne {
+	tc.conflict = opts
+	return &TermUpsertOne{
+		create: tc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Term.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (tc *TermCreate) OnConflictColumns(columns ...string) *TermUpsertOne {
+	tc.conflict = append(tc.conflict, sql.ConflictColumns(columns...))
+	return &TermUpsertOne{
+		create: tc,
+	}
+}
+
+type (
+	// TermUpsertOne is the builder for "upsert"-ing
+	//  one Term node.
+	TermUpsertOne struct {
+		create *TermCreate
+	}
+
+	// TermUpsert is the "OnConflict" setter.
+	TermUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCreatedAt sets the "created_at" field.
+func (u *TermUpsert) SetCreatedAt(v time.Time) *TermUpsert {
+	u.Set(term.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *TermUpsert) UpdateCreatedAt() *TermUpsert {
+	u.SetExcluded(term.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TermUpsert) SetUpdatedAt(v time.Time) *TermUpsert {
+	u.Set(term.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TermUpsert) UpdateUpdatedAt() *TermUpsert {
+	u.SetExcluded(term.FieldUpdatedAt)
+	return u
+}
+
+// SetWord sets the "word" field.
+func (u *TermUpsert) SetWord(v string) *TermUpsert {
+	u.Set(term.FieldWord, v)
+	return u
+}
+
+// UpdateWord sets the "word" field to the value that was provided on create.
+func (u *TermUpsert) UpdateWord() *TermUpsert {
+	u.SetExcluded(term.FieldWord)
+	return u
+}
+
+// SetPostingListCompressed sets the "posting_list_compressed" field.
+func (u *TermUpsert) SetPostingListCompressed(v []byte) *TermUpsert {
+	u.Set(term.FieldPostingListCompressed, v)
+	return u
+}
+
+// UpdatePostingListCompressed sets the "posting_list_compressed" field to the value that was provided on create.
+func (u *TermUpsert) UpdatePostingListCompressed() *TermUpsert {
+	u.SetExcluded(term.FieldPostingListCompressed)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create except the ID field.
+// Using this option is equivalent to using:
+//
+//	client.Term.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(term.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+//
+func (u *TermUpsertOne) UpdateNewValues() *TermUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.ID(); exists {
+			s.SetIgnore(term.FieldID)
+		}
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(term.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//  client.Term.Create().
+//      OnConflict(sql.ResolveWithIgnore()).
+//      Exec(ctx)
+//
+func (u *TermUpsertOne) Ignore() *TermUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TermUpsertOne) DoNothing() *TermUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TermCreate.OnConflict
+// documentation for more info.
+func (u *TermUpsertOne) Update(set func(*TermUpsert)) *TermUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TermUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *TermUpsertOne) SetCreatedAt(v time.Time) *TermUpsertOne {
+	return u.Update(func(s *TermUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *TermUpsertOne) UpdateCreatedAt() *TermUpsertOne {
+	return u.Update(func(s *TermUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TermUpsertOne) SetUpdatedAt(v time.Time) *TermUpsertOne {
+	return u.Update(func(s *TermUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TermUpsertOne) UpdateUpdatedAt() *TermUpsertOne {
+	return u.Update(func(s *TermUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetWord sets the "word" field.
+func (u *TermUpsertOne) SetWord(v string) *TermUpsertOne {
+	return u.Update(func(s *TermUpsert) {
+		s.SetWord(v)
+	})
+}
+
+// UpdateWord sets the "word" field to the value that was provided on create.
+func (u *TermUpsertOne) UpdateWord() *TermUpsertOne {
+	return u.Update(func(s *TermUpsert) {
+		s.UpdateWord()
+	})
+}
+
+// SetPostingListCompressed sets the "posting_list_compressed" field.
+func (u *TermUpsertOne) SetPostingListCompressed(v []byte) *TermUpsertOne {
+	return u.Update(func(s *TermUpsert) {
+		s.SetPostingListCompressed(v)
+	})
+}
+
+// UpdatePostingListCompressed sets the "posting_list_compressed" field to the value that was provided on create.
+func (u *TermUpsertOne) UpdatePostingListCompressed() *TermUpsertOne {
+	return u.Update(func(s *TermUpsert) {
+		s.UpdatePostingListCompressed()
+	})
+}
+
+// Exec executes the query.
+func (u *TermUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TermCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TermUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *TermUpsertOne) ID(ctx context.Context) (id uuid.UUID, err error) {
+	if u.create.driver.Dialect() == dialect.MySQL {
+		// In case of "ON CONFLICT", there is no way to get back non-numeric ID
+		// fields from the database since MySQL does not support the RETURNING clause.
+		return id, errors.New("ent: TermUpsertOne.ID is not supported by MySQL driver. Use TermUpsertOne.Exec instead")
+	}
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *TermUpsertOne) IDX(ctx context.Context) uuid.UUID {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
 }
 
 // TermCreateBulk is the builder for creating many Term entities in bulk.
 type TermCreateBulk struct {
 	config
 	builders []*TermCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Term entities in the database.
@@ -297,6 +531,7 @@ func (tcb *TermCreateBulk) Save(ctx context.Context) ([]*Term, error) {
 					_, err = mutators[i+1].Mutate(root, tcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = tcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, tcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -343,6 +578,181 @@ func (tcb *TermCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (tcb *TermCreateBulk) ExecX(ctx context.Context) {
 	if err := tcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Term.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.TermUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (tcb *TermCreateBulk) OnConflict(opts ...sql.ConflictOption) *TermUpsertBulk {
+	tcb.conflict = opts
+	return &TermUpsertBulk{
+		create: tcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Term.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (tcb *TermCreateBulk) OnConflictColumns(columns ...string) *TermUpsertBulk {
+	tcb.conflict = append(tcb.conflict, sql.ConflictColumns(columns...))
+	return &TermUpsertBulk{
+		create: tcb,
+	}
+}
+
+// TermUpsertBulk is the builder for "upsert"-ing
+// a bulk of Term nodes.
+type TermUpsertBulk struct {
+	create *TermCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Term.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//			sql.ResolveWith(func(u *sql.UpdateSet) {
+//				u.SetIgnore(term.FieldID)
+//			}),
+//		).
+//		Exec(ctx)
+//
+func (u *TermUpsertBulk) UpdateNewValues() *TermUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.ID(); exists {
+				s.SetIgnore(term.FieldID)
+				return
+			}
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(term.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Term.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+//
+func (u *TermUpsertBulk) Ignore() *TermUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *TermUpsertBulk) DoNothing() *TermUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the TermCreateBulk.OnConflict
+// documentation for more info.
+func (u *TermUpsertBulk) Update(set func(*TermUpsert)) *TermUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&TermUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *TermUpsertBulk) SetCreatedAt(v time.Time) *TermUpsertBulk {
+	return u.Update(func(s *TermUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *TermUpsertBulk) UpdateCreatedAt() *TermUpsertBulk {
+	return u.Update(func(s *TermUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *TermUpsertBulk) SetUpdatedAt(v time.Time) *TermUpsertBulk {
+	return u.Update(func(s *TermUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *TermUpsertBulk) UpdateUpdatedAt() *TermUpsertBulk {
+	return u.Update(func(s *TermUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetWord sets the "word" field.
+func (u *TermUpsertBulk) SetWord(v string) *TermUpsertBulk {
+	return u.Update(func(s *TermUpsert) {
+		s.SetWord(v)
+	})
+}
+
+// UpdateWord sets the "word" field to the value that was provided on create.
+func (u *TermUpsertBulk) UpdateWord() *TermUpsertBulk {
+	return u.Update(func(s *TermUpsert) {
+		s.UpdateWord()
+	})
+}
+
+// SetPostingListCompressed sets the "posting_list_compressed" field.
+func (u *TermUpsertBulk) SetPostingListCompressed(v []byte) *TermUpsertBulk {
+	return u.Update(func(s *TermUpsert) {
+		s.SetPostingListCompressed(v)
+	})
+}
+
+// UpdatePostingListCompressed sets the "posting_list_compressed" field to the value that was provided on create.
+func (u *TermUpsertBulk) UpdatePostingListCompressed() *TermUpsertBulk {
+	return u.Update(func(s *TermUpsert) {
+		s.UpdatePostingListCompressed()
+	})
+}
+
+// Exec executes the query.
+func (u *TermUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the TermCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for TermCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *TermUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

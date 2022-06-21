@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
 )
@@ -24,32 +23,8 @@ type Term struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	// Word holds the value of the "word" field.
 	Word string `json:"word,omitempty"`
-	// Edges holds the relations/edges for other nodes in the graph.
-	// The values are being populated by the TermQuery when eager-loading is set.
-	Edges TermEdges `json:"edges"`
-}
-
-// TermEdges holds the relations/edges for other nodes in the graph.
-type TermEdges struct {
-	// InvertIndexCompressed holds the value of the invert_index_compressed edge.
-	InvertIndexCompressed *InvertIndexCompressed `json:"invert_index_compressed,omitempty"`
-	// loadedTypes holds the information for reporting if a
-	// type was loaded (or requested) in eager-loading or not.
-	loadedTypes [1]bool
-}
-
-// InvertIndexCompressedOrErr returns the InvertIndexCompressed value or an error if the edge
-// was not loaded in eager-loading, or loaded but was not found.
-func (e TermEdges) InvertIndexCompressedOrErr() (*InvertIndexCompressed, error) {
-	if e.loadedTypes[0] {
-		if e.InvertIndexCompressed == nil {
-			// The edge invert_index_compressed was loaded in eager-loading,
-			// but was not found.
-			return nil, &NotFoundError{label: invertindexcompressed.Label}
-		}
-		return e.InvertIndexCompressed, nil
-	}
-	return nil, &NotLoadedError{edge: "invert_index_compressed"}
+	// PostingListCompressed holds the value of the "posting_list_compressed" field.
+	PostingListCompressed []byte `json:"posting_list_compressed,omitempty"`
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -57,6 +32,8 @@ func (*Term) scanValues(columns []string) ([]interface{}, error) {
 	values := make([]interface{}, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case term.FieldPostingListCompressed:
+			values[i] = new([]byte)
 		case term.FieldWord:
 			values[i] = new(sql.NullString)
 		case term.FieldCreatedAt, term.FieldUpdatedAt:
@@ -102,14 +79,15 @@ func (t *Term) assignValues(columns []string, values []interface{}) error {
 			} else if value.Valid {
 				t.Word = value.String
 			}
+		case term.FieldPostingListCompressed:
+			if value, ok := values[i].(*[]byte); !ok {
+				return fmt.Errorf("unexpected type %T for field posting_list_compressed", values[i])
+			} else if value != nil {
+				t.PostingListCompressed = *value
+			}
 		}
 	}
 	return nil
-}
-
-// QueryInvertIndexCompressed queries the "invert_index_compressed" edge of the Term entity.
-func (t *Term) QueryInvertIndexCompressed() *InvertIndexCompressedQuery {
-	return (&TermClient{config: t.config}).QueryInvertIndexCompressed(t)
 }
 
 // Update returns a builder for updating this Term.
@@ -141,6 +119,8 @@ func (t *Term) String() string {
 	builder.WriteString(t.UpdatedAt.Format(time.ANSIC))
 	builder.WriteString(", word=")
 	builder.WriteString(t.Word)
+	builder.WriteString(", posting_list_compressed=")
+	builder.WriteString(fmt.Sprintf("%v", t.PostingListCompressed))
 	builder.WriteByte(')')
 	return builder.String()
 }

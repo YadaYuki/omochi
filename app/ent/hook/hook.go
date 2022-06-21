@@ -22,19 +22,6 @@ func (f DocumentFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, er
 	return f(ctx, mv)
 }
 
-// The InvertIndexCompressedFunc type is an adapter to allow the use of ordinary
-// function as InvertIndexCompressed mutator.
-type InvertIndexCompressedFunc func(context.Context, *ent.InvertIndexCompressedMutation) (ent.Value, error)
-
-// Mutate calls f(ctx, m).
-func (f InvertIndexCompressedFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
-	mv, ok := m.(*ent.InvertIndexCompressedMutation)
-	if !ok {
-		return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.InvertIndexCompressedMutation", m)
-	}
-	return f(ctx, mv)
-}
-
 // The TermFunc type is an adapter to allow the use of ordinary
 // function as Term mutator.
 type TermFunc func(context.Context, *ent.TermMutation) (ent.Value, error)

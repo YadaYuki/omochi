@@ -19,17 +19,10 @@ const (
 	FieldUpdatedAt = "updated_at"
 	// FieldWord holds the string denoting the word field in the database.
 	FieldWord = "word"
-	// EdgeInvertIndexCompressed holds the string denoting the invert_index_compressed edge name in mutations.
-	EdgeInvertIndexCompressed = "invert_index_compressed"
+	// FieldPostingListCompressed holds the string denoting the posting_list_compressed field in the database.
+	FieldPostingListCompressed = "posting_list_compressed"
 	// Table holds the table name of the term in the database.
 	Table = "terms"
-	// InvertIndexCompressedTable is the table that holds the invert_index_compressed relation/edge.
-	InvertIndexCompressedTable = "invert_index_compresseds"
-	// InvertIndexCompressedInverseTable is the table name for the InvertIndexCompressed entity.
-	// It exists in this package in order to avoid circular dependency with the "invertindexcompressed" package.
-	InvertIndexCompressedInverseTable = "invert_index_compresseds"
-	// InvertIndexCompressedColumn is the table column denoting the invert_index_compressed relation/edge.
-	InvertIndexCompressedColumn = "term_invert_index_compressed"
 )
 
 // Columns holds all SQL columns for term fields.
@@ -38,6 +31,7 @@ var Columns = []string{
 	FieldCreatedAt,
 	FieldUpdatedAt,
 	FieldWord,
+	FieldPostingListCompressed,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -57,6 +51,8 @@ var (
 	DefaultUpdatedAt func() time.Time
 	// UpdateDefaultUpdatedAt holds the default value on update for the "updated_at" field.
 	UpdateDefaultUpdatedAt func() time.Time
+	// PostingListCompressedValidator is a validator for the "posting_list_compressed" field. It is called by the builders before save.
+	PostingListCompressedValidator func([]byte) error
 	// DefaultID holds the default value on creation for the "id" field.
 	DefaultID func() uuid.UUID
 )

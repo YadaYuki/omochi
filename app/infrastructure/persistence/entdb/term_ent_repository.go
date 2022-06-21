@@ -33,8 +33,21 @@ func (r *TermEntRepository) FindTermById(ctx context.Context, uuid uuid.UUID) (*
 	return convertTermEntSchemaToEntity(term), nil
 }
 
-func (r *TermEntRepository) BulkUpsertTerm(ctx context.Context, terms *[]entities.TermCreate) (*[]entities.TermCompressed, *errors.Error) {
-	return nil, nil
+func (r *TermEntRepository) BulkUpsertTerm(ctx context.Context, terms *[]entities.TermCompressedCreate) *errors.Error {
+	termCreates := make([]*ent.TermCreate, len(*terms))
+	for i, term := range *terms {
+		termCreates[i] = r.db.Term.Create().SetWord(term.Word).SetPostingListCompressed(term.InvertIndexCompressed.PostingListCompressed)
+	}
+	err := r.db.Term.
+		CreateBulk(termCreates...).
+		OnConflict().
+		Update(func(tu *ent.TermUpsert) {
+			tu.UpdatePostingListCompressed()
+		}).Exec(ctx)
+	if err != nil {
+		return errors.NewError(code.Unknown, err)
+	}
+	return nil
 }
 
 //
@@ -48,7 +61,6 @@ func (r *TermEntRepository) FindTermCompressedsByWords(ctx context.Context, word
 		Term.
 		Query().
 		Where(term.Or(predicatesForWords...)).
-		WithInvertIndexCompressed().
 		All(ctx)
 	if queryErr != nil {
 		return nil, errors.NewError(code.Unknown, queryErr)
@@ -60,18 +72,14 @@ func convertTermCompressedsEntSchemaToEntity(entTerms []*ent.Term) *[]entities.T
 	termCompresseds := make([]entities.TermCompressed, len(entTerms))
 	for i, entTerm := range entTerms {
 		invertIndexCompressed := &entities.InvertIndexCompressed{
-			Uuid:                  entTerm.Edges.InvertIndexCompressed.ID,
-			TermId:                entTerm.ID,
-			PostingListCompressed: entTerm.Edges.InvertIndexCompressed.PostingListCompressed,
-			CreatedAt:             entTerm.Edges.InvertIndexCompressed.CreatedAt,
-			UpdatedAt:             entTerm.Edges.InvertIndexCompressed.UpdatedAt,
+			PostingListCompressed: entTerm.PostingListCompressed,
 		}
 		termCompresseds[i] = entities.TermCompressed{
-			Uuid:                 entTerm.ID,
-			Word:                 entTerm.Word,
-			InvertIndexCompressd: invertIndexCompressed,
-			CreatedAt:            entTerm.CreatedAt,
-			UpdatedAt:            entTerm.UpdatedAt,
+			Uuid:                  entTerm.ID,
+			Word:                  entTerm.Word,
+			InvertIndexCompressed: invertIndexCompressed,
+			CreatedAt:             entTerm.CreatedAt,
+			UpdatedAt:             entTerm.UpdatedAt,
 		}
 	}
 	return &termCompresseds

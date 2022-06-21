@@ -14,8 +14,6 @@ type Tx struct {
 	config
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
-	// InvertIndexCompressed is the client for interacting with the InvertIndexCompressed builders.
-	InvertIndexCompressed *InvertIndexCompressedClient
 	// Term is the client for interacting with the Term builders.
 	Term *TermClient
 
@@ -154,7 +152,6 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Document = NewDocumentClient(tx.config)
-	tx.InvertIndexCompressed = NewInvertIndexCompressedClient(tx.config)
 	tx.Term = NewTermClient(tx.config)
 }
 
