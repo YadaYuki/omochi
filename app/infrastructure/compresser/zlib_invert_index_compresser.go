@@ -49,7 +49,7 @@ func (c *ZlibInvertIndexCompresser) Compress(ctx context.Context, invertIndex *e
 	}
 	compressedPostingList := compressedPostingListBuffer.Bytes()
 
-	invertIndexCompressed := entities.NewInvertIndexCompressedCreate(invertIndex.TermId, compressedPostingList)
+	invertIndexCompressed := entities.NewInvertIndexCompressedCreate(compressedPostingList)
 
 	return invertIndexCompressed, nil
 }
@@ -72,6 +72,6 @@ func (c *ZlibInvertIndexCompresser) Decompress(ctx context.Context, invertIndex 
 	if gobDecodeErr != nil {
 		return nil, errors.NewError(code.Unknown, fmt.Sprintf("gob: %v", gobDecodeErr.Error()))
 	}
-	invertIndexes := entities.NewInvertIndexCreate(invertIndex.TermId, &postingList)
+	invertIndexes := entities.NewInvertIndexCreate(&postingList)
 	return invertIndexes, nil
 }

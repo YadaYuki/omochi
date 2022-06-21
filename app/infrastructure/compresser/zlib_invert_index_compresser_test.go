@@ -6,14 +6,13 @@ import (
 	"testing"
 
 	"github.com/YadaYuki/omochi/app/domain/entities"
-	"github.com/google/uuid"
 )
 
 func TestCompress(t *testing.T) {
 	testCases := []struct {
 		invertIndex *entities.InvertIndexCreate
 	}{
-		{invertIndex: entities.NewInvertIndexCreate(uuid.New(), &[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
+		{invertIndex: entities.NewInvertIndexCreate(&[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
 	}
 	for _, tc := range testCases {
 		compresser := NewGobInvertIndexCompresser()
@@ -34,8 +33,8 @@ func TestCompressToDecompress(t *testing.T) {
 	testCases := []struct {
 		invertIndex *entities.InvertIndexCreate
 	}{
-		// {invertIndex: entities.NewInvertIndex(uuid.New(), &[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
-		{invertIndex: entities.NewInvertIndexCreate(uuid.New(), &[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
+		// {invertIndex: entities.NewInvertIndex( &[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
+		{invertIndex: entities.NewInvertIndexCreate(&[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
 	}
 	for _, tc := range testCases {
 		compresser := NewGobInvertIndexCompresser()

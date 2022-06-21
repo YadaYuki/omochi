@@ -15,7 +15,6 @@ type InvertIndex struct {
 }
 
 type InvertIndexCreate struct {
-	TermId      uuid.UUID  `json:"term_id"`
 	PostingList *[]Posting `json:"posting_list"`
 }
 
@@ -28,14 +27,13 @@ type InvertIndexCompressed struct {
 }
 
 type InvertIndexCompressedCreate struct {
-	TermId                uuid.UUID `json:"term_id"`
-	PostingListCompressed []byte    `json:"posting_list_compressed"`
+	PostingListCompressed []byte `json:"posting_list_compressed"`
 }
 
-func NewInvertIndexCreate(termId uuid.UUID, postingList *[]Posting) *InvertIndexCreate {
-	return &InvertIndexCreate{TermId: termId, PostingList: postingList}
+func NewInvertIndexCreate(postingList *[]Posting) *InvertIndexCreate {
+	return &InvertIndexCreate{PostingList: postingList}
 }
 
-func NewInvertIndexCompressedCreate(termId uuid.UUID, postingListCompressed []byte) *InvertIndexCompressedCreate {
-	return &InvertIndexCompressedCreate{TermId: termId, PostingListCompressed: postingListCompressed}
+func NewInvertIndexCompressedCreate(postingListCompressed []byte) *InvertIndexCompressedCreate {
+	return &InvertIndexCompressedCreate{PostingListCompressed: postingListCompressed}
 }
