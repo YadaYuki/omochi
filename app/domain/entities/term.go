@@ -23,8 +23,8 @@ type TermCompressed struct {
 }
 
 type TermCreate struct {
-	Word              string       `json:"word"`
-	InvertIndexCreate *InvertIndex `json:"invert_index"` // タームに対応した転置インデックス.
+	Word        string       `json:"word"`
+	InvertIndex *InvertIndex `json:"invert_index"` // タームに対応した転置インデックス.
 }
 
 type TermCompressedCreate struct {
