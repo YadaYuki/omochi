@@ -6,7 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
-type InvertIndexDetail struct {
+type InvertIndex struct {
 	Uuid        uuid.UUID  `json:"uuid"`
 	TermId      uuid.UUID  `json:"term_id"`
 	PostingList *[]Posting `json:"posting_list"`
@@ -14,16 +14,12 @@ type InvertIndexDetail struct {
 	UpdatedAt   time.Time  `json:"updated_at"`
 }
 
-type InvertIndex struct {
+type InvertIndexCreate struct {
 	TermId      uuid.UUID  `json:"term_id"`
 	PostingList *[]Posting `json:"posting_list"`
 }
 
-func NewInvertIndex(termId uuid.UUID, postingList *[]Posting) *InvertIndex {
-	return &InvertIndex{TermId: termId, PostingList: postingList}
-}
-
-type InvertedIndexCompressedDetail struct {
+type InvertedIndexCompressed struct {
 	Uuid                  uuid.UUID `json:"uuid"`
 	TermId                uuid.UUID `json:"term_id"`
 	PostingListCompressed []byte    `json:"posting_list_compressed"`
@@ -31,11 +27,15 @@ type InvertedIndexCompressedDetail struct {
 	UpdatedAt             time.Time `json:"updated_at"`
 }
 
-type InvertedIndexCompressed struct {
+type InvertIndexCompressedCreate struct {
 	TermId                uuid.UUID `json:"term_id"`
 	PostingListCompressed []byte    `json:"posting_list_compressed"`
 }
 
-func NewInvertIndexCompressed(termId uuid.UUID, postingListCompressed []byte) *InvertedIndexCompressed {
-	return &InvertedIndexCompressed{TermId: termId, PostingListCompressed: postingListCompressed}
+func NewInvertIndexCreate(termId uuid.UUID, postingList *[]Posting) *InvertIndexCreate {
+	return &InvertIndexCreate{TermId: termId, PostingList: postingList}
+}
+
+func NewInvertIndexCompressedCreate(termId uuid.UUID, postingListCompressed []byte) *InvertIndexCompressedCreate {
+	return &InvertIndexCompressedCreate{TermId: termId, PostingListCompressed: postingListCompressed}
 }

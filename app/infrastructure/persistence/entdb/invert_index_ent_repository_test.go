@@ -25,14 +25,14 @@ func TestBulkCreateInvertIndexesCompressed(t *testing.T) {
 		{postingListsCompressed: [][]byte{dummyContent, dummyContent, dummyContent, dummyContent, dummyContent}},
 	}
 	for _, tc := range testCases {
-		invertIndexesCompressed := make([]entities.InvertedIndexCompressed, 0)
+		invertIndexesCompressed := make([]entities.InvertIndexCompressedCreate, 0)
 		// 転置インデックスと紐づくタームを事前作成する.
 		ctx := context.Background()
 		for _, postingListCompressed := range tc.postingListsCompressed {
 			wordDummy := uuid.NewString()
 			term := entities.NewTerm(wordDummy)
 			termCreated, _ := client.Term.Create().SetWord(term.Word).Save(ctx)
-			invertIndexesCompressed = append(invertIndexesCompressed, *entities.NewInvertIndexCompressed(termCreated.ID, postingListCompressed))
+			invertIndexesCompressed = append(invertIndexesCompressed, *entities.NewInvertIndexCompressedCreate(termCreated.ID, postingListCompressed))
 		}
 		_, err := invertedIndexCompressedRepository.BulkCreateInvertIndexesCompressed(ctx, &invertIndexesCompressed)
 		if err != nil {

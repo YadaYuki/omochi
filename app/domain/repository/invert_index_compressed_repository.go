@@ -8,5 +8,5 @@ import (
 )
 
 type InvertedIndexCompressedRepository interface {
-	BulkCreateInvertIndexesCompressed(ctx context.Context, invertIndexes *[]entities.InvertedIndexCompressed) (*[]entities.InvertedIndexCompressedDetail, *errors.Error)
+	BulkCreateInvertIndexesCompressed(ctx context.Context, invertIndexes *[]entities.InvertIndexCompressedCreate) (*[]entities.InvertedIndexCompressed, *errors.Error)
 }

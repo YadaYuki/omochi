@@ -18,7 +18,7 @@ func NewInvertedIndexCompressedEntRepository(db *ent.Client) repository.Inverted
 	return &InvertedIndexCompressedEntRepository{db: db}
 }
 
-func (r *InvertedIndexCompressedEntRepository) BulkCreateInvertIndexesCompressed(ctx context.Context, invertIndexes *[]entities.InvertedIndexCompressed) (*[]entities.InvertedIndexCompressedDetail, *errors.Error) {
+func (r *InvertedIndexCompressedEntRepository) BulkCreateInvertIndexesCompressed(ctx context.Context, invertIndexes *[]entities.InvertIndexCompressedCreate) (*[]entities.InvertedIndexCompressed, *errors.Error) {
 	bulk := make([]*ent.InvertIndexCompressedCreate, len(*invertIndexes))
 	for i, invertIndex := range *invertIndexes {
 		bulk[i] = r.db.InvertIndexCompressed.Create().SetTermRelatedID(invertIndex.TermId).SetPostingListCompressed(invertIndex.PostingListCompressed)
@@ -30,10 +30,10 @@ func (r *InvertedIndexCompressedEntRepository) BulkCreateInvertIndexesCompressed
 	return convertInvertIndexesEntSchemaToEntity(invertIndexesCreated), nil
 }
 
-func convertInvertIndexesEntSchemaToEntity(t []*ent.InvertIndexCompressed) *[]entities.InvertedIndexCompressedDetail {
-	invertIndexes := make([]entities.InvertedIndexCompressedDetail, len(t))
+func convertInvertIndexesEntSchemaToEntity(t []*ent.InvertIndexCompressed) *[]entities.InvertedIndexCompressed {
+	invertIndexes := make([]entities.InvertedIndexCompressed, len(t))
 	for i, item := range t {
-		invertIndexes[i] = entities.InvertedIndexCompressedDetail{
+		invertIndexes[i] = entities.InvertedIndexCompressed{
 			Uuid:                  item.ID,
 			PostingListCompressed: item.PostingListCompressed,
 			CreatedAt:             item.CreatedAt,
