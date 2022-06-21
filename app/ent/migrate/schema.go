@@ -22,34 +22,13 @@ var (
 		Columns:    DocumentsColumns,
 		PrimaryKey: []*schema.Column{DocumentsColumns[0]},
 	}
-	// InvertIndexCompressedsColumns holds the columns for the "invert_index_compresseds" table.
-	InvertIndexCompressedsColumns = []*schema.Column{
-		{Name: "uuid", Type: field.TypeUUID},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "posting_list_compressed", Type: field.TypeBytes, Size: 1073741824},
-		{Name: "term_invert_index_compressed", Type: field.TypeUUID, Unique: true},
-	}
-	// InvertIndexCompressedsTable holds the schema information for the "invert_index_compresseds" table.
-	InvertIndexCompressedsTable = &schema.Table{
-		Name:       "invert_index_compresseds",
-		Columns:    InvertIndexCompressedsColumns,
-		PrimaryKey: []*schema.Column{InvertIndexCompressedsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "invert_index_compresseds_terms_invert_index_compressed",
-				Columns:    []*schema.Column{InvertIndexCompressedsColumns[4]},
-				RefColumns: []*schema.Column{TermsColumns[0]},
-				OnDelete:   schema.NoAction,
-			},
-		},
-	}
 	// TermsColumns holds the columns for the "terms" table.
 	TermsColumns = []*schema.Column{
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 		{Name: "word", Type: field.TypeString, Unique: true},
+		{Name: "posting_list_compressed", Type: field.TypeBytes, Size: 1073741824},
 	}
 	// TermsTable holds the schema information for the "terms" table.
 	TermsTable = &schema.Table{
@@ -67,11 +46,9 @@ var (
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		DocumentsTable,
-		InvertIndexCompressedsTable,
 		TermsTable,
 	}
 )
 
 func init() {
-	InvertIndexCompressedsTable.ForeignKeys[0].RefTable = TermsTable
 }

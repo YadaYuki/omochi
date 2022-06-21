@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/YadaYuki/omochi/app/ent/document"
@@ -18,6 +19,7 @@ type DocumentCreate struct {
 	config
 	mutation *DocumentMutation
 	hooks    []Hook
+	conflict []sql.ConflictOption
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -182,6 +184,7 @@ func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 			},
 		}
 	)
+	_spec.OnConflict = dc.conflict
 	if value, ok := dc.mutation.CreatedAt(); ok {
 		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
 			Type:   field.TypeTime,
@@ -217,10 +220,246 @@ func (dc *DocumentCreate) createSpec() (*Document, *sqlgraph.CreateSpec) {
 	return _node, _spec
 }
 
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Document.Create().
+//		SetCreatedAt(v).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DocumentUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dc *DocumentCreate) OnConflict(opts ...sql.ConflictOption) *DocumentUpsertOne {
+	dc.conflict = opts
+	return &DocumentUpsertOne{
+		create: dc,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Document.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dc *DocumentCreate) OnConflictColumns(columns ...string) *DocumentUpsertOne {
+	dc.conflict = append(dc.conflict, sql.ConflictColumns(columns...))
+	return &DocumentUpsertOne{
+		create: dc,
+	}
+}
+
+type (
+	// DocumentUpsertOne is the builder for "upsert"-ing
+	//  one Document node.
+	DocumentUpsertOne struct {
+		create *DocumentCreate
+	}
+
+	// DocumentUpsert is the "OnConflict" setter.
+	DocumentUpsert struct {
+		*sql.UpdateSet
+	}
+)
+
+// SetCreatedAt sets the "created_at" field.
+func (u *DocumentUpsert) SetCreatedAt(v time.Time) *DocumentUpsert {
+	u.Set(document.FieldCreatedAt, v)
+	return u
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *DocumentUpsert) UpdateCreatedAt() *DocumentUpsert {
+	u.SetExcluded(document.FieldCreatedAt)
+	return u
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *DocumentUpsert) SetUpdatedAt(v time.Time) *DocumentUpsert {
+	u.Set(document.FieldUpdatedAt, v)
+	return u
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *DocumentUpsert) UpdateUpdatedAt() *DocumentUpsert {
+	u.SetExcluded(document.FieldUpdatedAt)
+	return u
+}
+
+// SetContent sets the "content" field.
+func (u *DocumentUpsert) SetContent(v string) *DocumentUpsert {
+	u.Set(document.FieldContent, v)
+	return u
+}
+
+// UpdateContent sets the "content" field to the value that was provided on create.
+func (u *DocumentUpsert) UpdateContent() *DocumentUpsert {
+	u.SetExcluded(document.FieldContent)
+	return u
+}
+
+// SetTokenizedContent sets the "tokenized_content" field.
+func (u *DocumentUpsert) SetTokenizedContent(v string) *DocumentUpsert {
+	u.Set(document.FieldTokenizedContent, v)
+	return u
+}
+
+// UpdateTokenizedContent sets the "tokenized_content" field to the value that was provided on create.
+func (u *DocumentUpsert) UpdateTokenizedContent() *DocumentUpsert {
+	u.SetExcluded(document.FieldTokenizedContent)
+	return u
+}
+
+// UpdateNewValues updates the mutable fields using the new values that were set on create.
+// Using this option is equivalent to using:
+//
+//	client.Document.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DocumentUpsertOne) UpdateNewValues() *DocumentUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		if _, exists := u.create.mutation.CreatedAt(); exists {
+			s.SetIgnore(document.FieldCreatedAt)
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//  client.Document.Create().
+//      OnConflict(sql.ResolveWithIgnore()).
+//      Exec(ctx)
+//
+func (u *DocumentUpsertOne) Ignore() *DocumentUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DocumentUpsertOne) DoNothing() *DocumentUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DocumentCreate.OnConflict
+// documentation for more info.
+func (u *DocumentUpsertOne) Update(set func(*DocumentUpsert)) *DocumentUpsertOne {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DocumentUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *DocumentUpsertOne) SetCreatedAt(v time.Time) *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *DocumentUpsertOne) UpdateCreatedAt() *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *DocumentUpsertOne) SetUpdatedAt(v time.Time) *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *DocumentUpsertOne) UpdateUpdatedAt() *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetContent sets the "content" field.
+func (u *DocumentUpsertOne) SetContent(v string) *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetContent(v)
+	})
+}
+
+// UpdateContent sets the "content" field to the value that was provided on create.
+func (u *DocumentUpsertOne) UpdateContent() *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateContent()
+	})
+}
+
+// SetTokenizedContent sets the "tokenized_content" field.
+func (u *DocumentUpsertOne) SetTokenizedContent(v string) *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetTokenizedContent(v)
+	})
+}
+
+// UpdateTokenizedContent sets the "tokenized_content" field to the value that was provided on create.
+func (u *DocumentUpsertOne) UpdateTokenizedContent() *DocumentUpsertOne {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateTokenizedContent()
+	})
+}
+
+// Exec executes the query.
+func (u *DocumentUpsertOne) Exec(ctx context.Context) error {
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DocumentCreate.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DocumentUpsertOne) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// Exec executes the UPSERT query and returns the inserted/updated ID.
+func (u *DocumentUpsertOne) ID(ctx context.Context) (id int, err error) {
+	node, err := u.create.Save(ctx)
+	if err != nil {
+		return id, err
+	}
+	return node.ID, nil
+}
+
+// IDX is like ID, but panics if an error occurs.
+func (u *DocumentUpsertOne) IDX(ctx context.Context) int {
+	id, err := u.ID(ctx)
+	if err != nil {
+		panic(err)
+	}
+	return id
+}
+
 // DocumentCreateBulk is the builder for creating many Document entities in bulk.
 type DocumentCreateBulk struct {
 	config
 	builders []*DocumentCreate
+	conflict []sql.ConflictOption
 }
 
 // Save creates the Document entities in the database.
@@ -247,6 +486,7 @@ func (dcb *DocumentCreateBulk) Save(ctx context.Context) ([]*Document, error) {
 					_, err = mutators[i+1].Mutate(root, dcb.builders[i+1].mutation)
 				} else {
 					spec := &sqlgraph.BatchCreateSpec{Nodes: specs}
+					spec.OnConflict = dcb.conflict
 					// Invoke the actual operation on the latest mutation in the chain.
 					if err = sqlgraph.BatchCreate(ctx, dcb.driver, spec); err != nil {
 						if sqlgraph.IsConstraintError(err) {
@@ -297,6 +537,174 @@ func (dcb *DocumentCreateBulk) Exec(ctx context.Context) error {
 // ExecX is like Exec, but panics if an error occurs.
 func (dcb *DocumentCreateBulk) ExecX(ctx context.Context) {
 	if err := dcb.Exec(ctx); err != nil {
+		panic(err)
+	}
+}
+
+// OnConflict allows configuring the `ON CONFLICT` / `ON DUPLICATE KEY` clause
+// of the `INSERT` statement. For example:
+//
+//	client.Document.CreateBulk(builders...).
+//		OnConflict(
+//			// Update the row with the new values
+//			// the was proposed for insertion.
+//			sql.ResolveWithNewValues(),
+//		).
+//		// Override some of the fields with custom
+//		// update values.
+//		Update(func(u *ent.DocumentUpsert) {
+//			SetCreatedAt(v+v).
+//		}).
+//		Exec(ctx)
+//
+func (dcb *DocumentCreateBulk) OnConflict(opts ...sql.ConflictOption) *DocumentUpsertBulk {
+	dcb.conflict = opts
+	return &DocumentUpsertBulk{
+		create: dcb,
+	}
+}
+
+// OnConflictColumns calls `OnConflict` and configures the columns
+// as conflict target. Using this option is equivalent to using:
+//
+//	client.Document.Create().
+//		OnConflict(sql.ConflictColumns(columns...)).
+//		Exec(ctx)
+//
+func (dcb *DocumentCreateBulk) OnConflictColumns(columns ...string) *DocumentUpsertBulk {
+	dcb.conflict = append(dcb.conflict, sql.ConflictColumns(columns...))
+	return &DocumentUpsertBulk{
+		create: dcb,
+	}
+}
+
+// DocumentUpsertBulk is the builder for "upsert"-ing
+// a bulk of Document nodes.
+type DocumentUpsertBulk struct {
+	create *DocumentCreateBulk
+}
+
+// UpdateNewValues updates the mutable fields using the new values that
+// were set on create. Using this option is equivalent to using:
+//
+//	client.Document.Create().
+//		OnConflict(
+//			sql.ResolveWithNewValues(),
+//		).
+//		Exec(ctx)
+//
+func (u *DocumentUpsertBulk) UpdateNewValues() *DocumentUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithNewValues())
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(s *sql.UpdateSet) {
+		for _, b := range u.create.builders {
+			if _, exists := b.mutation.CreatedAt(); exists {
+				s.SetIgnore(document.FieldCreatedAt)
+			}
+		}
+	}))
+	return u
+}
+
+// Ignore sets each column to itself in case of conflict.
+// Using this option is equivalent to using:
+//
+//	client.Document.Create().
+//		OnConflict(sql.ResolveWithIgnore()).
+//		Exec(ctx)
+//
+func (u *DocumentUpsertBulk) Ignore() *DocumentUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWithIgnore())
+	return u
+}
+
+// DoNothing configures the conflict_action to `DO NOTHING`.
+// Supported only by SQLite and PostgreSQL.
+func (u *DocumentUpsertBulk) DoNothing() *DocumentUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.DoNothing())
+	return u
+}
+
+// Update allows overriding fields `UPDATE` values. See the DocumentCreateBulk.OnConflict
+// documentation for more info.
+func (u *DocumentUpsertBulk) Update(set func(*DocumentUpsert)) *DocumentUpsertBulk {
+	u.create.conflict = append(u.create.conflict, sql.ResolveWith(func(update *sql.UpdateSet) {
+		set(&DocumentUpsert{UpdateSet: update})
+	}))
+	return u
+}
+
+// SetCreatedAt sets the "created_at" field.
+func (u *DocumentUpsertBulk) SetCreatedAt(v time.Time) *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetCreatedAt(v)
+	})
+}
+
+// UpdateCreatedAt sets the "created_at" field to the value that was provided on create.
+func (u *DocumentUpsertBulk) UpdateCreatedAt() *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateCreatedAt()
+	})
+}
+
+// SetUpdatedAt sets the "updated_at" field.
+func (u *DocumentUpsertBulk) SetUpdatedAt(v time.Time) *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetUpdatedAt(v)
+	})
+}
+
+// UpdateUpdatedAt sets the "updated_at" field to the value that was provided on create.
+func (u *DocumentUpsertBulk) UpdateUpdatedAt() *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateUpdatedAt()
+	})
+}
+
+// SetContent sets the "content" field.
+func (u *DocumentUpsertBulk) SetContent(v string) *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetContent(v)
+	})
+}
+
+// UpdateContent sets the "content" field to the value that was provided on create.
+func (u *DocumentUpsertBulk) UpdateContent() *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateContent()
+	})
+}
+
+// SetTokenizedContent sets the "tokenized_content" field.
+func (u *DocumentUpsertBulk) SetTokenizedContent(v string) *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.SetTokenizedContent(v)
+	})
+}
+
+// UpdateTokenizedContent sets the "tokenized_content" field to the value that was provided on create.
+func (u *DocumentUpsertBulk) UpdateTokenizedContent() *DocumentUpsertBulk {
+	return u.Update(func(s *DocumentUpsert) {
+		s.UpdateTokenizedContent()
+	})
+}
+
+// Exec executes the query.
+func (u *DocumentUpsertBulk) Exec(ctx context.Context) error {
+	for i, b := range u.create.builders {
+		if len(b.conflict) != 0 {
+			return fmt.Errorf("ent: OnConflict was set for builder %d. Set it on the DocumentCreateBulk instead", i)
+		}
+	}
+	if len(u.create.conflict) == 0 {
+		return errors.New("ent: missing options for DocumentCreateBulk.OnConflict")
+	}
+	return u.create.Exec(ctx)
+}
+
+// ExecX is like Exec, but panics if an error occurs.
+func (u *DocumentUpsertBulk) ExecX(ctx context.Context) {
+	if err := u.create.Exec(ctx); err != nil {
 		panic(err)
 	}
 }

@@ -11,12 +11,10 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/YadaYuki/omochi/app/ent/document"
-	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/term"
 
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 // Client is the client that holds all ent builders.
@@ -26,8 +24,6 @@ type Client struct {
 	Schema *migrate.Schema
 	// Document is the client for interacting with the Document builders.
 	Document *DocumentClient
-	// InvertIndexCompressed is the client for interacting with the InvertIndexCompressed builders.
-	InvertIndexCompressed *InvertIndexCompressedClient
 	// Term is the client for interacting with the Term builders.
 	Term *TermClient
 }
@@ -44,7 +40,6 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Document = NewDocumentClient(c.config)
-	c.InvertIndexCompressed = NewInvertIndexCompressedClient(c.config)
 	c.Term = NewTermClient(c.config)
 }
 
@@ -77,11 +72,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                   ctx,
-		config:                cfg,
-		Document:              NewDocumentClient(cfg),
-		InvertIndexCompressed: NewInvertIndexCompressedClient(cfg),
-		Term:                  NewTermClient(cfg),
+		ctx:      ctx,
+		config:   cfg,
+		Document: NewDocumentClient(cfg),
+		Term:     NewTermClient(cfg),
 	}, nil
 }
 
@@ -99,11 +93,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                   ctx,
-		config:                cfg,
-		Document:              NewDocumentClient(cfg),
-		InvertIndexCompressed: NewInvertIndexCompressedClient(cfg),
-		Term:                  NewTermClient(cfg),
+		ctx:      ctx,
+		config:   cfg,
+		Document: NewDocumentClient(cfg),
+		Term:     NewTermClient(cfg),
 	}, nil
 }
 
@@ -134,7 +127,6 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Document.Use(hooks...)
-	c.InvertIndexCompressed.Use(hooks...)
 	c.Term.Use(hooks...)
 }
 
@@ -228,112 +220,6 @@ func (c *DocumentClient) Hooks() []Hook {
 	return c.hooks.Document
 }
 
-// InvertIndexCompressedClient is a client for the InvertIndexCompressed schema.
-type InvertIndexCompressedClient struct {
-	config
-}
-
-// NewInvertIndexCompressedClient returns a client for the InvertIndexCompressed from the given config.
-func NewInvertIndexCompressedClient(c config) *InvertIndexCompressedClient {
-	return &InvertIndexCompressedClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `invertindexcompressed.Hooks(f(g(h())))`.
-func (c *InvertIndexCompressedClient) Use(hooks ...Hook) {
-	c.hooks.InvertIndexCompressed = append(c.hooks.InvertIndexCompressed, hooks...)
-}
-
-// Create returns a create builder for InvertIndexCompressed.
-func (c *InvertIndexCompressedClient) Create() *InvertIndexCompressedCreate {
-	mutation := newInvertIndexCompressedMutation(c.config, OpCreate)
-	return &InvertIndexCompressedCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of InvertIndexCompressed entities.
-func (c *InvertIndexCompressedClient) CreateBulk(builders ...*InvertIndexCompressedCreate) *InvertIndexCompressedCreateBulk {
-	return &InvertIndexCompressedCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for InvertIndexCompressed.
-func (c *InvertIndexCompressedClient) Update() *InvertIndexCompressedUpdate {
-	mutation := newInvertIndexCompressedMutation(c.config, OpUpdate)
-	return &InvertIndexCompressedUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *InvertIndexCompressedClient) UpdateOne(iic *InvertIndexCompressed) *InvertIndexCompressedUpdateOne {
-	mutation := newInvertIndexCompressedMutation(c.config, OpUpdateOne, withInvertIndexCompressed(iic))
-	return &InvertIndexCompressedUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *InvertIndexCompressedClient) UpdateOneID(id uuid.UUID) *InvertIndexCompressedUpdateOne {
-	mutation := newInvertIndexCompressedMutation(c.config, OpUpdateOne, withInvertIndexCompressedID(id))
-	return &InvertIndexCompressedUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for InvertIndexCompressed.
-func (c *InvertIndexCompressedClient) Delete() *InvertIndexCompressedDelete {
-	mutation := newInvertIndexCompressedMutation(c.config, OpDelete)
-	return &InvertIndexCompressedDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a delete builder for the given entity.
-func (c *InvertIndexCompressedClient) DeleteOne(iic *InvertIndexCompressed) *InvertIndexCompressedDeleteOne {
-	return c.DeleteOneID(iic.ID)
-}
-
-// DeleteOneID returns a delete builder for the given id.
-func (c *InvertIndexCompressedClient) DeleteOneID(id uuid.UUID) *InvertIndexCompressedDeleteOne {
-	builder := c.Delete().Where(invertindexcompressed.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &InvertIndexCompressedDeleteOne{builder}
-}
-
-// Query returns a query builder for InvertIndexCompressed.
-func (c *InvertIndexCompressedClient) Query() *InvertIndexCompressedQuery {
-	return &InvertIndexCompressedQuery{
-		config: c.config,
-	}
-}
-
-// Get returns a InvertIndexCompressed entity by its id.
-func (c *InvertIndexCompressedClient) Get(ctx context.Context, id uuid.UUID) (*InvertIndexCompressed, error) {
-	return c.Query().Where(invertindexcompressed.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *InvertIndexCompressedClient) GetX(ctx context.Context, id uuid.UUID) *InvertIndexCompressed {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryTermRelated queries the term_related edge of a InvertIndexCompressed.
-func (c *InvertIndexCompressedClient) QueryTermRelated(iic *InvertIndexCompressed) *TermQuery {
-	query := &TermQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := iic.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(invertindexcompressed.Table, invertindexcompressed.FieldID, id),
-			sqlgraph.To(term.Table, term.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, true, invertindexcompressed.TermRelatedTable, invertindexcompressed.TermRelatedColumn),
-		)
-		fromV = sqlgraph.Neighbors(iic.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *InvertIndexCompressedClient) Hooks() []Hook {
-	return c.hooks.InvertIndexCompressed
-}
-
 // TermClient is a client for the Term schema.
 type TermClient struct {
 	config
@@ -417,22 +303,6 @@ func (c *TermClient) GetX(ctx context.Context, id uuid.UUID) *Term {
 		panic(err)
 	}
 	return obj
-}
-
-// QueryInvertIndexCompressed queries the invert_index_compressed edge of a Term.
-func (c *TermClient) QueryInvertIndexCompressed(t *Term) *InvertIndexCompressedQuery {
-	query := &InvertIndexCompressedQuery{config: c.config}
-	query.path = func(ctx context.Context) (fromV *sql.Selector, _ error) {
-		id := t.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(term.Table, term.FieldID, id),
-			sqlgraph.To(invertindexcompressed.Table, invertindexcompressed.FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, term.InvertIndexCompressedTable, term.InvertIndexCompressedColumn),
-		)
-		fromV = sqlgraph.Neighbors(t.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
 }
 
 // Hooks returns the client hooks.

@@ -26,6 +26,7 @@ func TestFindTermById(t *testing.T) {
 		termCreated, _ := client.Term.
 			Create().
 			SetWord(tc.word).
+			SetPostingListCompressed([]byte("hoge")).
 			Save(context.Background())
 		term, err := termRepository.FindTermById(context.Background(), termCreated.ID)
 		if err != nil {
@@ -39,7 +40,7 @@ func TestFindTermById(t *testing.T) {
 
 func TestFindTermCompressedsByWords(t *testing.T) {
 
-	dummyInvertIndexCompressedCreate := entities.NewInvertIndexCompressedCreate([]byte("DUMMY INVERT INDEX COMPRESSED"))
+	dummyInvertIndexCompressedCreate := entities.NewInvertIndexCompressed([]byte("DUMMY INVERT INDEX COMPRESSED"))
 	testCases := []struct {
 		wordsForQuery []string
 		wordsToInsert []string
@@ -67,14 +68,10 @@ func TestFindTermCompressedsByWords(t *testing.T) {
 			defer client.Close()
 			termRepository := NewTermEntRepository(client)
 			for _, word := range tc.wordsToInsert {
-				termCreated, _ := client.Term.
+				client.Term.
 					Create().
 					SetWord(word).
-					Save(context.Background())
-				client.InvertIndexCompressed.
-					Create().
 					SetPostingListCompressed(dummyInvertIndexCompressedCreate.PostingListCompressed).
-					SetTermRelatedID(termCreated.ID).
 					Save(context.Background())
 			}
 			termCompresseds, err := termRepository.FindTermCompressedsByWords(context.Background(), &tc.wordsForQuery)
@@ -88,7 +85,7 @@ func TestFindTermCompressedsByWords(t *testing.T) {
 				if !slices.Contains(tc.wordsToFind, term.Word) {
 					t.Fatalf("%v does not contain %v", tc.wordsToFind, term.Word)
 				}
-				if !bytes.Equal(dummyInvertIndexCompressedCreate.PostingListCompressed, term.InvertIndexCompressd.PostingListCompressed) {
+				if !bytes.Equal(dummyInvertIndexCompressedCreate.PostingListCompressed, term.InvertIndexCompressed.PostingListCompressed) {
 					t.Fatalf("")
 				}
 			}
@@ -97,8 +94,8 @@ func TestFindTermCompressedsByWords(t *testing.T) {
 }
 
 func TestBulkUpsertTerm(t *testing.T) {
-	dummyInvertIndexCompressedCreate := entities.NewInvertIndexCompressedCreate([]byte("DUMMY INVERT INDEX COMPRESSED"))
-	dummyInvertIndexCompressedUpdate := entities.NewInvertIndexCompressedCreate([]byte("DUMMY INVERT INDEX COMPRESSED UPDATED"))
+	dummyInvertIndexCompressedCreate := entities.NewInvertIndexCompressed([]byte("DUMMY INVERT INDEX COMPRESSED"))
+	dummyInvertIndexCompressedUpdate := entities.NewInvertIndexCompressed([]byte("DUMMY INVERT INDEX COMPRESSED UPDATED"))
 	testCases := []struct {
 		wordsForAdvanceInsert []string
 		wordsToUpsert         []string
@@ -127,29 +124,24 @@ func TestBulkUpsertTerm(t *testing.T) {
 			defer client.Close()
 			termRepository := NewTermEntRepository(client)
 			for _, word := range tc.wordsForAdvanceInsert {
-				termCreated, _ := client.Term.
+				client.Term.
 					Create().
 					SetWord(word).
-					Save(ctx)
-				client.InvertIndexCompressed.
-					Create().
 					SetPostingListCompressed(dummyInvertIndexCompressedCreate.PostingListCompressed).
-					SetTermRelatedID(termCreated.ID).
 					Save(ctx)
 			}
 			termsUpsert := make([]entities.TermCompressedCreate, len(tc.wordsToUpsert))
-			for i, termCreate := range termsUpsert {
-				termCreate.Word = tc.wordsToUpsert[i]
-				termCreate.InvertIndexCompressdCreate = dummyInvertIndexCompressedUpdate
+			for i := 0; i < len(tc.wordsToUpsert); i++ {
+				term := entities.NewTermCompressedCreate(tc.wordsToUpsert[i], dummyInvertIndexCompressedUpdate)
+				termsUpsert[i] = *term
 			}
-			_, err := termRepository.BulkUpsertTerm(ctx, &termsUpsert)
+			err := termRepository.BulkUpsertTerm(ctx, &termsUpsert)
 			if err != nil {
 				t.Fatal(err)
 			}
 			entTerms, _ := client.
 				Term.
 				Query().
-				WithInvertIndexCompressed().
 				All(ctx)
 			if len(tc.wordsAfterUpsert) != len(entTerms) {
 				t.Fatalf("len(entTerms) should be %v,but got %v", len(tc.wordsAfterUpsert), len(entTerms))
@@ -158,9 +150,9 @@ func TestBulkUpsertTerm(t *testing.T) {
 				if !slices.Contains(tc.wordsAfterUpsert, entTerm.Word) {
 					t.Fatalf("%v does not contain %v", tc.wordsAfterUpsert, entTerm.Word)
 				}
-				if slices.Contains(tc.wordsAfterUpsert, entTerm.Word) {
-					if !bytes.Equal(dummyInvertIndexCompressedUpdate.PostingListCompressed, entTerm.Edges.InvertIndexCompressed.PostingListCompressed) {
-						t.Fatalf("")
+				if slices.Contains(tc.wordsToUpsert, entTerm.Word) {
+					if !bytes.Equal(dummyInvertIndexCompressedUpdate.PostingListCompressed, entTerm.PostingListCompressed) {
+						t.Fatalf("PostingListCompressed after update should be %v. but got %v", string(dummyInvertIndexCompressedUpdate.PostingListCompressed), string(entTerm.PostingListCompressed))
 					}
 				}
 			}

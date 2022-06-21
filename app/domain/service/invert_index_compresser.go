@@ -8,6 +8,6 @@ import (
 )
 
 type InvertIndexCompresser interface {
-	Compress(ctx context.Context, invertIndexes *entities.InvertIndexCreate) (*entities.InvertIndexCompressedCreate, *errors.Error)
-	Decompress(ctx context.Context, invertIndexes *entities.InvertIndexCompressedCreate) (*entities.InvertIndexCreate, *errors.Error)
+	Compress(ctx context.Context, invertIndexes *entities.InvertIndex) (*entities.InvertIndexCompressed, *errors.Error)
+	Decompress(ctx context.Context, invertIndexes *entities.InvertIndexCompressed) (*entities.InvertIndex, *errors.Error)
 }

@@ -10,9 +10,9 @@ import (
 
 func TestCompress(t *testing.T) {
 	testCases := []struct {
-		invertIndex *entities.InvertIndexCreate
+		invertIndex *entities.InvertIndex
 	}{
-		{invertIndex: entities.NewInvertIndexCreate(&[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
+		{invertIndex: entities.NewInvertIndex(&[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
 	}
 	for _, tc := range testCases {
 		compresser := NewGobInvertIndexCompresser()
@@ -31,10 +31,10 @@ func TestCompress(t *testing.T) {
 // E2E
 func TestCompressToDecompress(t *testing.T) {
 	testCases := []struct {
-		invertIndex *entities.InvertIndexCreate
+		invertIndex *entities.InvertIndex
 	}{
 		// {invertIndex: entities.NewInvertIndex( &[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
-		{invertIndex: entities.NewInvertIndexCreate(&[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
+		{invertIndex: entities.NewInvertIndex(&[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
 	}
 	for _, tc := range testCases {
 		compresser := NewGobInvertIndexCompresser()

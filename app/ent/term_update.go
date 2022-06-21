@@ -11,10 +11,8 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
-	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/YadaYuki/omochi/app/ent/term"
-	"github.com/google/uuid"
 )
 
 // TermUpdate is the builder for updating Term entities.
@@ -42,34 +40,15 @@ func (tu *TermUpdate) SetWord(s string) *TermUpdate {
 	return tu
 }
 
-// SetInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID.
-func (tu *TermUpdate) SetInvertIndexCompressedID(id uuid.UUID) *TermUpdate {
-	tu.mutation.SetInvertIndexCompressedID(id)
+// SetPostingListCompressed sets the "posting_list_compressed" field.
+func (tu *TermUpdate) SetPostingListCompressed(b []byte) *TermUpdate {
+	tu.mutation.SetPostingListCompressed(b)
 	return tu
-}
-
-// SetNillableInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
-func (tu *TermUpdate) SetNillableInvertIndexCompressedID(id *uuid.UUID) *TermUpdate {
-	if id != nil {
-		tu = tu.SetInvertIndexCompressedID(*id)
-	}
-	return tu
-}
-
-// SetInvertIndexCompressed sets the "invert_index_compressed" edge to the InvertIndexCompressed entity.
-func (tu *TermUpdate) SetInvertIndexCompressed(i *InvertIndexCompressed) *TermUpdate {
-	return tu.SetInvertIndexCompressedID(i.ID)
 }
 
 // Mutation returns the TermMutation object of the builder.
 func (tu *TermUpdate) Mutation() *TermMutation {
 	return tu.mutation
-}
-
-// ClearInvertIndexCompressed clears the "invert_index_compressed" edge to the InvertIndexCompressed entity.
-func (tu *TermUpdate) ClearInvertIndexCompressed() *TermUpdate {
-	tu.mutation.ClearInvertIndexCompressed()
-	return tu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -80,12 +59,18 @@ func (tu *TermUpdate) Save(ctx context.Context) (int, error) {
 	)
 	tu.defaults()
 	if len(tu.hooks) == 0 {
+		if err = tu.check(); err != nil {
+			return 0, err
+		}
 		affected, err = tu.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*TermMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = tu.check(); err != nil {
+				return 0, err
 			}
 			tu.mutation = mutation
 			affected, err = tu.sqlSave(ctx)
@@ -135,6 +120,16 @@ func (tu *TermUpdate) defaults() {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (tu *TermUpdate) check() error {
+	if v, ok := tu.mutation.PostingListCompressed(); ok {
+		if err := term.PostingListCompressedValidator(v); err != nil {
+			return &ValidationError{Name: "posting_list_compressed", err: fmt.Errorf(`ent: validator failed for field "Term.posting_list_compressed": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	_spec := &sqlgraph.UpdateSpec{
 		Node: &sqlgraph.NodeSpec{
@@ -167,40 +162,12 @@ func (tu *TermUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: term.FieldWord,
 		})
 	}
-	if tu.mutation.InvertIndexCompressedCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   term.InvertIndexCompressedTable,
-			Columns: []string{term.InvertIndexCompressedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: invertindexcompressed.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tu.mutation.InvertIndexCompressedIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   term.InvertIndexCompressedTable,
-			Columns: []string{term.InvertIndexCompressedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: invertindexcompressed.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := tu.mutation.PostingListCompressed(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: term.FieldPostingListCompressed,
+		})
 	}
 	if n, err = sqlgraph.UpdateNodes(ctx, tu.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -233,34 +200,15 @@ func (tuo *TermUpdateOne) SetWord(s string) *TermUpdateOne {
 	return tuo
 }
 
-// SetInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID.
-func (tuo *TermUpdateOne) SetInvertIndexCompressedID(id uuid.UUID) *TermUpdateOne {
-	tuo.mutation.SetInvertIndexCompressedID(id)
+// SetPostingListCompressed sets the "posting_list_compressed" field.
+func (tuo *TermUpdateOne) SetPostingListCompressed(b []byte) *TermUpdateOne {
+	tuo.mutation.SetPostingListCompressed(b)
 	return tuo
-}
-
-// SetNillableInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by ID if the given value is not nil.
-func (tuo *TermUpdateOne) SetNillableInvertIndexCompressedID(id *uuid.UUID) *TermUpdateOne {
-	if id != nil {
-		tuo = tuo.SetInvertIndexCompressedID(*id)
-	}
-	return tuo
-}
-
-// SetInvertIndexCompressed sets the "invert_index_compressed" edge to the InvertIndexCompressed entity.
-func (tuo *TermUpdateOne) SetInvertIndexCompressed(i *InvertIndexCompressed) *TermUpdateOne {
-	return tuo.SetInvertIndexCompressedID(i.ID)
 }
 
 // Mutation returns the TermMutation object of the builder.
 func (tuo *TermUpdateOne) Mutation() *TermMutation {
 	return tuo.mutation
-}
-
-// ClearInvertIndexCompressed clears the "invert_index_compressed" edge to the InvertIndexCompressed entity.
-func (tuo *TermUpdateOne) ClearInvertIndexCompressed() *TermUpdateOne {
-	tuo.mutation.ClearInvertIndexCompressed()
-	return tuo
 }
 
 // Select allows selecting one or more fields (columns) of the returned entity.
@@ -278,12 +226,18 @@ func (tuo *TermUpdateOne) Save(ctx context.Context) (*Term, error) {
 	)
 	tuo.defaults()
 	if len(tuo.hooks) == 0 {
+		if err = tuo.check(); err != nil {
+			return nil, err
+		}
 		node, err = tuo.sqlSave(ctx)
 	} else {
 		var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 			mutation, ok := m.(*TermMutation)
 			if !ok {
 				return nil, fmt.Errorf("unexpected mutation type %T", m)
+			}
+			if err = tuo.check(); err != nil {
+				return nil, err
 			}
 			tuo.mutation = mutation
 			node, err = tuo.sqlSave(ctx)
@@ -331,6 +285,16 @@ func (tuo *TermUpdateOne) defaults() {
 		v := term.UpdateDefaultUpdatedAt()
 		tuo.mutation.SetUpdatedAt(v)
 	}
+}
+
+// check runs all checks and user-defined validators on the builder.
+func (tuo *TermUpdateOne) check() error {
+	if v, ok := tuo.mutation.PostingListCompressed(); ok {
+		if err := term.PostingListCompressedValidator(v); err != nil {
+			return &ValidationError{Name: "posting_list_compressed", err: fmt.Errorf(`ent: validator failed for field "Term.posting_list_compressed": %w`, err)}
+		}
+	}
+	return nil
 }
 
 func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) {
@@ -382,40 +346,12 @@ func (tuo *TermUpdateOne) sqlSave(ctx context.Context) (_node *Term, err error) 
 			Column: term.FieldWord,
 		})
 	}
-	if tuo.mutation.InvertIndexCompressedCleared() {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   term.InvertIndexCompressedTable,
-			Columns: []string{term.InvertIndexCompressedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: invertindexcompressed.FieldID,
-				},
-			},
-		}
-		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
-	}
-	if nodes := tuo.mutation.InvertIndexCompressedIDs(); len(nodes) > 0 {
-		edge := &sqlgraph.EdgeSpec{
-			Rel:     sqlgraph.O2O,
-			Inverse: false,
-			Table:   term.InvertIndexCompressedTable,
-			Columns: []string{term.InvertIndexCompressedColumn},
-			Bidi:    false,
-			Target: &sqlgraph.EdgeTarget{
-				IDSpec: &sqlgraph.FieldSpec{
-					Type:   field.TypeUUID,
-					Column: invertindexcompressed.FieldID,
-				},
-			},
-		}
-		for _, k := range nodes {
-			edge.Target.Nodes = append(edge.Target.Nodes, k)
-		}
-		_spec.Edges.Add = append(_spec.Edges.Add, edge)
+	if value, ok := tuo.mutation.PostingListCompressed(); ok {
+		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
+			Type:   field.TypeBytes,
+			Value:  value,
+			Column: term.FieldPostingListCompressed,
+		})
 	}
 	_node = &Term{config: tuo.config}
 	_spec.Assign = _node.assignValues

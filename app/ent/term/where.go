@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/google/uuid"
 )
@@ -112,6 +111,13 @@ func UpdatedAt(v time.Time) predicate.Term {
 func Word(v string) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
 		s.Where(sql.EQ(s.C(FieldWord), v))
+	})
+}
+
+// PostingListCompressed applies equality check predicate on the "posting_list_compressed" field. It's identical to PostingListCompressedEQ.
+func PostingListCompressed(v []byte) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.EQ(s.C(FieldPostingListCompressed), v))
 	})
 }
 
@@ -378,31 +384,79 @@ func WordContainsFold(v string) predicate.Term {
 	})
 }
 
-// HasInvertIndexCompressed applies the HasEdge predicate on the "invert_index_compressed" edge.
-func HasInvertIndexCompressed() predicate.Term {
+// PostingListCompressedEQ applies the EQ predicate on the "posting_list_compressed" field.
+func PostingListCompressedEQ(v []byte) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InvertIndexCompressedTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, InvertIndexCompressedTable, InvertIndexCompressedColumn),
-		)
-		sqlgraph.HasNeighbors(s, step)
+		s.Where(sql.EQ(s.C(FieldPostingListCompressed), v))
 	})
 }
 
-// HasInvertIndexCompressedWith applies the HasEdge predicate on the "invert_index_compressed" edge with a given conditions (other predicates).
-func HasInvertIndexCompressedWith(preds ...predicate.InvertIndexCompressed) predicate.Term {
+// PostingListCompressedNEQ applies the NEQ predicate on the "posting_list_compressed" field.
+func PostingListCompressedNEQ(v []byte) predicate.Term {
 	return predicate.Term(func(s *sql.Selector) {
-		step := sqlgraph.NewStep(
-			sqlgraph.From(Table, FieldID),
-			sqlgraph.To(InvertIndexCompressedInverseTable, FieldID),
-			sqlgraph.Edge(sqlgraph.O2O, false, InvertIndexCompressedTable, InvertIndexCompressedColumn),
-		)
-		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
-			for _, p := range preds {
-				p(s)
-			}
-		})
+		s.Where(sql.NEQ(s.C(FieldPostingListCompressed), v))
+	})
+}
+
+// PostingListCompressedIn applies the In predicate on the "posting_list_compressed" field.
+func PostingListCompressedIn(vs ...[]byte) predicate.Term {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Term(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.In(s.C(FieldPostingListCompressed), v...))
+	})
+}
+
+// PostingListCompressedNotIn applies the NotIn predicate on the "posting_list_compressed" field.
+func PostingListCompressedNotIn(vs ...[]byte) predicate.Term {
+	v := make([]interface{}, len(vs))
+	for i := range v {
+		v[i] = vs[i]
+	}
+	return predicate.Term(func(s *sql.Selector) {
+		// if not arguments were provided, append the FALSE constants,
+		// since we can't apply "IN ()". This will make this predicate falsy.
+		if len(v) == 0 {
+			s.Where(sql.False())
+			return
+		}
+		s.Where(sql.NotIn(s.C(FieldPostingListCompressed), v...))
+	})
+}
+
+// PostingListCompressedGT applies the GT predicate on the "posting_list_compressed" field.
+func PostingListCompressedGT(v []byte) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.GT(s.C(FieldPostingListCompressed), v))
+	})
+}
+
+// PostingListCompressedGTE applies the GTE predicate on the "posting_list_compressed" field.
+func PostingListCompressedGTE(v []byte) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.GTE(s.C(FieldPostingListCompressed), v))
+	})
+}
+
+// PostingListCompressedLT applies the LT predicate on the "posting_list_compressed" field.
+func PostingListCompressedLT(v []byte) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.LT(s.C(FieldPostingListCompressed), v))
+	})
+}
+
+// PostingListCompressedLTE applies the LTE predicate on the "posting_list_compressed" field.
+func PostingListCompressedLTE(v []byte) predicate.Term {
+	return predicate.Term(func(s *sql.Selector) {
+		s.Where(sql.LTE(s.C(FieldPostingListCompressed), v))
 	})
 }
 

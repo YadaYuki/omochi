@@ -9,8 +9,5 @@ import (
 // Document is the predicate function for document builders.
 type Document func(*sql.Selector)
 
-// InvertIndexCompressed is the predicate function for invertindexcompressed builders.
-type InvertIndexCompressed func(*sql.Selector)
-
 // Term is the predicate function for term builders.
 type Term func(*sql.Selector)

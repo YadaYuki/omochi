@@ -21,7 +21,7 @@ func NewGobInvertIndexCompresser() service.InvertIndexCompresser {
 	return &ZlibInvertIndexCompresser{}
 }
 
-func (c *ZlibInvertIndexCompresser) Compress(ctx context.Context, invertIndex *entities.InvertIndexCreate) (*entities.InvertIndexCompressedCreate, *errors.Error) {
+func (c *ZlibInvertIndexCompresser) Compress(ctx context.Context, invertIndex *entities.InvertIndex) (*entities.InvertIndexCompressed, *errors.Error) {
 
 	// Encode posting list to gob
 	var postingListGobBuffer bytes.Buffer
@@ -49,12 +49,12 @@ func (c *ZlibInvertIndexCompresser) Compress(ctx context.Context, invertIndex *e
 	}
 	compressedPostingList := compressedPostingListBuffer.Bytes()
 
-	invertIndexCompressed := entities.NewInvertIndexCompressedCreate(compressedPostingList)
+	invertIndexCompressed := entities.NewInvertIndexCompressed(compressedPostingList)
 
 	return invertIndexCompressed, nil
 }
 
-func (c *ZlibInvertIndexCompresser) Decompress(ctx context.Context, invertIndex *entities.InvertIndexCompressedCreate) (*entities.InvertIndexCreate, *errors.Error) {
+func (c *ZlibInvertIndexCompresser) Decompress(ctx context.Context, invertIndex *entities.InvertIndexCompressed) (*entities.InvertIndex, *errors.Error) {
 
 	// decompress posting list by zlib
 	compressedPostingListBuffer := bytes.NewBuffer(invertIndex.PostingListCompressed)
@@ -72,6 +72,6 @@ func (c *ZlibInvertIndexCompresser) Decompress(ctx context.Context, invertIndex 
 	if gobDecodeErr != nil {
 		return nil, errors.NewError(code.Unknown, fmt.Sprintf("gob: %v", gobDecodeErr.Error()))
 	}
-	invertIndexes := entities.NewInvertIndexCreate(&postingList)
+	invertIndexes := entities.NewInvertIndex(&postingList)
 	return invertIndexes, nil
 }

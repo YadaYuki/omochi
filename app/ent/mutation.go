@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/YadaYuki/omochi/app/ent/document"
-	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
@@ -27,9 +26,8 @@ const (
 	OpUpdateOne = ent.OpUpdateOne
 
 	// Node types.
-	TypeDocument              = "Document"
-	TypeInvertIndexCompressed = "InvertIndexCompressed"
-	TypeTerm                  = "Term"
+	TypeDocument = "Document"
+	TypeTerm     = "Term"
 )
 
 // DocumentMutation represents an operation that mutates the Document nodes in the graph.
@@ -505,515 +503,20 @@ func (m *DocumentMutation) ResetEdge(name string) error {
 	return fmt.Errorf("unknown Document edge %s", name)
 }
 
-// InvertIndexCompressedMutation represents an operation that mutates the InvertIndexCompressed nodes in the graph.
-type InvertIndexCompressedMutation struct {
+// TermMutation represents an operation that mutates the Term nodes in the graph.
+type TermMutation struct {
 	config
 	op                      Op
 	typ                     string
 	id                      *uuid.UUID
 	created_at              *time.Time
 	updated_at              *time.Time
+	word                    *string
 	posting_list_compressed *[]byte
 	clearedFields           map[string]struct{}
-	term_related            *uuid.UUID
-	clearedterm_related     bool
 	done                    bool
-	oldValue                func(context.Context) (*InvertIndexCompressed, error)
-	predicates              []predicate.InvertIndexCompressed
-}
-
-var _ ent.Mutation = (*InvertIndexCompressedMutation)(nil)
-
-// invertindexcompressedOption allows management of the mutation configuration using functional options.
-type invertindexcompressedOption func(*InvertIndexCompressedMutation)
-
-// newInvertIndexCompressedMutation creates new mutation for the InvertIndexCompressed entity.
-func newInvertIndexCompressedMutation(c config, op Op, opts ...invertindexcompressedOption) *InvertIndexCompressedMutation {
-	m := &InvertIndexCompressedMutation{
-		config:        c,
-		op:            op,
-		typ:           TypeInvertIndexCompressed,
-		clearedFields: make(map[string]struct{}),
-	}
-	for _, opt := range opts {
-		opt(m)
-	}
-	return m
-}
-
-// withInvertIndexCompressedID sets the ID field of the mutation.
-func withInvertIndexCompressedID(id uuid.UUID) invertindexcompressedOption {
-	return func(m *InvertIndexCompressedMutation) {
-		var (
-			err   error
-			once  sync.Once
-			value *InvertIndexCompressed
-		)
-		m.oldValue = func(ctx context.Context) (*InvertIndexCompressed, error) {
-			once.Do(func() {
-				if m.done {
-					err = errors.New("querying old values post mutation is not allowed")
-				} else {
-					value, err = m.Client().InvertIndexCompressed.Get(ctx, id)
-				}
-			})
-			return value, err
-		}
-		m.id = &id
-	}
-}
-
-// withInvertIndexCompressed sets the old InvertIndexCompressed of the mutation.
-func withInvertIndexCompressed(node *InvertIndexCompressed) invertindexcompressedOption {
-	return func(m *InvertIndexCompressedMutation) {
-		m.oldValue = func(context.Context) (*InvertIndexCompressed, error) {
-			return node, nil
-		}
-		m.id = &node.ID
-	}
-}
-
-// Client returns a new `ent.Client` from the mutation. If the mutation was
-// executed in a transaction (ent.Tx), a transactional client is returned.
-func (m InvertIndexCompressedMutation) Client() *Client {
-	client := &Client{config: m.config}
-	client.init()
-	return client
-}
-
-// Tx returns an `ent.Tx` for mutations that were executed in transactions;
-// it returns an error otherwise.
-func (m InvertIndexCompressedMutation) Tx() (*Tx, error) {
-	if _, ok := m.driver.(*txDriver); !ok {
-		return nil, errors.New("ent: mutation is not running in a transaction")
-	}
-	tx := &Tx{config: m.config}
-	tx.init()
-	return tx, nil
-}
-
-// SetID sets the value of the id field. Note that this
-// operation is only accepted on creation of InvertIndexCompressed entities.
-func (m *InvertIndexCompressedMutation) SetID(id uuid.UUID) {
-	m.id = &id
-}
-
-// ID returns the ID value in the mutation. Note that the ID is only available
-// if it was provided to the builder or after it was returned from the database.
-func (m *InvertIndexCompressedMutation) ID() (id uuid.UUID, exists bool) {
-	if m.id == nil {
-		return
-	}
-	return *m.id, true
-}
-
-// IDs queries the database and returns the entity ids that match the mutation's predicate.
-// That means, if the mutation is applied within a transaction with an isolation level such
-// as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
-// or updated by the mutation.
-func (m *InvertIndexCompressedMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
-	switch {
-	case m.op.Is(OpUpdateOne | OpDeleteOne):
-		id, exists := m.ID()
-		if exists {
-			return []uuid.UUID{id}, nil
-		}
-		fallthrough
-	case m.op.Is(OpUpdate | OpDelete):
-		return m.Client().InvertIndexCompressed.Query().Where(m.predicates...).IDs(ctx)
-	default:
-		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
-	}
-}
-
-// SetCreatedAt sets the "created_at" field.
-func (m *InvertIndexCompressedMutation) SetCreatedAt(t time.Time) {
-	m.created_at = &t
-}
-
-// CreatedAt returns the value of the "created_at" field in the mutation.
-func (m *InvertIndexCompressedMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.created_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old "created_at" field's value of the InvertIndexCompressed entity.
-// If the InvertIndexCompressed object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InvertIndexCompressedMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCreatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt resets all changes to the "created_at" field.
-func (m *InvertIndexCompressedMutation) ResetCreatedAt() {
-	m.created_at = nil
-}
-
-// SetUpdatedAt sets the "updated_at" field.
-func (m *InvertIndexCompressedMutation) SetUpdatedAt(t time.Time) {
-	m.updated_at = &t
-}
-
-// UpdatedAt returns the value of the "updated_at" field in the mutation.
-func (m *InvertIndexCompressedMutation) UpdatedAt() (r time.Time, exists bool) {
-	v := m.updated_at
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUpdatedAt returns the old "updated_at" field's value of the InvertIndexCompressed entity.
-// If the InvertIndexCompressed object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InvertIndexCompressedMutation) OldUpdatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUpdatedAt is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUpdatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUpdatedAt: %w", err)
-	}
-	return oldValue.UpdatedAt, nil
-}
-
-// ResetUpdatedAt resets all changes to the "updated_at" field.
-func (m *InvertIndexCompressedMutation) ResetUpdatedAt() {
-	m.updated_at = nil
-}
-
-// SetPostingListCompressed sets the "posting_list_compressed" field.
-func (m *InvertIndexCompressedMutation) SetPostingListCompressed(b []byte) {
-	m.posting_list_compressed = &b
-}
-
-// PostingListCompressed returns the value of the "posting_list_compressed" field in the mutation.
-func (m *InvertIndexCompressedMutation) PostingListCompressed() (r []byte, exists bool) {
-	v := m.posting_list_compressed
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldPostingListCompressed returns the old "posting_list_compressed" field's value of the InvertIndexCompressed entity.
-// If the InvertIndexCompressed object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *InvertIndexCompressedMutation) OldPostingListCompressed(ctx context.Context) (v []byte, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldPostingListCompressed is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldPostingListCompressed requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldPostingListCompressed: %w", err)
-	}
-	return oldValue.PostingListCompressed, nil
-}
-
-// ResetPostingListCompressed resets all changes to the "posting_list_compressed" field.
-func (m *InvertIndexCompressedMutation) ResetPostingListCompressed() {
-	m.posting_list_compressed = nil
-}
-
-// SetTermRelatedID sets the "term_related" edge to the Term entity by id.
-func (m *InvertIndexCompressedMutation) SetTermRelatedID(id uuid.UUID) {
-	m.term_related = &id
-}
-
-// ClearTermRelated clears the "term_related" edge to the Term entity.
-func (m *InvertIndexCompressedMutation) ClearTermRelated() {
-	m.clearedterm_related = true
-}
-
-// TermRelatedCleared reports if the "term_related" edge to the Term entity was cleared.
-func (m *InvertIndexCompressedMutation) TermRelatedCleared() bool {
-	return m.clearedterm_related
-}
-
-// TermRelatedID returns the "term_related" edge ID in the mutation.
-func (m *InvertIndexCompressedMutation) TermRelatedID() (id uuid.UUID, exists bool) {
-	if m.term_related != nil {
-		return *m.term_related, true
-	}
-	return
-}
-
-// TermRelatedIDs returns the "term_related" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// TermRelatedID instead. It exists only for internal usage by the builders.
-func (m *InvertIndexCompressedMutation) TermRelatedIDs() (ids []uuid.UUID) {
-	if id := m.term_related; id != nil {
-		ids = append(ids, *id)
-	}
-	return
-}
-
-// ResetTermRelated resets all changes to the "term_related" edge.
-func (m *InvertIndexCompressedMutation) ResetTermRelated() {
-	m.term_related = nil
-	m.clearedterm_related = false
-}
-
-// Where appends a list predicates to the InvertIndexCompressedMutation builder.
-func (m *InvertIndexCompressedMutation) Where(ps ...predicate.InvertIndexCompressed) {
-	m.predicates = append(m.predicates, ps...)
-}
-
-// Op returns the operation name.
-func (m *InvertIndexCompressedMutation) Op() Op {
-	return m.op
-}
-
-// Type returns the node type of this mutation (InvertIndexCompressed).
-func (m *InvertIndexCompressedMutation) Type() string {
-	return m.typ
-}
-
-// Fields returns all fields that were changed during this mutation. Note that in
-// order to get all numeric fields that were incremented/decremented, call
-// AddedFields().
-func (m *InvertIndexCompressedMutation) Fields() []string {
-	fields := make([]string, 0, 3)
-	if m.created_at != nil {
-		fields = append(fields, invertindexcompressed.FieldCreatedAt)
-	}
-	if m.updated_at != nil {
-		fields = append(fields, invertindexcompressed.FieldUpdatedAt)
-	}
-	if m.posting_list_compressed != nil {
-		fields = append(fields, invertindexcompressed.FieldPostingListCompressed)
-	}
-	return fields
-}
-
-// Field returns the value of a field with the given name. The second boolean
-// return value indicates that this field was not set, or was not defined in the
-// schema.
-func (m *InvertIndexCompressedMutation) Field(name string) (ent.Value, bool) {
-	switch name {
-	case invertindexcompressed.FieldCreatedAt:
-		return m.CreatedAt()
-	case invertindexcompressed.FieldUpdatedAt:
-		return m.UpdatedAt()
-	case invertindexcompressed.FieldPostingListCompressed:
-		return m.PostingListCompressed()
-	}
-	return nil, false
-}
-
-// OldField returns the old value of the field from the database. An error is
-// returned if the mutation operation is not UpdateOne, or the query to the
-// database failed.
-func (m *InvertIndexCompressedMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
-	switch name {
-	case invertindexcompressed.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
-	case invertindexcompressed.FieldUpdatedAt:
-		return m.OldUpdatedAt(ctx)
-	case invertindexcompressed.FieldPostingListCompressed:
-		return m.OldPostingListCompressed(ctx)
-	}
-	return nil, fmt.Errorf("unknown InvertIndexCompressed field %s", name)
-}
-
-// SetField sets the value of a field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *InvertIndexCompressedMutation) SetField(name string, value ent.Value) error {
-	switch name {
-	case invertindexcompressed.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
-		return nil
-	case invertindexcompressed.FieldUpdatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUpdatedAt(v)
-		return nil
-	case invertindexcompressed.FieldPostingListCompressed:
-		v, ok := value.([]byte)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetPostingListCompressed(v)
-		return nil
-	}
-	return fmt.Errorf("unknown InvertIndexCompressed field %s", name)
-}
-
-// AddedFields returns all numeric fields that were incremented/decremented during
-// this mutation.
-func (m *InvertIndexCompressedMutation) AddedFields() []string {
-	return nil
-}
-
-// AddedField returns the numeric value that was incremented/decremented on a field
-// with the given name. The second boolean return value indicates that this field
-// was not set, or was not defined in the schema.
-func (m *InvertIndexCompressedMutation) AddedField(name string) (ent.Value, bool) {
-	return nil, false
-}
-
-// AddField adds the value to the field with the given name. It returns an error if
-// the field is not defined in the schema, or if the type mismatched the field
-// type.
-func (m *InvertIndexCompressedMutation) AddField(name string, value ent.Value) error {
-	switch name {
-	}
-	return fmt.Errorf("unknown InvertIndexCompressed numeric field %s", name)
-}
-
-// ClearedFields returns all nullable fields that were cleared during this
-// mutation.
-func (m *InvertIndexCompressedMutation) ClearedFields() []string {
-	return nil
-}
-
-// FieldCleared returns a boolean indicating if a field with the given name was
-// cleared in this mutation.
-func (m *InvertIndexCompressedMutation) FieldCleared(name string) bool {
-	_, ok := m.clearedFields[name]
-	return ok
-}
-
-// ClearField clears the value of the field with the given name. It returns an
-// error if the field is not defined in the schema.
-func (m *InvertIndexCompressedMutation) ClearField(name string) error {
-	return fmt.Errorf("unknown InvertIndexCompressed nullable field %s", name)
-}
-
-// ResetField resets all changes in the mutation for the field with the given name.
-// It returns an error if the field is not defined in the schema.
-func (m *InvertIndexCompressedMutation) ResetField(name string) error {
-	switch name {
-	case invertindexcompressed.FieldCreatedAt:
-		m.ResetCreatedAt()
-		return nil
-	case invertindexcompressed.FieldUpdatedAt:
-		m.ResetUpdatedAt()
-		return nil
-	case invertindexcompressed.FieldPostingListCompressed:
-		m.ResetPostingListCompressed()
-		return nil
-	}
-	return fmt.Errorf("unknown InvertIndexCompressed field %s", name)
-}
-
-// AddedEdges returns all edge names that were set/added in this mutation.
-func (m *InvertIndexCompressedMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.term_related != nil {
-		edges = append(edges, invertindexcompressed.EdgeTermRelated)
-	}
-	return edges
-}
-
-// AddedIDs returns all IDs (to other nodes) that were added for the given edge
-// name in this mutation.
-func (m *InvertIndexCompressedMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case invertindexcompressed.EdgeTermRelated:
-		if id := m.term_related; id != nil {
-			return []ent.Value{*id}
-		}
-	}
-	return nil
-}
-
-// RemovedEdges returns all edge names that were removed in this mutation.
-func (m *InvertIndexCompressedMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
-	return edges
-}
-
-// RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
-// the given name in this mutation.
-func (m *InvertIndexCompressedMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	}
-	return nil
-}
-
-// ClearedEdges returns all edge names that were cleared in this mutation.
-func (m *InvertIndexCompressedMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedterm_related {
-		edges = append(edges, invertindexcompressed.EdgeTermRelated)
-	}
-	return edges
-}
-
-// EdgeCleared returns a boolean which indicates if the edge with the given name
-// was cleared in this mutation.
-func (m *InvertIndexCompressedMutation) EdgeCleared(name string) bool {
-	switch name {
-	case invertindexcompressed.EdgeTermRelated:
-		return m.clearedterm_related
-	}
-	return false
-}
-
-// ClearEdge clears the value of the edge with the given name. It returns an error
-// if that edge is not defined in the schema.
-func (m *InvertIndexCompressedMutation) ClearEdge(name string) error {
-	switch name {
-	case invertindexcompressed.EdgeTermRelated:
-		m.ClearTermRelated()
-		return nil
-	}
-	return fmt.Errorf("unknown InvertIndexCompressed unique edge %s", name)
-}
-
-// ResetEdge resets all changes to the edge with the given name in this mutation.
-// It returns an error if the edge is not defined in the schema.
-func (m *InvertIndexCompressedMutation) ResetEdge(name string) error {
-	switch name {
-	case invertindexcompressed.EdgeTermRelated:
-		m.ResetTermRelated()
-		return nil
-	}
-	return fmt.Errorf("unknown InvertIndexCompressed edge %s", name)
-}
-
-// TermMutation represents an operation that mutates the Term nodes in the graph.
-type TermMutation struct {
-	config
-	op                             Op
-	typ                            string
-	id                             *uuid.UUID
-	created_at                     *time.Time
-	updated_at                     *time.Time
-	word                           *string
-	clearedFields                  map[string]struct{}
-	invert_index_compressed        *uuid.UUID
-	clearedinvert_index_compressed bool
-	done                           bool
-	oldValue                       func(context.Context) (*Term, error)
-	predicates                     []predicate.Term
+	oldValue                func(context.Context) (*Term, error)
+	predicates              []predicate.Term
 }
 
 var _ ent.Mutation = (*TermMutation)(nil)
@@ -1228,43 +731,40 @@ func (m *TermMutation) ResetWord() {
 	m.word = nil
 }
 
-// SetInvertIndexCompressedID sets the "invert_index_compressed" edge to the InvertIndexCompressed entity by id.
-func (m *TermMutation) SetInvertIndexCompressedID(id uuid.UUID) {
-	m.invert_index_compressed = &id
+// SetPostingListCompressed sets the "posting_list_compressed" field.
+func (m *TermMutation) SetPostingListCompressed(b []byte) {
+	m.posting_list_compressed = &b
 }
 
-// ClearInvertIndexCompressed clears the "invert_index_compressed" edge to the InvertIndexCompressed entity.
-func (m *TermMutation) ClearInvertIndexCompressed() {
-	m.clearedinvert_index_compressed = true
-}
-
-// InvertIndexCompressedCleared reports if the "invert_index_compressed" edge to the InvertIndexCompressed entity was cleared.
-func (m *TermMutation) InvertIndexCompressedCleared() bool {
-	return m.clearedinvert_index_compressed
-}
-
-// InvertIndexCompressedID returns the "invert_index_compressed" edge ID in the mutation.
-func (m *TermMutation) InvertIndexCompressedID() (id uuid.UUID, exists bool) {
-	if m.invert_index_compressed != nil {
-		return *m.invert_index_compressed, true
+// PostingListCompressed returns the value of the "posting_list_compressed" field in the mutation.
+func (m *TermMutation) PostingListCompressed() (r []byte, exists bool) {
+	v := m.posting_list_compressed
+	if v == nil {
+		return
 	}
-	return
+	return *v, true
 }
 
-// InvertIndexCompressedIDs returns the "invert_index_compressed" edge IDs in the mutation.
-// Note that IDs always returns len(IDs) <= 1 for unique edges, and you should use
-// InvertIndexCompressedID instead. It exists only for internal usage by the builders.
-func (m *TermMutation) InvertIndexCompressedIDs() (ids []uuid.UUID) {
-	if id := m.invert_index_compressed; id != nil {
-		ids = append(ids, *id)
+// OldPostingListCompressed returns the old "posting_list_compressed" field's value of the Term entity.
+// If the Term object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TermMutation) OldPostingListCompressed(ctx context.Context) (v []byte, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldPostingListCompressed is only allowed on UpdateOne operations")
 	}
-	return
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldPostingListCompressed requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldPostingListCompressed: %w", err)
+	}
+	return oldValue.PostingListCompressed, nil
 }
 
-// ResetInvertIndexCompressed resets all changes to the "invert_index_compressed" edge.
-func (m *TermMutation) ResetInvertIndexCompressed() {
-	m.invert_index_compressed = nil
-	m.clearedinvert_index_compressed = false
+// ResetPostingListCompressed resets all changes to the "posting_list_compressed" field.
+func (m *TermMutation) ResetPostingListCompressed() {
+	m.posting_list_compressed = nil
 }
 
 // Where appends a list predicates to the TermMutation builder.
@@ -1286,7 +786,7 @@ func (m *TermMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TermMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 4)
 	if m.created_at != nil {
 		fields = append(fields, term.FieldCreatedAt)
 	}
@@ -1295,6 +795,9 @@ func (m *TermMutation) Fields() []string {
 	}
 	if m.word != nil {
 		fields = append(fields, term.FieldWord)
+	}
+	if m.posting_list_compressed != nil {
+		fields = append(fields, term.FieldPostingListCompressed)
 	}
 	return fields
 }
@@ -1310,6 +813,8 @@ func (m *TermMutation) Field(name string) (ent.Value, bool) {
 		return m.UpdatedAt()
 	case term.FieldWord:
 		return m.Word()
+	case term.FieldPostingListCompressed:
+		return m.PostingListCompressed()
 	}
 	return nil, false
 }
@@ -1325,6 +830,8 @@ func (m *TermMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldUpdatedAt(ctx)
 	case term.FieldWord:
 		return m.OldWord(ctx)
+	case term.FieldPostingListCompressed:
+		return m.OldPostingListCompressed(ctx)
 	}
 	return nil, fmt.Errorf("unknown Term field %s", name)
 }
@@ -1354,6 +861,13 @@ func (m *TermMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetWord(v)
+		return nil
+	case term.FieldPostingListCompressed:
+		v, ok := value.([]byte)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetPostingListCompressed(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Term field %s", name)
@@ -1413,82 +927,57 @@ func (m *TermMutation) ResetField(name string) error {
 	case term.FieldWord:
 		m.ResetWord()
 		return nil
+	case term.FieldPostingListCompressed:
+		m.ResetPostingListCompressed()
+		return nil
 	}
 	return fmt.Errorf("unknown Term field %s", name)
 }
 
 // AddedEdges returns all edge names that were set/added in this mutation.
 func (m *TermMutation) AddedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.invert_index_compressed != nil {
-		edges = append(edges, term.EdgeInvertIndexCompressed)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // AddedIDs returns all IDs (to other nodes) that were added for the given edge
 // name in this mutation.
 func (m *TermMutation) AddedIDs(name string) []ent.Value {
-	switch name {
-	case term.EdgeInvertIndexCompressed:
-		if id := m.invert_index_compressed; id != nil {
-			return []ent.Value{*id}
-		}
-	}
 	return nil
 }
 
 // RemovedEdges returns all edge names that were removed in this mutation.
 func (m *TermMutation) RemovedEdges() []string {
-	edges := make([]string, 0, 1)
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // RemovedIDs returns all IDs (to other nodes) that were removed for the edge with
 // the given name in this mutation.
 func (m *TermMutation) RemovedIDs(name string) []ent.Value {
-	switch name {
-	}
 	return nil
 }
 
 // ClearedEdges returns all edge names that were cleared in this mutation.
 func (m *TermMutation) ClearedEdges() []string {
-	edges := make([]string, 0, 1)
-	if m.clearedinvert_index_compressed {
-		edges = append(edges, term.EdgeInvertIndexCompressed)
-	}
+	edges := make([]string, 0, 0)
 	return edges
 }
 
 // EdgeCleared returns a boolean which indicates if the edge with the given name
 // was cleared in this mutation.
 func (m *TermMutation) EdgeCleared(name string) bool {
-	switch name {
-	case term.EdgeInvertIndexCompressed:
-		return m.clearedinvert_index_compressed
-	}
 	return false
 }
 
 // ClearEdge clears the value of the edge with the given name. It returns an error
 // if that edge is not defined in the schema.
 func (m *TermMutation) ClearEdge(name string) error {
-	switch name {
-	case term.EdgeInvertIndexCompressed:
-		m.ClearInvertIndexCompressed()
-		return nil
-	}
 	return fmt.Errorf("unknown Term unique edge %s", name)
 }
 
 // ResetEdge resets all changes to the edge with the given name in this mutation.
 // It returns an error if the edge is not defined in the schema.
 func (m *TermMutation) ResetEdge(name string) error {
-	switch name {
-	case term.EdgeInvertIndexCompressed:
-		m.ResetInvertIndexCompressed()
-		return nil
-	}
 	return fmt.Errorf("unknown Term edge %s", name)
 }

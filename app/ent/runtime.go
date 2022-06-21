@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/YadaYuki/omochi/app/ent/document"
-	"github.com/YadaYuki/omochi/app/ent/invertindexcompressed"
 	"github.com/YadaYuki/omochi/app/ent/schema"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/google/uuid"
@@ -31,29 +30,6 @@ func init() {
 	document.DefaultUpdatedAt = documentDescUpdatedAt.Default.(func() time.Time)
 	// document.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	document.UpdateDefaultUpdatedAt = documentDescUpdatedAt.UpdateDefault.(func() time.Time)
-	invertindexcompressedMixin := schema.InvertIndexCompressed{}.Mixin()
-	invertindexcompressedMixinFields0 := invertindexcompressedMixin[0].Fields()
-	_ = invertindexcompressedMixinFields0
-	invertindexcompressedFields := schema.InvertIndexCompressed{}.Fields()
-	_ = invertindexcompressedFields
-	// invertindexcompressedDescCreatedAt is the schema descriptor for created_at field.
-	invertindexcompressedDescCreatedAt := invertindexcompressedMixinFields0[0].Descriptor()
-	// invertindexcompressed.DefaultCreatedAt holds the default value on creation for the created_at field.
-	invertindexcompressed.DefaultCreatedAt = invertindexcompressedDescCreatedAt.Default.(func() time.Time)
-	// invertindexcompressedDescUpdatedAt is the schema descriptor for updated_at field.
-	invertindexcompressedDescUpdatedAt := invertindexcompressedMixinFields0[1].Descriptor()
-	// invertindexcompressed.DefaultUpdatedAt holds the default value on creation for the updated_at field.
-	invertindexcompressed.DefaultUpdatedAt = invertindexcompressedDescUpdatedAt.Default.(func() time.Time)
-	// invertindexcompressed.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
-	invertindexcompressed.UpdateDefaultUpdatedAt = invertindexcompressedDescUpdatedAt.UpdateDefault.(func() time.Time)
-	// invertindexcompressedDescPostingListCompressed is the schema descriptor for posting_list_compressed field.
-	invertindexcompressedDescPostingListCompressed := invertindexcompressedFields[1].Descriptor()
-	// invertindexcompressed.PostingListCompressedValidator is a validator for the "posting_list_compressed" field. It is called by the builders before save.
-	invertindexcompressed.PostingListCompressedValidator = invertindexcompressedDescPostingListCompressed.Validators[0].(func([]byte) error)
-	// invertindexcompressedDescID is the schema descriptor for id field.
-	invertindexcompressedDescID := invertindexcompressedFields[0].Descriptor()
-	// invertindexcompressed.DefaultID holds the default value on creation for the id field.
-	invertindexcompressed.DefaultID = invertindexcompressedDescID.Default.(func() uuid.UUID)
 	termMixin := schema.Term{}.Mixin()
 	termMixinFields0 := termMixin[0].Fields()
 	_ = termMixinFields0
@@ -69,6 +45,10 @@ func init() {
 	term.DefaultUpdatedAt = termDescUpdatedAt.Default.(func() time.Time)
 	// term.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	term.UpdateDefaultUpdatedAt = termDescUpdatedAt.UpdateDefault.(func() time.Time)
+	// termDescPostingListCompressed is the schema descriptor for posting_list_compressed field.
+	termDescPostingListCompressed := termFields[2].Descriptor()
+	// term.PostingListCompressedValidator is a validator for the "posting_list_compressed" field. It is called by the builders before save.
+	term.PostingListCompressedValidator = termDescPostingListCompressed.Validators[0].(func([]byte) error)
 	// termDescID is the schema descriptor for id field.
 	termDescID := termFields[0].Descriptor()
 	// term.DefaultID holds the default value on creation for the id field.
