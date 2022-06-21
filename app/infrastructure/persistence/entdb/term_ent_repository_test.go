@@ -38,9 +38,7 @@ func TestFindTermById(t *testing.T) {
 }
 
 func TestFindTermCompressedsByWords(t *testing.T) {
-	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
-	termRepository := NewTermEntRepository(client)
+
 	dummyInvertIndexCompressedCreate := entities.NewInvertIndexCompressedCreate([]byte("DUMMY INVERT INDEX COMPRESSED"))
 	testCases := []struct {
 		wordsForQuery []string
@@ -65,6 +63,9 @@ func TestFindTermCompressedsByWords(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(fmt.Sprintf("%v", tc), func(tt *testing.T) {
+			client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+			defer client.Close()
+			termRepository := NewTermEntRepository(client)
 			for _, word := range tc.wordsToInsert {
 				termCreated, _ := client.Term.
 					Create().
@@ -73,7 +74,7 @@ func TestFindTermCompressedsByWords(t *testing.T) {
 				client.InvertIndexCompressed.
 					Create().
 					SetPostingListCompressed(dummyInvertIndexCompressedCreate.PostingListCompressed).
-					SetID(termCreated.ID).
+					SetTermRelatedID(termCreated.ID).
 					Save(context.Background())
 			}
 			termCompresseds, err := termRepository.FindTermCompressedsByWords(context.Background(), &tc.wordsForQuery)
