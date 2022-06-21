@@ -44,13 +44,12 @@ var (
 			},
 		},
 	}
-	
 	// TermsColumns holds the columns for the "terms" table.
 	TermsColumns = []*schema.Column{
 		{Name: "uuid", Type: field.TypeUUID},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "word", Type: field.TypeString},
+		{Name: "word", Type: field.TypeString, Unique: true},
 	}
 	// TermsTable holds the schema information for the "terms" table.
 	TermsTable = &schema.Table{
