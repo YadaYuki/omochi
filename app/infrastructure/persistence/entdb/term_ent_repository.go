@@ -43,7 +43,13 @@ func (r *TermEntRepository) FindTermCompressedsByWords(ctx context.Context, word
 	for i, word := range *words {
 		predicatesForWords[i] = term.Word(word)
 	}
-	termCompresseds, queryErr := r.db.Term.Query().Where(term.Or(predicatesForWords...)).WithInvertIndexCompressed().All(ctx)
+	termCompresseds, queryErr := r.
+		db.
+		Term.
+		Query().
+		Where(term.Or(predicatesForWords...)).
+		WithInvertIndexCompressed().
+		All(ctx)
 	if queryErr != nil {
 		return nil, errors.NewError(code.Unknown, queryErr)
 	}
