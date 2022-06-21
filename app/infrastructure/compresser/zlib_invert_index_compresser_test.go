@@ -15,7 +15,7 @@ func TestCompress(t *testing.T) {
 		{invertIndex: entities.NewInvertIndex(&[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
 	}
 	for _, tc := range testCases {
-		compresser := NewGobInvertIndexCompresser()
+		compresser := NewZlibInvertIndexCompresser()
 		t.Run(fmt.Sprintf("%v", tc.invertIndex), func(tt *testing.T) {
 			compressed, err := compresser.Compress(context.Background(), tc.invertIndex)
 			if err != nil {
@@ -37,7 +37,7 @@ func TestCompressToDecompress(t *testing.T) {
 		{invertIndex: entities.NewInvertIndex(&[]entities.Posting{{DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}, {DocumentRelatedId: -1, PositionsInDocument: []int{1, 2, 3}}})},
 	}
 	for _, tc := range testCases {
-		compresser := NewGobInvertIndexCompresser()
+		compresser := NewZlibInvertIndexCompresser()
 		t.Run(fmt.Sprintf("%v", tc.invertIndex), func(tt *testing.T) {
 			ctx := context.Background()
 			invertIndexCompressed, compressErr := compresser.Compress(ctx, tc.invertIndex)

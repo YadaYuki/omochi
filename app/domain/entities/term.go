@@ -33,7 +33,7 @@ type TermCompressedCreate struct {
 }
 
 func NewTermCreate(word string, invertIndex *InvertIndex) *TermCreate {
-	return &TermCreate{Word: word}
+	return &TermCreate{Word: word, InvertIndex: invertIndex}
 }
 
 func NewTermCompressedCreate(word string, invertIndex *InvertIndexCompressed) *TermCompressedCreate {

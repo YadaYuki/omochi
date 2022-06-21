@@ -12,8 +12,8 @@ func TestTokenize(t *testing.T) {
 		expectedTermWords []string
 	}{
 		{"hoge fuga piyo", []string{"hoge", "fuga", "piyo"}},
-		{"I have a pen", []string{"i", "have", "pen"}},                                                        // a,theなどの冠詞は除去 / 単語は小文字に統一.
-		{"I have a pen , you don't have pens.", []string{"i", "have", "pen", "you", "don't", "have", "pens"}}, // .も除去
+		{"I have a pen", []string{"i", "have", "pen"}},                                                            // a,theなどの冠詞は除去 / 単語は小文字に統一.
+		{"I have a pen , you don't have pens.", []string{"i", "have", "pen", "you", "do", "n't", "have", "pens"}}, // .も除去
 	}
 	for _, tc := range testCases {
 		tokenizer := NewEnProseTokenizer()
@@ -21,6 +21,9 @@ func TestTokenize(t *testing.T) {
 			terms, err := tokenizer.Tokenize(context.Background(), tc.content)
 			if err != nil {
 				t.Fatalf(err.Error())
+			}
+			if len(*terms) != len(tc.expectedTermWords) {
+				t.Fatalf("len(*terms) should be %v but got %v", len(tc.expectedTermWords), len(*terms))
 			}
 			for i, term := range *terms {
 				if term.Word != tc.expectedTermWords[i] {
