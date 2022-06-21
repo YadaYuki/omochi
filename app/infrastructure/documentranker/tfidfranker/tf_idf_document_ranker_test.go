@@ -12,12 +12,12 @@ import (
 func TestCalculateTermFrequency(t *testing.T) {
 	ranker := &TfIdfDocumentRanker{}
 	testCases := []struct {
-		doc        entities.DocumentDetail
+		doc        entities.Document
 		word       string
 		expectedTf int
 	}{
-		{entities.DocumentDetail{TokenizedContent: []string{"sun", "is", "shining"}}, "is", 1},
-		{entities.DocumentDetail{TokenizedContent: []string{"sun", "is", "shining"}}, "hoge", 0},
+		{entities.Document{TokenizedContent: []string{"sun", "is", "shining"}}, "is", 1},
+		{entities.Document{TokenizedContent: []string{"sun", "is", "shining"}}, "hoge", 0},
 	}
 	for _, tc := range testCases {
 		t.Run(tc.word, func(tt *testing.T) {
@@ -31,13 +31,13 @@ func TestCalculateTermFrequency(t *testing.T) {
 
 func TestCalculateInverseDocumentFrequency(t *testing.T) {
 	ranker := &TfIdfDocumentRanker{}
-	documents := &[]entities.DocumentDetail{
+	documents := &[]entities.Document{
 		{TokenizedContent: []string{"sun", "is", "shining"}},
 		{TokenizedContent: []string{"weather", "is", "sweet"}},
 		{TokenizedContent: []string{"sun", "is", "shining", "weather", "is", "sweet"}},
 	}
 	testCases := []struct {
-		docs        *[]entities.DocumentDetail
+		docs        *[]entities.Document
 		word        string
 		expectedIdf float32
 	}{
@@ -80,7 +80,7 @@ func TestNormalize(t *testing.T) {
 
 func TestCalculateDocumentScores(t *testing.T) {
 	ranker := &TfIdfDocumentRanker{}
-	documents := &[]entities.DocumentDetail{
+	documents := &[]entities.Document{
 		{TokenizedContent: []string{"sun", "is", "shining"}},
 		{TokenizedContent: []string{"weather", "is", "sweet"}},
 		{TokenizedContent: []string{"sun", "is", "shining", "weather", "is", "sweet"}},
@@ -107,7 +107,7 @@ func TestCalculateDocumentScores(t *testing.T) {
 
 func TestSortDocumentByScore(t *testing.T) {
 	ranker := &TfIdfDocumentRanker{}
-	documents := []entities.DocumentDetail{
+	documents := []entities.Document{
 		{Content: "sun is shining", TokenizedContent: []string{"sun", "is", "shining"}},
 		{Content: "weather is sweet", TokenizedContent: []string{"weather", "is", "sweet"}},
 		{Content: "sun is shining weather is sweet", TokenizedContent: []string{"sun", "is", "shining", "weather", "is", "sweet"}},

@@ -21,7 +21,7 @@ func TestCreateDocument(t *testing.T) {
 		{"hoge hoge hoge", []string{"hoge", "hoge", "hoge"}},
 	}
 	for _, tc := range testCases {
-		doc := entities.NewDocument(tc.content, tc.tokenizedContent)
+		doc := entities.NewDocumentCreate(tc.content, tc.tokenizedContent)
 		documentDetail, err := documentRepository.CreateDocument(context.Background(), doc)
 		if err != nil {
 			t.Fatal(err)
