@@ -15,10 +15,9 @@ import (
 )
 
 type ZlibInvertIndexCompresser struct {
-	service.InvertIndexCompresser
 }
 
-func NewGobInvertIndexCompresser() *ZlibInvertIndexCompresser {
+func NewGobInvertIndexCompresser() service.InvertIndexCompresser {
 	return &ZlibInvertIndexCompresser{}
 }
 

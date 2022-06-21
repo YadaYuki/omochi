@@ -11,5 +11,5 @@ import (
 type TermRepository interface {
 	FindTermById(ctx context.Context, uuid uuid.UUID) (*entities.Term, *errors.Error)
 	BulkUpsertTerm(ctx context.Context, terms *[]entities.TermCreate) (*[]entities.Term, *errors.Error)
-	FindTermsByWords(ctx context.Context, words *[]string) (*[]entities.Term, *errors.Error)
+	FindTermCompressedsByWords(ctx context.Context, words *[]string) (*[]entities.Term, *errors.Error)
 }

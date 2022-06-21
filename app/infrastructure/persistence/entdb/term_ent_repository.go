@@ -36,7 +36,8 @@ func (r *TermEntRepository) BulkUpsertTerm(ctx context.Context, terms *[]entitie
 	return nil, nil
 }
 
-func (r *TermEntRepository) FindTermsByWords(ctx context.Context, words *[]string) (*[]entities.Term, *errors.Error) {
+//
+func (r *TermEntRepository) FindTermCompressedsByWords(ctx context.Context, words *[]string) (*[]entities.Term, *errors.Error) {
 	return nil, nil
 }
 
