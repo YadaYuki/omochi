@@ -95,3 +95,75 @@ func TestFindTermCompressedsByWords(t *testing.T) {
 		})
 	}
 }
+
+func TestBulkUpsertTerm(t *testing.T) {
+	dummyInvertIndexCompressedCreate := entities.NewInvertIndexCompressedCreate([]byte("DUMMY INVERT INDEX COMPRESSED"))
+	dummyInvertIndexCompressedUpdate := entities.NewInvertIndexCompressedCreate([]byte("DUMMY INVERT INDEX COMPRESSED UPDATED"))
+	testCases := []struct {
+		wordsForAdvanceInsert []string
+		wordsToUpsert         []string
+		wordsAfterUpsert      []string // wordsForQueryとwordsToInsertの和集合になる.
+	}{
+		{
+			wordsForAdvanceInsert: []string{"hoge", "fuga"},
+			wordsToUpsert:         []string{"hoge", "piyo"},
+			wordsAfterUpsert:      []string{"hoge", "fuga", "piyo"},
+		},
+		{
+			wordsForAdvanceInsert: []string{},
+			wordsToUpsert:         []string{"ruby", "js", "cpp"},
+			wordsAfterUpsert:      []string{"ruby", "js", "cpp"},
+		},
+		{
+			wordsForAdvanceInsert: []string{"ruby", "js", "java", "python"},
+			wordsToUpsert:         []string{"ruby", "js", "java", "python"},
+			wordsAfterUpsert:      []string{"ruby", "js", "java", "python"},
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%v", tc), func(tt *testing.T) {
+			ctx := context.Background()
+			client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+			defer client.Close()
+			termRepository := NewTermEntRepository(client)
+			for _, word := range tc.wordsForAdvanceInsert {
+				termCreated, _ := client.Term.
+					Create().
+					SetWord(word).
+					Save(ctx)
+				client.InvertIndexCompressed.
+					Create().
+					SetPostingListCompressed(dummyInvertIndexCompressedCreate.PostingListCompressed).
+					SetTermRelatedID(termCreated.ID).
+					Save(ctx)
+			}
+			termsUpsert := make([]entities.TermCompressedCreate, len(tc.wordsToUpsert))
+			for i, termCreate := range termsUpsert {
+				termCreate.Word = tc.wordsToUpsert[i]
+				termCreate.InvertIndexCompressdCreate = dummyInvertIndexCompressedUpdate
+			}
+			_, err := termRepository.BulkUpsertTerm(ctx, &termsUpsert)
+			if err != nil {
+				t.Fatal(err)
+			}
+			entTerms, _ := client.
+				Term.
+				Query().
+				WithInvertIndexCompressed().
+				All(ctx)
+			if len(tc.wordsAfterUpsert) != len(entTerms) {
+				t.Fatalf("len(entTerms) should be %v,but got %v", len(tc.wordsAfterUpsert), len(entTerms))
+			}
+			for _, entTerm := range entTerms {
+				if !slices.Contains(tc.wordsAfterUpsert, entTerm.Word) {
+					t.Fatalf("%v does not contain %v", tc.wordsAfterUpsert, entTerm.Word)
+				}
+				if slices.Contains(tc.wordsAfterUpsert, entTerm.Word) {
+					if !bytes.Equal(dummyInvertIndexCompressedUpdate.PostingListCompressed, entTerm.Edges.InvertIndexCompressed.PostingListCompressed) {
+						t.Fatalf("")
+					}
+				}
+			}
+		})
+	}
+}

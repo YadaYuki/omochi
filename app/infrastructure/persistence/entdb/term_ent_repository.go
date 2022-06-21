@@ -33,7 +33,7 @@ func (r *TermEntRepository) FindTermById(ctx context.Context, uuid uuid.UUID) (*
 	return convertTermEntSchemaToEntity(term), nil
 }
 
-func (r *TermEntRepository) BulkUpsertTerm(ctx context.Context, terms *[]entities.TermCreate) (*[]entities.TermCompressed, *errors.Error) {
+func (r *TermEntRepository) BulkUpsertTerm(ctx context.Context, terms *[]entities.TermCompressedCreate) (*[]entities.TermCompressed, *errors.Error) {
 	return nil, nil
 }
 

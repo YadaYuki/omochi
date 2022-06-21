@@ -11,13 +11,12 @@ import (
 )
 
 type Indexer struct {
-	transactionWrapper *wrapper.EntTransactionWrapper
 	documentRepository repository.DocumentRepository
 	tokenizer          service.Tokenizer
 }
 
 func NewIndexer(wrapper *wrapper.EntTransactionWrapper, documentRepository repository.DocumentRepository, tokenizer service.Tokenizer) service.Indexer {
-	return &Indexer{transactionWrapper: wrapper}
+	return &Indexer{}
 }
 
 func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.DocumentCreate) (*[]entities.Document, *errors.Error) {
@@ -31,18 +30,12 @@ func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Docum
 	for i, term := range *tokenizedContent {
 		document.TokenizedContent[i] = term.Word
 	}
-	// TODO:Transaction
-	// create document
 	documentDetail, documentCreateErr := i.documentRepository.CreateDocument(ctx, document)
 	if documentCreateErr != nil {
 		return nil, errors.NewError(documentCreateErr.Code, documentCreateErr.Error())
 	}
-
-	// create term
-
 	// create invert indexes
 	documentId := documentDetail.Id
-
 	wordToPostingMap := make(map[string]*entities.Posting)
 	for position, word := range document.TokenizedContent {
 		if _, ok := wordToPostingMap[word]; ok {
