@@ -7,17 +7,18 @@ import (
 
 	"github.com/YadaYuki/omochi/app/common/slices"
 	"github.com/YadaYuki/omochi/app/domain/entities"
+	"github.com/YadaYuki/omochi/app/domain/service"
 	"github.com/YadaYuki/omochi/app/errors"
 )
 
 type TfIdfDocumentRanker struct{}
 
-func NewTfIdfDocumentRanker() *TfIdfDocumentRanker {
+func NewTfIdfDocumentRanker() service.DocumentRanker {
 	return &TfIdfDocumentRanker{}
 }
 
-func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, query string, docs *[]entities.DocumentDetail) *errors.Error {
-	documentScores := ranker.calculateDocumentScores(ctx, query, docs)
+func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, query string, docs *[]entities.DocumentDetail) (*[]entities.DocumentDetail, *errors.Error) {
+	documentScores, _ := ranker.calculateDocumentScores(ctx, query, docs)
 	contentToScoreMap := make(map[string]float64)
 	for i := 0; i < len(*docs); i++ {
 		contentToScoreMap[(*docs)[i].Content] = documentScores[i]
@@ -33,17 +34,17 @@ func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, quer
 		// Scoreが大きい方が前
 		return scoreI > scoreJ
 	})
-	return nil
+	return docs, nil
 }
 
-func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, query string, docs *[]entities.DocumentDetail) []float64 {
+func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, query string, docs *[]entities.DocumentDetail) ([]float64, *errors.Error) {
 	documentScores := make([]float64, len(*docs))
 	idf := ranker.calculateInverseDocumentFrequency(query, docs)
 	for i, doc := range *docs {
 		tf := ranker.calculateTermFrequency(query, doc)
 		documentScores[i] = float64(tf) * (idf + 1)
 	}
-	return ranker.normalize(documentScores)
+	return ranker.normalize(documentScores), nil
 }
 
 func (ranker *TfIdfDocumentRanker) calculateTermFrequency(query string, doc entities.DocumentDetail) int {

@@ -11,22 +11,21 @@ import (
 )
 
 type Indexer struct {
-	service.Indexer
 	transactionWrapper *wrapper.EntTransactionWrapper
 	documentRepository repository.DocumentRepository
 	tokenizer          service.Tokenizer
 }
 
-func NewIndexer(wrapper *wrapper.EntTransactionWrapper, documentRepository repository.DocumentRepository, tokenizer service.Tokenizer) *Indexer {
+func NewIndexer(wrapper *wrapper.EntTransactionWrapper, documentRepository repository.DocumentRepository, tokenizer service.Tokenizer) service.Indexer {
 	return &Indexer{transactionWrapper: wrapper}
 }
 
-func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Document) *errors.Error {
+func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Document) (*[]entities.DocumentDetail, *errors.Error) {
 
 	// Create Invert Index from document
 	tokenizedContent, tokenizeErr := i.tokenizer.Tokenize(ctx, document.Content)
 	if tokenizeErr != nil {
-		return errors.NewError(tokenizeErr.Code, tokenizeErr.Error())
+		return nil, errors.NewError(tokenizeErr.Code, tokenizeErr.Error())
 	}
 	document.TokenizedContent = make([]string, len(*tokenizedContent))
 	for i, term := range *tokenizedContent {
@@ -36,7 +35,7 @@ func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Docum
 	// create document
 	documentDetail, documentCreateErr := i.documentRepository.CreateDocument(ctx, document)
 	if documentCreateErr != nil {
-		return errors.NewError(documentCreateErr.Code, documentCreateErr.Error())
+		return nil, errors.NewError(documentCreateErr.Code, documentCreateErr.Error())
 	}
 
 	// create term
@@ -57,5 +56,5 @@ func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Docum
 	// 単語に対応する転置インデックスが存在していた場合 → 更新
 	// 存在していない場合 → 追加
 
-	return nil
+	return nil, nil
 }

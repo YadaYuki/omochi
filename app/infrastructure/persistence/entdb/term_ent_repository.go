@@ -5,6 +5,7 @@ import (
 
 	"github.com/YadaYuki/omochi/app/domain/entities"
 	"github.com/YadaYuki/omochi/app/domain/repository"
+	"github.com/YadaYuki/omochi/app/domain/service"
 	"github.com/YadaYuki/omochi/app/ent"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/YadaYuki/omochi/app/errors"
@@ -20,8 +21,8 @@ func NewTermEntRepository(db *ent.Client) repository.TermRepository {
 	return &TermEntRepository{db: db}
 }
 
-func (r *TermEntRepository) FindTermById(ctx context.Context, id uuid.UUID) (*entities.TermDetail, *errors.Error) {
-	term, err := r.db.Term.Query().Where(term.ID(uuid.UUID(id))).Only(ctx)
+func (r *TermEntRepository) FindTermById(ctx context.Context, uuid uuid.UUID) (*entities.TermDetail, *errors.Error) {
+	term, err := r.db.Term.Query().Where(term.ID(uuid)).Only(ctx)
 	if err != nil {
 		_, ok := err.(*ent.NotFoundError)
 		if ok {
@@ -30,6 +31,15 @@ func (r *TermEntRepository) FindTermById(ctx context.Context, id uuid.UUID) (*en
 		return nil, errors.NewError(code.Unknown, err)
 	}
 	return convertTermEntSchemaToEntity(term), nil
+}
+
+func (r *TermEntRepository) BulkCreateTerm(ctx context.Context, terms *[]entities.Term) (*[]entities.TermDetail, *errors.Error) {
+
+	return nil, nil
+}
+
+func (r *TermEntRepository) FindTermsByWords(ctx context.Context, words *[]string, compresser service.InvertIndexCompresser) (*[]entities.TermDetail, *errors.Error) {
+	return nil, nil
 }
 
 func convertTermEntSchemaToEntity(t *ent.Term) *entities.TermDetail {

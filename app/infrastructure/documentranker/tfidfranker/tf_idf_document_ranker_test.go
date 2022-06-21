@@ -10,7 +10,7 @@ import (
 )
 
 func TestCalculateTermFrequency(t *testing.T) {
-	ranker := NewTfIdfDocumentRanker()
+	ranker := &TfIdfDocumentRanker{}
 	testCases := []struct {
 		doc        entities.DocumentDetail
 		word       string
@@ -30,7 +30,7 @@ func TestCalculateTermFrequency(t *testing.T) {
 }
 
 func TestCalculateInverseDocumentFrequency(t *testing.T) {
-	ranker := NewTfIdfDocumentRanker()
+	ranker := &TfIdfDocumentRanker{}
 	documents := &[]entities.DocumentDetail{
 		{TokenizedContent: []string{"sun", "is", "shining"}},
 		{TokenizedContent: []string{"weather", "is", "sweet"}},
@@ -57,7 +57,7 @@ func TestCalculateInverseDocumentFrequency(t *testing.T) {
 }
 
 func TestNormalize(t *testing.T) {
-	ranker := NewTfIdfDocumentRanker()
+	ranker := &TfIdfDocumentRanker{}
 
 	testCases := []struct {
 		nums               []float64
@@ -79,7 +79,7 @@ func TestNormalize(t *testing.T) {
 }
 
 func TestCalculateDocumentScores(t *testing.T) {
-	ranker := NewTfIdfDocumentRanker()
+	ranker := &TfIdfDocumentRanker{}
 	documents := &[]entities.DocumentDetail{
 		{TokenizedContent: []string{"sun", "is", "shining"}},
 		{TokenizedContent: []string{"weather", "is", "sweet"}},
@@ -95,7 +95,7 @@ func TestCalculateDocumentScores(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.word, func(tt *testing.T) {
-			documentScores := ranker.calculateDocumentScores(context.Background(), tc.word, documents)
+			documentScores, _ := ranker.calculateDocumentScores(context.Background(), tc.word, documents)
 			for i, item := range documentScores {
 				if math.Abs(item-tc.expectedScores[i]) > 1e-3 {
 					t.Fatalf("expected %v, but got %v", tc.expectedScores[i], item)
@@ -106,7 +106,7 @@ func TestCalculateDocumentScores(t *testing.T) {
 }
 
 func TestSortDocumentByScore(t *testing.T) {
-	ranker := NewTfIdfDocumentRanker()
+	ranker := &TfIdfDocumentRanker{}
 	documents := []entities.DocumentDetail{
 		{Content: "sun is shining", TokenizedContent: []string{"sun", "is", "shining"}},
 		{Content: "weather is sweet", TokenizedContent: []string{"weather", "is", "sweet"}},

@@ -9,11 +9,12 @@ import (
 	"github.com/jdkato/prose/v2"
 
 	"github.com/YadaYuki/omochi/app/domain/entities"
+	"github.com/YadaYuki/omochi/app/domain/service"
 )
 
 type EnProseTokenizer struct{}
 
-func NewEnProseTokenizer() *EnProseTokenizer {
+func NewEnProseTokenizer() service.Tokenizer {
 	return &EnProseTokenizer{}
 }
 
