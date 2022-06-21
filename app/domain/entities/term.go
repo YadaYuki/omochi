@@ -7,10 +7,19 @@ import (
 )
 
 type TermDetail struct {
-	Uuid      uuid.UUID `json:"uuid"`
-	Word      string    `json:"word"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Uuid        uuid.UUID          `json:"uuid"`
+	Word        string             `json:"word"`
+	InvertIndex *InvertIndexDetail `json:"invert_index"` // タームに対応した転置インデックス.
+	CreatedAt   time.Time          `json:"created_at"`
+	UpdatedAt   time.Time          `json:"updated_at"`
+}
+
+type TermCompressedDetail struct {
+	Uuid        uuid.UUID                `json:"uuid"`
+	Word        string                   `json:"word"`
+	InvertIndex *InvertedIndexCompressed `json:"invert_index"` // タームに対応した転置インデックス.
+	CreatedAt   time.Time                `json:"created_at"`
+	UpdatedAt   time.Time                `json:"updated_at"`
 }
 
 type Term struct {
