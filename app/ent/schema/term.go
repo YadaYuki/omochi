@@ -17,7 +17,7 @@ type Term struct {
 func (Term) Fields() []ent.Field {
 	return []ent.Field{
 		field.UUID("id", uuid.UUID{}).StorageKey("uuid").Default(uuid.New),
-		field.String("word"),
+		field.String("word").Unique(),
 	}
 }
 
@@ -30,7 +30,6 @@ func (Term) Mixin() []ent.Mixin {
 
 func (Term) Indexes() []ent.Index {
 	return []ent.Index{
-		// non-unique index.
 		index.Fields("word"),
 	}
 }

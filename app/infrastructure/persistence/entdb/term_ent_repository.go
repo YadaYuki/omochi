@@ -6,6 +6,7 @@ import (
 	"github.com/YadaYuki/omochi/app/domain/entities"
 	"github.com/YadaYuki/omochi/app/domain/repository"
 	"github.com/YadaYuki/omochi/app/ent"
+	"github.com/YadaYuki/omochi/app/ent/predicate"
 	"github.com/YadaYuki/omochi/app/ent/term"
 	"github.com/YadaYuki/omochi/app/errors"
 	"github.com/YadaYuki/omochi/app/errors/code"
@@ -32,12 +33,48 @@ func (r *TermEntRepository) FindTermById(ctx context.Context, uuid uuid.UUID) (*
 	return convertTermEntSchemaToEntity(term), nil
 }
 
-func (r *TermEntRepository) BulkUpsertTerm(ctx context.Context, terms *[]entities.TermCreate) (*[]entities.Term, *errors.Error) {
+func (r *TermEntRepository) BulkUpsertTerm(ctx context.Context, terms *[]entities.TermCreate) (*[]entities.TermCompressed, *errors.Error) {
 	return nil, nil
 }
 
-func (r *TermEntRepository) FindTermsByWords(ctx context.Context, words *[]string) (*[]entities.Term, *errors.Error) {
-	return nil, nil
+//
+func (r *TermEntRepository) FindTermCompressedsByWords(ctx context.Context, words *[]string) (*[]entities.TermCompressed, *errors.Error) {
+	predicatesForWords := make([]predicate.Term, len(*words))
+	for i, word := range *words {
+		predicatesForWords[i] = term.Word(word)
+	}
+	termCompresseds, queryErr := r.
+		db.
+		Term.
+		Query().
+		Where(term.Or(predicatesForWords...)).
+		WithInvertIndexCompressed().
+		All(ctx)
+	if queryErr != nil {
+		return nil, errors.NewError(code.Unknown, queryErr)
+	}
+	return convertTermCompressedsEntSchemaToEntity(termCompresseds), nil
+}
+
+func convertTermCompressedsEntSchemaToEntity(entTerms []*ent.Term) *[]entities.TermCompressed {
+	termCompresseds := make([]entities.TermCompressed, len(entTerms))
+	for i, entTerm := range entTerms {
+		invertIndexCompressed := &entities.InvertIndexCompressed{
+			Uuid:                  entTerm.Edges.InvertIndexCompressed.ID,
+			TermId:                entTerm.ID,
+			PostingListCompressed: entTerm.Edges.InvertIndexCompressed.PostingListCompressed,
+			CreatedAt:             entTerm.Edges.InvertIndexCompressed.CreatedAt,
+			UpdatedAt:             entTerm.Edges.InvertIndexCompressed.UpdatedAt,
+		}
+		termCompresseds[i] = entities.TermCompressed{
+			Uuid:                 entTerm.ID,
+			Word:                 entTerm.Word,
+			InvertIndexCompressd: invertIndexCompressed,
+			CreatedAt:            entTerm.CreatedAt,
+			UpdatedAt:            entTerm.UpdatedAt,
+		}
+	}
+	return &termCompresseds
 }
 
 func convertTermEntSchemaToEntity(t *ent.Term) *entities.Term {
