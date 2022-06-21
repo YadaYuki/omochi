@@ -20,7 +20,7 @@ func NewDocumentEntRepository(db *ent.Client) repository.DocumentRepository {
 	return &DocumentEntRepository{db: db}
 }
 
-func (r *DocumentEntRepository) CreateDocument(ctx context.Context, doc *entities.Document) (*entities.DocumentDetail, *errors.Error) {
+func (r *DocumentEntRepository) CreateDocument(ctx context.Context, doc *entities.DocumentCreate) (*entities.Document, *errors.Error) {
 	docCreated, err := r.db.Document.
 		Create().
 		SetContent(doc.Content).
@@ -32,8 +32,8 @@ func (r *DocumentEntRepository) CreateDocument(ctx context.Context, doc *entitie
 	return convertDocumentEntSchemaToEntity(docCreated), nil
 }
 
-func convertDocumentEntSchemaToEntity(t *ent.Document) *entities.DocumentDetail {
-	return &entities.DocumentDetail{
+func convertDocumentEntSchemaToEntity(t *ent.Document) *entities.Document {
+	return &entities.Document{
 		Id:               int64(t.ID),
 		Content:          t.Content,
 		TokenizedContent: strings.Split(t.TokenizedContent, constant.WHITE_SPACE),

@@ -4,7 +4,7 @@ import (
 	"time"
 )
 
-type DocumentDetail struct {
+type Document struct {
 	Id               int64     `json:"id"`
 	Content          string    `json:"content"`
 	TokenizedContent []string  `json:"tokenized_content"`
@@ -12,13 +12,11 @@ type DocumentDetail struct {
 	UpdatedAt        time.Time `json:"updated_at"`
 }
 
-type Document struct {
+type DocumentCreate struct {
 	Content          string   `json:"content"`
 	TokenizedContent []string `json:"tokenized_content"`
 }
 
-func NewDocument(content string, tokenizedConetnt []string) *Document {
-	return &Document{Content: content, TokenizedContent: tokenizedConetnt}
+func NewDocumentCreate(content string, tokenizedConetnt []string) *DocumentCreate {
+	return &DocumentCreate{Content: content, TokenizedContent: tokenizedConetnt}
 }
-
-type Documents = []Document

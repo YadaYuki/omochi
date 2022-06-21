@@ -7,6 +7,6 @@ import (
 	"github.com/YadaYuki/omochi/app/errors"
 )
 
-type InvertedIndexCompressedRepository interface {
-	BulkCreateInvertIndexesCompressed(ctx context.Context, invertIndexes *[]entities.InvertedIndexCompressed) (*[]entities.InvertedIndexCompressedDetail, *errors.Error)
+type InvertIndexCompressedRepository interface {
+	BulkCreateInvertIndexesCompressed(ctx context.Context, invertIndexes *[]entities.InvertIndexCompressedCreate) (*[]entities.InvertIndexCompressed, *errors.Error)
 }

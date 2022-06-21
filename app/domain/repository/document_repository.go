@@ -8,5 +8,5 @@ import (
 )
 
 type DocumentRepository interface {
-	CreateDocument(ctx context.Context, doc *entities.Document) (*entities.DocumentDetail, *errors.Error)
+	CreateDocument(ctx context.Context, doc *entities.DocumentCreate) (*entities.Document, *errors.Error)
 }

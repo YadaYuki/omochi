@@ -8,5 +8,5 @@ import (
 )
 
 type Tokenizer interface {
-	Tokenize(ctx context.Context, content string) (*[]entities.Term, *errors.Error)
+	Tokenize(ctx context.Context, content string) (*[]entities.TermCreate, *errors.Error)
 }

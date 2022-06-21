@@ -17,7 +17,7 @@ func NewTfIdfDocumentRanker() service.DocumentRanker {
 	return &TfIdfDocumentRanker{}
 }
 
-func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, query string, docs *[]entities.DocumentDetail) (*[]entities.DocumentDetail, *errors.Error) {
+func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, query string, docs *[]entities.Document) (*[]entities.Document, *errors.Error) {
 	documentScores, _ := ranker.calculateDocumentScores(ctx, query, docs)
 	contentToScoreMap := make(map[string]float64)
 	for i := 0; i < len(*docs); i++ {
@@ -37,7 +37,7 @@ func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, quer
 	return docs, nil
 }
 
-func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, query string, docs *[]entities.DocumentDetail) ([]float64, *errors.Error) {
+func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, query string, docs *[]entities.Document) ([]float64, *errors.Error) {
 	documentScores := make([]float64, len(*docs))
 	idf := ranker.calculateInverseDocumentFrequency(query, docs)
 	for i, doc := range *docs {
@@ -47,7 +47,7 @@ func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, 
 	return ranker.normalize(documentScores), nil
 }
 
-func (ranker *TfIdfDocumentRanker) calculateTermFrequency(query string, doc entities.DocumentDetail) int {
+func (ranker *TfIdfDocumentRanker) calculateTermFrequency(query string, doc entities.Document) int {
 	termFrequency := 0
 	for _, term := range doc.TokenizedContent {
 		if term == query {
@@ -57,7 +57,7 @@ func (ranker *TfIdfDocumentRanker) calculateTermFrequency(query string, doc enti
 	return termFrequency
 }
 
-func (ranker *TfIdfDocumentRanker) calculateInverseDocumentFrequency(query string, docs *[]entities.DocumentDetail) float64 {
+func (ranker *TfIdfDocumentRanker) calculateInverseDocumentFrequency(query string, docs *[]entities.Document) float64 {
 	nDocs := len(*docs)
 	documentFrequency := 0 // docsのうち、何個のドキュメントに、queryが含まれているか
 	for _, doc := range *docs {

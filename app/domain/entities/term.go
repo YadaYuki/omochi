@@ -6,28 +6,36 @@ import (
 	"github.com/google/uuid"
 )
 
-type TermDetail struct {
-	Uuid        uuid.UUID          `json:"uuid"`
-	Word        string             `json:"word"`
-	InvertIndex *InvertIndexDetail `json:"invert_index"` // タームに対応した転置インデックス.
-	CreatedAt   time.Time          `json:"created_at"`
-	UpdatedAt   time.Time          `json:"updated_at"`
-}
-
-type TermCompressedDetail struct {
-	Uuid        uuid.UUID                `json:"uuid"`
-	Word        string                   `json:"word"`
-	InvertIndex *InvertedIndexCompressed `json:"invert_index"` // タームに対応した転置インデックス.
-	CreatedAt   time.Time                `json:"created_at"`
-	UpdatedAt   time.Time                `json:"updated_at"`
-}
-
 type Term struct {
-	Word string `json:"word"`
+	Uuid        uuid.UUID    `json:"uuid"`
+	Word        string       `json:"word"`
+	InvertIndex *InvertIndex `json:"invert_index"` // タームに対応した転置インデックス.
+	CreatedAt   time.Time    `json:"created_at"`
+	UpdatedAt   time.Time    `json:"updated_at"`
 }
 
-func NewTerm(word string) *Term {
-	return &Term{Word: word}
+type TermCompressed struct {
+	Uuid                 uuid.UUID              `json:"uuid"`
+	Word                 string                 `json:"word"`
+	InvertIndexCompressd *InvertIndexCompressed `json:"invert_index_compressed"` // タームに対応した転置インデックス.
+	CreatedAt            time.Time              `json:"created_at"`
+	UpdatedAt            time.Time              `json:"updated_at"`
 }
 
-type Terms = []Term
+type TermCreate struct {
+	Word              string             `json:"word"`
+	InvertIndexCreate *InvertIndexCreate `json:"invert_index"` // タームに対応した転置インデックス.
+}
+
+type TermCompressedCreate struct {
+	Word                       string                       `json:"word"`
+	InvertIndexCompressdCreate *InvertIndexCompressedCreate `json:"invert_index_compressed"` // タームに対応した転置インデックス.
+}
+
+func NewTermCreate(word string, invertIndex *InvertIndexCreate) *TermCreate {
+	return &TermCreate{Word: word}
+}
+
+func NewTermCompressedCreate(word string, invertIndex *InvertIndexCompressedCreate) *TermCompressedCreate {
+	return &TermCompressedCreate{Word: word, InvertIndexCompressdCreate: invertIndex}
+}

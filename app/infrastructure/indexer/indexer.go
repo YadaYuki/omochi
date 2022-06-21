@@ -20,7 +20,7 @@ func NewIndexer(wrapper *wrapper.EntTransactionWrapper, documentRepository repos
 	return &Indexer{transactionWrapper: wrapper}
 }
 
-func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.Document) (*[]entities.DocumentDetail, *errors.Error) {
+func (i *Indexer) IndexingDocument(ctx context.Context, document *entities.DocumentCreate) (*[]entities.Document, *errors.Error) {
 
 	// Create Invert Index from document
 	tokenizedContent, tokenizeErr := i.tokenizer.Tokenize(ctx, document.Content)

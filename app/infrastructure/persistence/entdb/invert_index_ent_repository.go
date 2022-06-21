@@ -10,15 +10,15 @@ import (
 	"github.com/YadaYuki/omochi/app/errors/code"
 )
 
-type InvertedIndexCompressedEntRepository struct {
+type InvertIndexCompressedEntRepository struct {
 	db *ent.Client
 }
 
-func NewInvertedIndexCompressedEntRepository(db *ent.Client) repository.InvertedIndexCompressedRepository {
-	return &InvertedIndexCompressedEntRepository{db: db}
+func NewInvertIndexCompressedEntRepository(db *ent.Client) repository.InvertIndexCompressedRepository {
+	return &InvertIndexCompressedEntRepository{db: db}
 }
 
-func (r *InvertedIndexCompressedEntRepository) BulkCreateInvertIndexesCompressed(ctx context.Context, invertIndexes *[]entities.InvertedIndexCompressed) (*[]entities.InvertedIndexCompressedDetail, *errors.Error) {
+func (r *InvertIndexCompressedEntRepository) BulkCreateInvertIndexesCompressed(ctx context.Context, invertIndexes *[]entities.InvertIndexCompressedCreate) (*[]entities.InvertIndexCompressed, *errors.Error) {
 	bulk := make([]*ent.InvertIndexCompressedCreate, len(*invertIndexes))
 	for i, invertIndex := range *invertIndexes {
 		bulk[i] = r.db.InvertIndexCompressed.Create().SetTermRelatedID(invertIndex.TermId).SetPostingListCompressed(invertIndex.PostingListCompressed)
@@ -30,10 +30,10 @@ func (r *InvertedIndexCompressedEntRepository) BulkCreateInvertIndexesCompressed
 	return convertInvertIndexesEntSchemaToEntity(invertIndexesCreated), nil
 }
 
-func convertInvertIndexesEntSchemaToEntity(t []*ent.InvertIndexCompressed) *[]entities.InvertedIndexCompressedDetail {
-	invertIndexes := make([]entities.InvertedIndexCompressedDetail, len(t))
+func convertInvertIndexesEntSchemaToEntity(t []*ent.InvertIndexCompressed) *[]entities.InvertIndexCompressed {
+	invertIndexes := make([]entities.InvertIndexCompressed, len(t))
 	for i, item := range t {
-		invertIndexes[i] = entities.InvertedIndexCompressedDetail{
+		invertIndexes[i] = entities.InvertIndexCompressed{
 			Uuid:                  item.ID,
 			PostingListCompressed: item.PostingListCompressed,
 			CreatedAt:             item.CreatedAt,
