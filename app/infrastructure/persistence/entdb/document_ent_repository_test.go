@@ -69,7 +69,10 @@ func TestFindDocumentsByIds(t *testing.T) {
 			if findErr != nil {
 				t.Fatal(findErr)
 			}
-			for i, doc := range *documents {
+			if len(documents) != len(tc.expectedContent) {
+				t.Fatalf("len(documents) should be %v, but got %v", len(tc.expectedContent), len(documents))
+			}
+			for i, doc := range documents {
 				if doc.Content != tc.expectedContent[i] {
 					t.Fatalf("doc.Content should be %v, but got %v", tc.expectedContent[i], doc.Content)
 				}
