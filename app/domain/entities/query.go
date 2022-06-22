@@ -9,6 +9,7 @@ const (
 )
 
 type Query struct {
-	Keywords   *[]string `json:"keywords"`
-	SearchMode string    `json:"mode"`
+	// Keywords   *[]string `json:"keywords"` // TODO: Correspond to multi keywords
+	Keyword    string `json:"keyword"`
+	SearchMode string `json:"mode"`
 }

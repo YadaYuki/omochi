@@ -8,5 +8,5 @@ import (
 )
 
 type DocumentRanker interface {
-	SortDocumentByScore(ctx context.Context, query string, docs *[]entities.Document) (*[]entities.Document, *errors.Error)
+	SortDocumentByScore(ctx context.Context, query string, docs []*entities.Document) ([]*entities.Document, *errors.Error)
 }

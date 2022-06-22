@@ -31,13 +31,13 @@ func TestCalculateTermFrequency(t *testing.T) {
 
 func TestCalculateInverseDocumentFrequency(t *testing.T) {
 	ranker := &TfIdfDocumentRanker{}
-	documents := &[]entities.Document{
+	documents := []*entities.Document{
 		{TokenizedContent: []string{"sun", "is", "shining"}},
 		{TokenizedContent: []string{"weather", "is", "sweet"}},
 		{TokenizedContent: []string{"sun", "is", "shining", "weather", "is", "sweet"}},
 	}
 	testCases := []struct {
-		docs        *[]entities.Document
+		docs        []*entities.Document
 		word        string
 		expectedIdf float32
 	}{
@@ -80,7 +80,7 @@ func TestNormalize(t *testing.T) {
 
 func TestCalculateDocumentScores(t *testing.T) {
 	ranker := &TfIdfDocumentRanker{}
-	documents := &[]entities.Document{
+	documents := []*entities.Document{
 		{TokenizedContent: []string{"sun", "is", "shining"}},
 		{TokenizedContent: []string{"weather", "is", "sweet"}},
 		{TokenizedContent: []string{"sun", "is", "shining", "weather", "is", "sweet"}},
@@ -107,7 +107,7 @@ func TestCalculateDocumentScores(t *testing.T) {
 
 func TestSortDocumentByScore(t *testing.T) {
 	ranker := &TfIdfDocumentRanker{}
-	documents := []entities.Document{
+	documents := []*entities.Document{
 		{Content: "sun is shining", TokenizedContent: []string{"sun", "is", "shining"}},
 		{Content: "weather is sweet", TokenizedContent: []string{"weather", "is", "sweet"}},
 		{Content: "sun is shining weather is sweet", TokenizedContent: []string{"sun", "is", "shining", "weather", "is", "sweet"}},
@@ -122,7 +122,7 @@ func TestSortDocumentByScore(t *testing.T) {
 	}
 	for _, tc := range testCases {
 		t.Run(tc.word, func(tt *testing.T) {
-			ranker.SortDocumentByScore(context.Background(), tc.word, &documents)
+			ranker.SortDocumentByScore(context.Background(), tc.word, documents)
 			for i, doc := range documents {
 				if doc.Content != tc.expectedSortedContents[i] {
 					t.Fatalf("expected %v, but got %v", tc.expectedSortedContents[i], doc.Content)
