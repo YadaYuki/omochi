@@ -38,7 +38,7 @@ func TestTermHandler_FindTermByIdHandler(t *testing.T) {
 		}
 		res := httptest.NewRecorder()
 		router := mux.NewRouter()
-		router.HandleFunc("/term/{uuid}", termHandler.FindTermByIdHandler)
+		router.HandleFunc("/term/{uuid}", termHandler.FindTermCompressedByIdHandler)
 		router.ServeHTTP(res, req)
 		if res.Code != http.StatusOK {
 			t.Fatalf("expected %d, but got %d", http.StatusOK, res.Code)
@@ -64,7 +64,7 @@ func TestTermHandler_FindTermByIdHandlerError(t *testing.T) {
 	}
 	res := httptest.NewRecorder()
 	router := mux.NewRouter()
-	router.HandleFunc("/term/{uuid}", termHandler.FindTermByIdHandler)
+	router.HandleFunc("/term/{uuid}", termHandler.FindTermCompressedByIdHandler)
 	router.ServeHTTP(res, req)
 	if res.Code != http.StatusBadRequest {
 		t.Fatalf("expected %d, but got %d", http.StatusBadRequest, res.Code)

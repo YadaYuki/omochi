@@ -10,7 +10,7 @@ import (
 )
 
 type TermUseCase interface {
-	FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, *errors.Error)
+	FindTermCompressedById(ctx context.Context, id uuid.UUID) (*entities.TermCompressed, *errors.Error)
 }
 
 type termUseCase struct {
@@ -21,8 +21,8 @@ func NewTermUseCase(repository repository.TermRepository) TermUseCase {
 	return &termUseCase{r: repository}
 }
 
-func (u *termUseCase) FindTermById(ctx context.Context, id uuid.UUID) (*entities.Term, *errors.Error) {
-	term, err := u.r.FindTermById(ctx, id)
+func (u *termUseCase) FindTermCompressedById(ctx context.Context, id uuid.UUID) (*entities.TermCompressed, *errors.Error) {
+	term, err := u.r.FindTermCompressedById(ctx, id)
 	if err != nil {
 		return nil, err
 	}

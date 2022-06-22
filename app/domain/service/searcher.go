@@ -8,5 +8,5 @@ import (
 )
 
 type Searcher interface {
-	Search(ctx context.Context, query entities.SearchModeType) ([]*entities.Document, *errors.Error)
+	Search(ctx context.Context, query *entities.Query) ([]*entities.Document, *errors.Error)
 }
