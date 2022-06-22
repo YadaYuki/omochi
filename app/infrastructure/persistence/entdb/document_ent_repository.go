@@ -32,6 +32,18 @@ func (r *DocumentEntRepository) CreateDocument(ctx context.Context, doc *entitie
 	return convertDocumentEntSchemaToEntity(docCreated), nil
 }
 
+func (r *DocumentEntRepository) FindDocumentsByIds(ctx context.Context, ids *[]int64) (*[]entities.Document, *errors.Error) {
+	docCreated, err := r.db.Document.
+		Create().
+		SetContent(doc.Content).
+		SetTokenizedContent(strings.Join(doc.TokenizedContent, constant.WHITE_SPACE)).
+		Save(ctx)
+	if err != nil {
+		return nil, errors.NewError(code.Unknown, err)
+	}
+	return convertDocumentEntSchemaToEntity(docCreated), nil
+}
+
 func convertDocumentEntSchemaToEntity(t *ent.Document) *entities.Document {
 	return &entities.Document{
 		Id:               int64(t.ID),
