@@ -43,6 +43,7 @@ func (r *TermEntRepository) BulkUpsertTerm(ctx context.Context, terms *[]entitie
 		OnConflict().
 		Update(func(tu *ent.TermUpsert) {
 			tu.UpdatePostingListCompressed()
+			tu.UpdateUpdatedAt()
 		}).Exec(ctx)
 	if err != nil {
 		return errors.NewError(code.Unknown, err)

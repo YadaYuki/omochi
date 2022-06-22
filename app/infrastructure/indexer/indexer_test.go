@@ -42,8 +42,9 @@ func TestIndexingDocument(t *testing.T) {
 			t.Fatal(indexingErr)
 		}
 	}
-	d, _ := client.Document.Query().All(context.Background())
-	fmt.Println(d)
 	a, _ := client.Term.Query().All(context.Background())
-	fmt.Println(a)
+	c := compresser.NewZlibInvertIndexCompresser()
+	invertIdxCps := entities.NewInvertIndexCompressed(a[0].PostingListCompressed)
+	invertIndex, _ := c.Decompress(context.Background(), invertIdxCps)
+	fmt.Println(*invertIndex.PostingList)
 }
