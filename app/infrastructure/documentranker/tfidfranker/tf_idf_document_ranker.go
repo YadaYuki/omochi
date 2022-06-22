@@ -17,19 +17,19 @@ func NewTfIdfDocumentRanker() service.DocumentRanker {
 	return &TfIdfDocumentRanker{}
 }
 
-func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, query string, docs *[]entities.Document) (*[]entities.Document, *errors.Error) {
+func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, query string, docs []*entities.Document) ([]*entities.Document, *errors.Error) {
 	documentScores, _ := ranker.calculateDocumentScores(ctx, query, docs)
 	contentToScoreMap := make(map[string]float64)
-	for i := 0; i < len(*docs); i++ {
-		contentToScoreMap[(*docs)[i].Content] = documentScores[i]
+	for i := 0; i < len(docs); i++ {
+		contentToScoreMap[(docs)[i].Content] = documentScores[i]
 	}
 
-	sort.Slice(*docs, func(i, j int) bool {
+	sort.Slice(docs, func(i, j int) bool {
 		// Scoreが同じだった場合は、より単語の密度が大きい、短い文章を前に.
-		scoreI := contentToScoreMap[(*docs)[i].Content]
-		scoreJ := contentToScoreMap[(*docs)[j].Content]
+		scoreI := contentToScoreMap[(docs)[i].Content]
+		scoreJ := contentToScoreMap[(docs)[j].Content]
 		if scoreI == scoreJ {
-			return len((*docs)[i].Content) < len((*docs)[j].Content)
+			return len((docs)[i].Content) < len((docs)[j].Content)
 		}
 		// Scoreが大きい方が前
 		return scoreI > scoreJ
@@ -37,11 +37,11 @@ func (ranker *TfIdfDocumentRanker) SortDocumentByScore(ctx context.Context, quer
 	return docs, nil
 }
 
-func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, query string, docs *[]entities.Document) ([]float64, *errors.Error) {
-	documentScores := make([]float64, len(*docs))
+func (ranker *TfIdfDocumentRanker) calculateDocumentScores(ctx context.Context, query string, docs []*entities.Document) ([]float64, *errors.Error) {
+	documentScores := make([]float64, len(docs))
 	idf := ranker.calculateInverseDocumentFrequency(query, docs)
-	for i, doc := range *docs {
-		tf := ranker.calculateTermFrequency(query, doc)
+	for i, doc := range docs {
+		tf := ranker.calculateTermFrequency(query, *doc)
 		documentScores[i] = float64(tf) * (idf + 1)
 	}
 	return ranker.normalize(documentScores), nil
@@ -57,10 +57,10 @@ func (ranker *TfIdfDocumentRanker) calculateTermFrequency(query string, doc enti
 	return termFrequency
 }
 
-func (ranker *TfIdfDocumentRanker) calculateInverseDocumentFrequency(query string, docs *[]entities.Document) float64 {
-	nDocs := len(*docs)
+func (ranker *TfIdfDocumentRanker) calculateInverseDocumentFrequency(query string, docs []*entities.Document) float64 {
+	nDocs := len(docs)
 	documentFrequency := 0 // docsのうち、何個のドキュメントに、queryが含まれているか
-	for _, doc := range *docs {
+	for _, doc := range docs {
 		if slices.Contains(doc.TokenizedContent, query) {
 			documentFrequency++
 		}

@@ -21,7 +21,7 @@ func NewTermEntRepository(db *ent.Client) repository.TermRepository {
 	return &TermEntRepository{db: db}
 }
 
-func (r *TermEntRepository) FindTermById(ctx context.Context, uuid uuid.UUID) (*entities.Term, *errors.Error) {
+func (r *TermEntRepository) FindTermCompressedById(ctx context.Context, uuid uuid.UUID) (*entities.TermCompressed, *errors.Error) {
 	term, err := r.db.Term.Query().Where(term.ID(uuid)).Only(ctx)
 	if err != nil {
 		_, ok := err.(*ent.NotFoundError)
@@ -30,7 +30,7 @@ func (r *TermEntRepository) FindTermById(ctx context.Context, uuid uuid.UUID) (*
 		}
 		return nil, errors.NewError(code.Unknown, err)
 	}
-	return convertTermEntSchemaToEntity(term), nil
+	return convertTermCompressedEntSchemaToEntity(term), nil
 }
 
 func (r *TermEntRepository) BulkUpsertTerm(ctx context.Context, terms *[]entities.TermCompressedCreate) *errors.Error {
@@ -69,6 +69,18 @@ func (r *TermEntRepository) FindTermCompressedsByWords(ctx context.Context, word
 	return convertTermCompressedsEntSchemaToEntity(termCompresseds), nil
 }
 
+func (r *TermEntRepository) FindTermCompressedByWord(ctx context.Context, word string) (*entities.TermCompressed, *errors.Error) {
+	term, queryErr := r.db.Term.Query().Where(term.Word(word)).Only(ctx)
+	if queryErr != nil {
+		_, ok := queryErr.(*ent.NotFoundError)
+		if ok {
+			return nil, errors.NewError(code.NotExist, queryErr)
+		}
+		return nil, errors.NewError(code.Unknown, queryErr)
+	}
+	return convertTermCompressedEntSchemaToEntity(term), nil
+}
+
 func convertTermCompressedsEntSchemaToEntity(entTerms []*ent.Term) *[]entities.TermCompressed {
 	termCompresseds := make([]entities.TermCompressed, len(entTerms))
 	for i, entTerm := range entTerms {
@@ -86,11 +98,17 @@ func convertTermCompressedsEntSchemaToEntity(entTerms []*ent.Term) *[]entities.T
 	return &termCompresseds
 }
 
-func convertTermEntSchemaToEntity(t *ent.Term) *entities.Term {
-	return &entities.Term{
-		Uuid:      t.ID,
-		Word:      t.Word,
-		CreatedAt: t.CreatedAt,
-		UpdatedAt: t.UpdatedAt,
+func convertTermCompressedEntSchemaToEntity(entTerm *ent.Term) *entities.TermCompressed {
+	invertIndexCompressed := &entities.InvertIndexCompressed{
+		PostingListCompressed: entTerm.PostingListCompressed,
 	}
+	termCompressed := entities.TermCompressed{
+		Uuid:                  entTerm.ID,
+		Word:                  entTerm.Word,
+		InvertIndexCompressed: invertIndexCompressed,
+		CreatedAt:             entTerm.CreatedAt,
+		UpdatedAt:             entTerm.UpdatedAt,
+	}
+
+	return &termCompressed
 }

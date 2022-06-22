@@ -34,6 +34,6 @@ func main() {
 	log.Println("Successfully connected to MySQL")
 	log.Println("application started")
 	r := mux.NewRouter()
-	r.HandleFunc("/term/{uuid}", termHandler.FindTermByIdHandler)
+	r.HandleFunc("/term/{uuid}", termHandler.FindTermCompressedByIdHandler)
 	http.ListenAndServe(":8081", r)
 }

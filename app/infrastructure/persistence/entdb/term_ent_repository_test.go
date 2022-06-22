@@ -13,7 +13,7 @@ import (
 	"github.com/YadaYuki/omochi/app/ent/enttest"
 )
 
-func TestFindTermById(t *testing.T) {
+func TestFindTermCompressedById(t *testing.T) {
 	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 	defer client.Close()
 	termRepository := NewTermEntRepository(client)
@@ -28,13 +28,43 @@ func TestFindTermById(t *testing.T) {
 			SetWord(tc.word).
 			SetPostingListCompressed([]byte("hoge")).
 			Save(context.Background())
-		term, err := termRepository.FindTermById(context.Background(), termCreated.ID)
+		term, err := termRepository.FindTermCompressedById(context.Background(), termCreated.ID)
 		if err != nil {
 			t.Fatal(err)
 		}
 		if term.Word != tc.word {
 			t.Fatalf("expected %s, but got %s", tc.word, term.Word)
 		}
+	}
+}
+
+func TestFindTermCompressedByWord(t *testing.T) {
+
+	testCases := []struct {
+		word                  string
+		postingListCompressed []byte
+	}{
+		{"sample", []byte("hoge")},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.word, func(tt *testing.T) {
+			client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
+			defer client.Close()
+			termRepository := NewTermEntRepository(client)
+			ctx := context.Background()
+			client.Term.
+				Create().
+				SetWord(tc.word).
+				SetPostingListCompressed(tc.postingListCompressed).
+				Save(ctx)
+			term, err := termRepository.FindTermCompressedByWord(ctx, tc.word)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if term.Word != tc.word {
+				t.Fatalf("expected %s, but got %s", tc.word, term.Word)
+			}
+		})
 	}
 }
 

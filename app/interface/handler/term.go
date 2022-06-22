@@ -19,7 +19,7 @@ func NewTermHandler(u usecase.TermUseCase) *TermHandler {
 	return &TermHandler{u: u}
 }
 
-func (h *TermHandler) FindTermByIdHandler(w http.ResponseWriter, r *http.Request) {
+func (h *TermHandler) FindTermCompressedByIdHandler(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	uuidStr, ok := vars["uuid"]
 	if !ok {
@@ -31,7 +31,7 @@ func (h *TermHandler) FindTermByIdHandler(w http.ResponseWriter, r *http.Request
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	term, err := h.u.FindTermById(r.Context(), id)
+	term, err := h.u.FindTermCompressedById(r.Context(), id)
 	if err != nil {
 		covertErrorToResponse(err, w)
 		return
