@@ -22,7 +22,7 @@ func NewSearcher(invertIndexCached map[string]*entities.InvertIndex, termReposit
 }
 
 func (s *Searcher) Search(ctx context.Context, query *entities.Query) ([]*entities.Document, *errors.Error) {
-	//
+
 	invertIndex, ok := s.invertIndexCached[query.Keyword]
 	if !ok {
 		termCompressed, err := s.termRepository.FindTermCompressedByWord(ctx, query.Keyword)
