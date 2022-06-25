@@ -1,4 +1,4 @@
-package api
+package term
 
 import (
 	"encoding/json"
@@ -7,31 +7,27 @@ import (
 	"github.com/YadaYuki/omochi/app/errors"
 	"github.com/YadaYuki/omochi/app/errors/code"
 	usecase "github.com/YadaYuki/omochi/app/usecase/term"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
-	"github.com/gorilla/mux"
 )
 
-type TermHandler struct {
+type TermController struct {
 	u usecase.TermUseCase
 }
 
-func NewTermHandler(u usecase.TermUseCase) *TermHandler {
-	return &TermHandler{u: u}
+func NewTermController(u usecase.TermUseCase) *TermController {
+	return &TermController{u: u}
 }
 
-func (h *TermHandler) FindTermCompressedByIdHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	uuidStr, ok := vars["uuid"]
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (controller *TermController) FindTermCompressedById(w http.ResponseWriter, r *http.Request) {
+	uuidStr := chi.URLParam(r, "uuid")
+
 	id, errId := uuid.Parse(uuidStr)
 	if errId != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	term, err := h.u.FindTermCompressedById(r.Context(), id)
+	term, err := controller.u.FindTermCompressedById(r.Context(), id)
 	if err != nil {
 		covertErrorToResponse(err, w)
 		return

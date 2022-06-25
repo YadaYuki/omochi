@@ -1,4 +1,4 @@
-package api
+package term
 
 import (
 	"context"
@@ -13,14 +13,15 @@ import (
 	"github.com/YadaYuki/omochi/app/ent/enttest"
 	"github.com/YadaYuki/omochi/app/infrastructure/persistence/entdb"
 	usecase "github.com/YadaYuki/omochi/app/usecase/term"
-	"github.com/gorilla/mux"
+	"github.com/go-chi/chi/v5"
+
 	_ "github.com/mattn/go-sqlite3"
 )
 
-func TestTermHandler_FindTermByIdHandler(t *testing.T) {
+func TestTermController_FindTermById(t *testing.T) {
 	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 	defer client.Close()
-	termHandler := createTermHandler(t, client)
+	termController := createTermController(t, client)
 	testCases := []struct {
 		word string
 	}{
@@ -31,15 +32,16 @@ func TestTermHandler_FindTermByIdHandler(t *testing.T) {
 		termCreated, _ := client.Term.
 			Create().
 			SetWord(tc.word).
+			SetPostingListCompressed([]byte("sample")).
 			Save(context.Background())
 		req, err := http.NewRequest("GET", fmt.Sprintf("/term/%s", termCreated.ID.String()), nil)
 		if err != nil {
 			t.Fatal(err)
 		}
 		res := httptest.NewRecorder()
-		router := mux.NewRouter()
-		router.HandleFunc("/term/{uuid}", termHandler.FindTermCompressedByIdHandler)
-		router.ServeHTTP(res, req)
+		r := chi.NewRouter()
+		r.Get("/term/{uuid}", termController.FindTermCompressedById)
+		r.ServeHTTP(res, req)
 		if res.Code != http.StatusOK {
 			t.Fatalf("expected %d, but got %d", http.StatusOK, res.Code)
 		}
@@ -53,27 +55,9 @@ func TestTermHandler_FindTermByIdHandler(t *testing.T) {
 	}
 }
 
-func TestTermHandler_FindTermByIdHandlerError(t *testing.T) {
-	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
-	defer client.Close()
-	termHandler := createTermHandler(t, client)
-
-	req, err := http.NewRequest("GET", fmt.Sprintf("/term/%s", ""), nil)
-	if err != nil {
-		t.Fatal(err)
-	}
-	res := httptest.NewRecorder()
-	router := mux.NewRouter()
-	router.HandleFunc("/term/{uuid}", termHandler.FindTermCompressedByIdHandler)
-	router.ServeHTTP(res, req)
-	if res.Code != http.StatusBadRequest {
-		t.Fatalf("expected %d, but got %d", http.StatusBadRequest, res.Code)
-	}
-}
-
-func createTermHandler(t testing.TB, client *ent.Client) *TermHandler {
+func createTermController(t testing.TB, client *ent.Client) *TermController {
 	termRepository := entdb.NewTermEntRepository(client)
 	useCase := usecase.NewTermUseCase(termRepository)
-	termHandler := NewTermHandler(useCase)
-	return termHandler
+	termController := NewTermController(useCase)
+	return termController
 }
