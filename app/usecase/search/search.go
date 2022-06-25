@@ -17,7 +17,7 @@ type searchUseCase struct {
 	seacher service.Searcher
 }
 
-func NewTermUseCase(s service.Searcher) SearchUseCase {
+func NewSearchUseCase(s service.Searcher) SearchUseCase {
 	return &searchUseCase{s}
 }
 
