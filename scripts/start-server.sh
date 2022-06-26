@@ -8,4 +8,4 @@ done
 
 
 
-cd /go/github.com/YadaYuki/omochi/app && go run main.go
+cd /go/github.com/YadaYuki/omochi/cmd/api && go run main.go

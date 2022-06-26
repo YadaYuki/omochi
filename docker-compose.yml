@@ -14,7 +14,8 @@ services:
     depends_on:
       - omochi_db
     volumes:
-      - ./app:/go/github.com/YadaYuki/omochi/app
+      - ./pkg:/go/github.com/YadaYuki/omochi/pkg
+      - ./cmd:/go/github.com/YadaYuki/omochi/cmd
       - ./scripts:/go/github.com/YadaYuki/omochi/scripts
     command: sh /go/github.com/YadaYuki/omochi/scripts/start-server.sh
     environment:
