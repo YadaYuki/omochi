@@ -19,6 +19,10 @@ require (
 	github.com/go-openapi/inflect v0.19.0 // indirect
 	github.com/google/go-cmp v0.5.7 // indirect
 	github.com/hashicorp/hcl/v2 v2.10.0 // indirect
+	github.com/ikawaha/kagome-dict v1.0.4 // indirect
+	github.com/ikawaha/kagome-dict/ipa v1.0.4 // indirect
+	github.com/ikawaha/kagome-dict/uni v1.1.3 // indirect
+	github.com/ikawaha/kagome/v2 v2.8.0 // indirect
 	github.com/mingrammer/commonregex v1.0.1 // indirect
 	github.com/mitchellh/go-wordwrap v0.0.0-20150314170334-ad45545899c7 // indirect
 	github.com/zclconf/go-cty v1.8.0 // indirect
