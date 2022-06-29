@@ -26,7 +26,7 @@ func (r *DocumentEntRepository) CreateDocument(ctx context.Context, doc *entitie
 	docCreated, err := r.db.Document.
 		Create().
 		SetContent(doc.Content).
-		SetTokenizedContent(strings.Join(doc.TokenizedContent, constant.WHITE_SPACE)).
+		SetTokenizedContent(strings.Join(doc.TokenizedContent, constant.WhiteSpace)).
 		Save(ctx)
 	if err != nil {
 		return nil, errors.NewError(code.Unknown, err)
@@ -63,7 +63,7 @@ func convertDocumentEntSchemaToEntity(t *ent.Document) *entities.Document {
 	return &entities.Document{
 		Id:               int64(t.ID),
 		Content:          t.Content,
-		TokenizedContent: strings.Split(t.TokenizedContent, constant.WHITE_SPACE),
+		TokenizedContent: strings.Split(t.TokenizedContent, constant.WhiteSpace),
 		CreatedAt:        t.CreatedAt,
 		UpdatedAt:        t.UpdatedAt,
 	}

@@ -35,7 +35,7 @@ func TestTermController_FindTermById(t *testing.T) {
 	}
 	documentCreates := []*entities.DocumentCreate{}
 	for _, documentContent := range documentContents {
-		documentCreates = append(documentCreates, entities.NewDocumentCreate(documentContent, strings.Split(documentContent, constant.WHITE_SPACE)))
+		documentCreates = append(documentCreates, entities.NewDocumentCreate(documentContent, strings.Split(documentContent, constant.WhiteSpace)))
 	}
 
 	testCases := []struct {
