@@ -23,18 +23,18 @@ func (tokenizer *EnProseTokenizer) Tokenize(ctx context.Context, content string)
 	if err != nil {
 		return nil, errors.NewError(code.Unknown, err)
 	}
-	INDEXABLE_TOKEN_TAG_PREFIX := []string{
+	EnIndexableTokenPOSPrefix := []string{
 		"JJ", "MD", "NN", "PDT", "PRP", "RB", "RPP", "UH", "VB", "WP", "WRB",
 	}
 	terms := []entities.TermCreate{}
 	for _, token := range doc.Tokens() {
-		indexable_token := false
-		for _, prefix := range INDEXABLE_TOKEN_TAG_PREFIX {
+		indexableToken := false
+		for _, prefix := range EnIndexableTokenPOSPrefix {
 			if strings.HasPrefix(token.Tag, prefix) {
-				indexable_token = true
+				indexableToken = true
 			}
 		}
-		if indexable_token {
+		if indexableToken {
 			terms = append(terms, *entities.NewTermCreate(strings.ToLower(token.Text), nil))
 		}
 	}

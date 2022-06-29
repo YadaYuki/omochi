@@ -24,16 +24,16 @@ func NewEntIndexer(db *ent.Client, t *wrapper.EntTransactionWrapper) *EntIndexer
 
 // IndexingDocumentWithTx is a function for indexing a document with RDB Transaction.
 func (entIndexer *EntIndexer) IndexingDocumentWithTx(ctx context.Context, document *entities.DocumentCreate) *errors.Error {
-
-	if err := entIndexer.t.WithTx(ctx, entIndexer.db, func(transactionClient *ent.Client) *errors.Error {
+	indexingDocumentFunc := func(transactionClient *ent.Client) *errors.Error {
 		documentRepository := entdb.NewDocumentEntRepository(transactionClient)
 		termRepository := entdb.NewTermEntRepository(transactionClient)
 		tokenizer := eng.NewEnProseTokenizer()
 		invertIndexCompresser := compresser.NewZlibInvertIndexCompresser()
 		indexer := indexer.NewIndexer(documentRepository, termRepository, tokenizer, invertIndexCompresser)
 		return indexer.IndexingDocument(ctx, document)
-
-	}); err != nil {
+	}
+	err := entIndexer.t.WithTx(ctx, entIndexer.db, indexingDocumentFunc)
+	if err != nil {
 		return err
 	}
 	return nil
