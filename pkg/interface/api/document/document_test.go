@@ -64,6 +64,7 @@ func TestTermController_FindTermById(t *testing.T) {
 	for _, tc := range testCases {
 
 		reqBody, err := json.Marshal(&RequestSearchDocument{Keyword: tc.query, Mode: string(tc.mode)})
+		t.Log(reqBody)
 		if err != nil {
 			t.Fatal(err)
 		}
