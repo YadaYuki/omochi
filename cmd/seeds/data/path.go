@@ -1,5 +1,8 @@
 package data
 
-const (
-	DoraemonDocumentTsvPath = "./ja/doraemon.tsv"
+import (
+	"os"
+	"path"
 )
+
+var DoraemonDocumentTsvPath = path.Join(os.Getenv("PROJECT_ROOT"), "cmd/seeds/data/ja/doraemon.tsv")

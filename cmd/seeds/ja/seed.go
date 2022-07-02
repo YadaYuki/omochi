@@ -3,9 +3,11 @@ package main
 import (
 	"context"
 	"flag"
+	"fmt"
 	"log"
 
 	"github.com/YadaYuki/omochi/cmd/seeds/data"
+	"github.com/YadaYuki/omochi/pkg/common/slices"
 	"github.com/YadaYuki/omochi/pkg/config"
 	"github.com/YadaYuki/omochi/pkg/domain/entities"
 	"github.com/YadaYuki/omochi/pkg/domain/service"
@@ -16,6 +18,7 @@ import (
 	"github.com/YadaYuki/omochi/pkg/infrastructure/tokenizer/ja"
 	"github.com/YadaYuki/omochi/pkg/infrastructure/transaction/wrapper"
 	_ "github.com/go-sql-driver/mysql"
+	"golang.org/x/sync/errgroup"
 )
 
 func main() {
@@ -43,23 +46,34 @@ func main() {
 		log.Fatalf("unknown language: %s", language)
 	}
 	entIndexer := entindexer.NewEntIndexer(db, t, tokenizer, zlibInvertIndexCompresser)
-
+	fmt.Println(entIndexer)
 	// load documents
-
-	docs, loadErr := data.LoadDocumentsFromTsv(data.DoraemonDocumentTsvPath)
-	if loadErr != nil {
-		panic(loadErr)
+	docs, err := data.LoadDocumentsFromTsv(data.DoraemonDocumentTsvPath)
+	if err != nil {
+		log.Fatalf("failed loading documents: %v", err)
 	}
-
+	size := 200
+	docLists := slices.SplitSlice(*docs, size)
+	goroutines := len(docLists)
 	ctx := context.Background()
 
-	for _, doc := range *docs {
-		EmptyTokenizedContent := []string{}
-		documentCreate := entities.NewDocumentCreate(doc, EmptyTokenizedContent)
-		indexingErr := entIndexer.IndexingDocumentWithTx(ctx, documentCreate)
-		if indexingErr != nil {
-			panic(indexingErr)
-		}
+	// index documents concurrently
+	log.Println("start indexing documents")
+	var eg errgroup.Group
+	for i := 0; i < goroutines; i++ {
+		docList := docLists[i]
+		eg.Go(func() error {
+			for _, doc := range docList {
+				docCreate := entities.NewDocumentCreate(doc, []string{})
+				if err := entIndexer.IndexingDocumentWithTx(ctx, docCreate); err != nil {
+					return err
+				}
+				log.Println("indexed:", doc)
+			}
+			return nil
+		})
 	}
-
+	if err := eg.Wait(); err != nil {
+		log.Println(err)
+	}
 }
