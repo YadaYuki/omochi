@@ -28,13 +28,17 @@ type ReseponseSearchDocument struct {
 }
 
 func (controller *DocumentController) SearchDocuments(w http.ResponseWriter, r *http.Request) {
-
-	var requestBody RequestSearchDocument
-	parseErr := json.NewDecoder(r.Body).Decode(&requestBody)
-	if parseErr != nil {
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		return
+	keyword := r.URL.Query().Get("keyword")
+	mode := r.URL.Query().Get("mode")
+	requestBody := RequestSearchDocument{
+		Keyword: keyword,
+		Mode:    mode,
 	}
+	// parseErr := json.NewDecoder(r.Body).Decode(&requestBody)
+	// if parseErr != nil {
+	// 	http.Error(w, parseErr.Error(), http.StatusUnprocessableEntity)
+	// 	return
+	// }
 	query := entities.NewQuery(requestBody.Keyword, entities.SearchModeType(requestBody.Mode))
 	documents, searchErr := controller.searchUsecase.SearchDocuments(r.Context(), query)
 	if searchErr != nil {
@@ -57,8 +61,8 @@ func (controller *DocumentController) SearchDocuments(w http.ResponseWriter, r *
 func covertErrorToResponse(err *errors.Error, w http.ResponseWriter) {
 	switch err.Code {
 	case code.NotExist:
-		w.WriteHeader(http.StatusNotFound)
+		http.Error(w, err.Error(), http.StatusNotFound)
 	default:
-		w.WriteHeader(http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
 }

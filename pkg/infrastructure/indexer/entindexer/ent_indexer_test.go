@@ -8,6 +8,7 @@ import (
 	"github.com/YadaYuki/omochi/pkg/domain/entities"
 	"github.com/YadaYuki/omochi/pkg/ent/enttest"
 	"github.com/YadaYuki/omochi/pkg/infrastructure/compresser"
+	"github.com/YadaYuki/omochi/pkg/infrastructure/tokenizer/eng"
 	"github.com/YadaYuki/omochi/pkg/infrastructure/transaction/wrapper"
 
 	_ "github.com/mattn/go-sqlite3"
@@ -19,7 +20,9 @@ func TestIndexingDocument(t *testing.T) {
 	client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 	defer client.Close()
 	transactionWrapper := wrapper.NewEntTransactionWrapper()
-	indexer := NewEntIndexer(client, transactionWrapper)
+	jaKagomeTokenizer := eng.NewEnProseTokenizer()
+	zlibInvertIndexCompresser := compresser.NewZlibInvertIndexCompresser()
+	indexer := NewEntIndexer(client, transactionWrapper, jaKagomeTokenizer, zlibInvertIndexCompresser)
 
 	testCases := []struct {
 		content string

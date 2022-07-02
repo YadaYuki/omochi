@@ -1,7 +1,6 @@
 package main
 
 import (
-	"context"
 	"log"
 	"net/http"
 
@@ -26,9 +25,6 @@ func main() {
 	}
 	defer db.Close()
 
-	if err := db.Schema.Create(context.Background()); err != nil {
-		log.Fatalf("failed creating schema resources: %v", err)
-	}
 	log.Println("Successfully connected to MySQL")
 
 	// initialize term usecase
