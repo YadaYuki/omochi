@@ -3,6 +3,7 @@ package document
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/YadaYuki/omochi/pkg/domain/entities"
 	"github.com/YadaYuki/omochi/pkg/errors"
@@ -19,8 +20,8 @@ func NewDocumentController(searchUsecase search.SearchUseCase) *DocumentControll
 }
 
 type RequestSearchDocument struct {
-	Keyword string `json:"keyword"`
-	Mode    string `json:"mode"`
+	Keywords *[]string `json:"keywords"`
+	Mode     string    `json:"mode"`
 }
 
 type ReseponseSearchDocument struct {
@@ -28,18 +29,13 @@ type ReseponseSearchDocument struct {
 }
 
 func (controller *DocumentController) SearchDocuments(w http.ResponseWriter, r *http.Request) {
-	keyword := r.URL.Query().Get("keyword")
+	keywords := strings.Split(r.URL.Query().Get("keywords"), ",")
 	mode := r.URL.Query().Get("mode")
 	requestBody := RequestSearchDocument{
-		Keyword: keyword,
-		Mode:    mode,
+		Keywords: &keywords,
+		Mode:     mode,
 	}
-	// parseErr := json.NewDecoder(r.Body).Decode(&requestBody)
-	// if parseErr != nil {
-	// 	http.Error(w, parseErr.Error(), http.StatusUnprocessableEntity)
-	// 	return
-	// }
-	query := entities.NewQuery(requestBody.Keyword, entities.SearchModeType(requestBody.Mode))
+	query := entities.NewQuery(*requestBody.Keywords, entities.SearchModeType(requestBody.Mode))
 	documents, searchErr := controller.searchUsecase.SearchDocuments(r.Context(), query)
 	if searchErr != nil {
 		covertErrorToResponse(searchErr, w)

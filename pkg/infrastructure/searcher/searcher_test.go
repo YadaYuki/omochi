@@ -55,7 +55,7 @@ func TestSearch(t *testing.T) {
 			invertIndexCompressedCached := map[string]*entities.InvertIndex{}
 			searcher := NewSearcher(invertIndexCompressedCached, termRepository, documentRepository, compresser.NewZlibInvertIndexCompresser(), tfidfranker.NewTfIdfDocumentRanker())
 
-			searchResultDocs, searchErr := searcher.Search(context.Background(), &entities.Query{Keyword: tc.query})
+			searchResultDocs, searchErr := searcher.Search(context.Background(), &entities.Query{Keywords: &[]string{tc.query}})
 			if searchErr != nil {
 				t.Fatal(searchErr)
 			}

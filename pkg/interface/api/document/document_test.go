@@ -1,7 +1,6 @@
 package document
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -39,12 +38,12 @@ func TestTermController_FindTermById(t *testing.T) {
 	}
 
 	testCases := []struct {
-		query            string
+		keywords         []string
 		mode             entities.SearchModeType
 		expectedContents []string
 	}{
 		{
-			query:            "java",
+			keywords:         []string{"java"},
 			mode:             entities.Or,
 			expectedContents: []string{"JAVA C JS RUBY CPP TS GOLANG PYTHON JAVA", "java c js ruby cpp ts golang python"},
 		},
@@ -63,13 +62,8 @@ func TestTermController_FindTermById(t *testing.T) {
 	DummyPath := "/search_test"
 	for _, tc := range testCases {
 
-		reqBody, err := json.Marshal(&RequestSearchDocument{Keyword: tc.query, Mode: string(tc.mode)})
-		t.Log(reqBody)
-		if err != nil {
-			t.Fatal(err)
-		}
-		reqBodyReader := bytes.NewReader(reqBody)
-		req, _ := http.NewRequest("GET", DummyPath, reqBodyReader)
+		paramStr := "?keywords=" + strings.Join(tc.keywords, ",") + "&mode=" + string(tc.mode)
+		req, _ := http.NewRequest("GET", DummyPath+paramStr, nil)
 
 		res := httptest.NewRecorder()
 		r := chi.NewRouter()

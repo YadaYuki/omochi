@@ -23,9 +23,9 @@ func NewSearcher(invertIndexCached map[string]*entities.InvertIndex, termReposit
 
 func (s *Searcher) Search(ctx context.Context, query *entities.Query) ([]*entities.Document, *errors.Error) {
 
-	invertIndex, ok := s.invertIndexCached[query.Keyword]
+	invertIndex, ok := s.invertIndexCached[(*query.Keywords)[0]]
 	if !ok {
-		termCompressed, err := s.termRepository.FindTermCompressedByWord(ctx, query.Keyword)
+		termCompressed, err := s.termRepository.FindTermCompressedByWord(ctx, (*query.Keywords)[0])
 		if err != nil {
 			return nil, errors.NewError(err.Code, err)
 		}
@@ -45,7 +45,7 @@ func (s *Searcher) Search(ctx context.Context, query *entities.Query) ([]*entiti
 	if documentErr != nil {
 		return nil, errors.NewError(documentErr.Code, documentErr)
 	}
-	sortedDocument, sortErr := s.documentRanker.SortDocumentByScore(ctx, query.Keyword, documents)
+	sortedDocument, sortErr := s.documentRanker.SortDocumentByScore(ctx, (*query.Keywords)[0], documents)
 	if sortErr != nil {
 		return nil, errors.NewError(sortErr.Code, sortErr)
 	}
