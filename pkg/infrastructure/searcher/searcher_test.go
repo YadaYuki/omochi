@@ -28,17 +28,24 @@ func TestSearch(t *testing.T) {
 	}
 
 	testCases := []struct {
-		query            string
+		keywords         []string
+		mode             entities.SearchModeType
 		expectedContents []string
 	}{
 		{
-			query:            "java",
+			keywords:         []string{"java"},
+			mode:             entities.Or,
 			expectedContents: []string{"java c js ruby cpp ts golang python java", "java c js ruby cpp ts golang python"},
+		},
+		{
+			keywords:         []string{"java", "c"},
+			mode:             entities.Or,
+			expectedContents: []string{"java c js ruby cpp ts golang python", "c js ruby cpp ts golang python", "java c js ruby cpp ts golang python java"},
 		},
 	}
 
 	for _, tc := range testCases {
-		t.Run(tc.query, func(tt *testing.T) {
+		t.Run(strings.Join(tc.keywords, ","), func(tt *testing.T) {
 			client := enttest.Open(t, "sqlite3", "file:ent?mode=memory&cache=shared&_fk=1")
 			defer client.Close()
 			documentRepository := entdb.NewDocumentEntRepository(client)
@@ -55,7 +62,7 @@ func TestSearch(t *testing.T) {
 			invertIndexCompressedCached := map[string]*entities.InvertIndex{}
 			searcher := NewSearcher(invertIndexCompressedCached, termRepository, documentRepository, compresser.NewZlibInvertIndexCompresser(), tfidfranker.NewTfIdfDocumentRanker())
 
-			searchResultDocs, searchErr := searcher.Search(context.Background(), &entities.Query{Keyword: tc.query})
+			searchResultDocs, searchErr := searcher.Search(context.Background(), &entities.Query{SearchMode: tc.mode, Keywords: &tc.keywords})
 			if searchErr != nil {
 				t.Fatal(searchErr)
 			}

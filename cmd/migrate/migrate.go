@@ -27,4 +27,5 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed creating schema resources: %v", err)
 	}
+	log.Println("Successfully migrated ! ")
 }
