@@ -3,9 +3,8 @@ package entities
 type SearchModeType string
 
 const (
-	And    SearchModeType = "And"
-	Or     SearchModeType = "Or"
-	Phrase SearchModeType = "Phrase"
+	And SearchModeType = "And"
+	Or  SearchModeType = "Or"
 )
 
 type Query struct {
