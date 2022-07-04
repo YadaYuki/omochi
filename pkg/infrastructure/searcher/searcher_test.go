@@ -42,6 +42,21 @@ func TestSearch(t *testing.T) {
 			mode:             entities.Or,
 			expectedContents: []string{"java c js ruby cpp ts golang python", "c js ruby cpp ts golang python", "java c js ruby cpp ts golang python java"},
 		},
+		{
+			keywords:         []string{"java", "c"},
+			mode:             entities.And,
+			expectedContents: []string{"java c js ruby cpp ts golang python", "java c js ruby cpp ts golang python java"},
+		},
+		{
+			keywords:         []string{"java", "c", "dart"},
+			mode:             entities.And,
+			expectedContents: []string{},
+		},
+		{
+			keywords:         []string{"java", "c", "cpp", "java"},
+			mode:             entities.And,
+			expectedContents: []string{"java c js ruby cpp ts golang python", "java c js ruby cpp ts golang python java"},
+		},
 	}
 
 	for _, tc := range testCases {
@@ -65,6 +80,9 @@ func TestSearch(t *testing.T) {
 			searchResultDocs, searchErr := searcher.Search(context.Background(), &entities.Query{SearchMode: tc.mode, Keywords: &tc.keywords})
 			if searchErr != nil {
 				t.Fatal(searchErr)
+			}
+			if len(searchResultDocs) != len(tc.expectedContents) {
+				t.Fatalf("expected %d, but %d", len(tc.expectedContents), len(searchResultDocs))
 			}
 			for i, expectedContent := range tc.expectedContents {
 				if searchResultDocs[i].Content != expectedContent {
