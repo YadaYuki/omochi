@@ -2,6 +2,7 @@ package document
 
 import (
 	"encoding/json"
+	"log"
 	"net/http"
 	"strings"
 
@@ -29,6 +30,7 @@ type ReseponseSearchDocument struct {
 }
 
 func (controller *DocumentController) SearchDocuments(w http.ResponseWriter, r *http.Request) {
+	log.Println("Searching...", r.URL.Query().Get("keywords"), strings.Split(r.URL.Query().Get("keywords"), ","))
 	keywords := strings.Split(r.URL.Query().Get("keywords"), ",")
 	mode := r.URL.Query().Get("mode")
 	requestBody := RequestSearchDocument{
