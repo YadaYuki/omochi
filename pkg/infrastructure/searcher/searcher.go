@@ -3,6 +3,7 @@ package searcher
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/YadaYuki/omochi/pkg/domain/entities"
 	"github.com/YadaYuki/omochi/pkg/domain/repository"
@@ -25,6 +26,7 @@ func NewSearcher(invertIndexCached map[string]*entities.InvertIndex, termReposit
 
 func (s *Searcher) Search(ctx context.Context, query *entities.Query) ([]*entities.Document, *errors.Error) {
 
+	log.Println("Searching...", *query.Keywords)
 	if len(*query.Keywords) == 1 {
 		return s.searchBySingleKeyword(ctx, query)
 	}
@@ -188,6 +190,10 @@ func (s *Searcher) searchAnd(ctx context.Context, query *entities.Query) ([]*ent
 		if valid {
 			documentIds = append(documentIds, id)
 		}
+	}
+
+	if len(documentIds) == 0 {
+		return []*entities.Document{}, nil
 	}
 
 	documents, documentErr := s.documentRepository.FindDocumentsByIds(ctx, &documentIds)
