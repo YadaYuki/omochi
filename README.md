@@ -27,12 +27,3 @@
 
 ## 🧑‍💻 License
 
-
-- [ ] Features
-- [ ] Example
-- [ ] Requirements
-- [ ] Setup
-- [ ] Start Application
-- [ ] Dataset
-- [ ] Reference
-- [ ] License
