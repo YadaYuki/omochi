@@ -20,6 +20,9 @@
 
 ## 📍 Requirements
 
+- [Golang](https://golang.org/) 1.18+
+- [Docker](https://www.docker.com/) 20.10+
+
 ## 📦 Setup
 
 ### Database Migration
