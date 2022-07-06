@@ -14,6 +14,8 @@
 - You can search documents from RESTful API.
 - Supported language: English, Japanese.
 
+
+
 ## 🤩 Example
 
 ## 📍 Requirements
@@ -32,4 +34,4 @@
 
 ## 🧑‍💻 License
 
-MIT
+[MIT](https://github.com/YadaYuki/omochi/blob/yadayuki/add-readme/LICENSE)
