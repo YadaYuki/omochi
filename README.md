@@ -5,16 +5,16 @@
 
 <h1 align="center">Omochi 😊</h1>
 
-<p align="center"><strong>Full text search engine by Golangʕ◔ϖ◔ʔ 😊</strong></p>
+<p align="center"><strong>Full text search engine from scratch by Golangʕ◔ϖ◔ʔ (Just a toy)</strong></p>
 
 ## ✨ Features
 
-- Omochi is an inverted index based search engine by Golang,
+- Omochi is an inverted index based search engine by Golang.
 - If indexed correctly, any document can be searched.
 - You can search documents from RESTful API.
 - Supported language: English, Japanese.
 
-
+<!-- ここに概要図 -->
 
 ## 🤩 Example
 
@@ -26,6 +26,8 @@
 ## 📦 Setup
 
 ### Database Migration
+
+
 
 ### Data seeding
 
