@@ -38,7 +38,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed loading documents: %v", err)
 	}
-	size := 5000
+	size := 100
 	docLists := slices.SplitSlice(*docs, size)
 	goroutines := len(docLists)
 	ctx := context.Background()
