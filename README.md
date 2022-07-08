@@ -13,8 +13,9 @@
 - If indexed correctly, any document can be searched.
 - You can search documents from RESTful API.
 - Supported language: English, Japanese.
-
-<img width="100%" alt="スクリーンショット 2022-07-08 11 06 05" src="https://user-images.githubusercontent.com/57289763/177902184-e72af3f7-7836-467b-8dca-ca1159dc3e5c.png">
+<div align="center">
+<img width="673" alt="スクリーンショット 2022-07-08 11 08 15" src="https://user-images.githubusercontent.com/57289763/177902420-998af3a1-1387-4943-8332-eea8fe90aca2.png">
+</div>
 
 ## 🤩 Example
 
