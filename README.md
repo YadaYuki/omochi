@@ -52,7 +52,7 @@ $ go run ./cmd/migrate/migrate.go
 
 To try search engine, this project provides two datasets as samples in TSV Format. 
 
-The dataset for English is a **Movie title dataset**, and the dataset for Japanese is a **Doraemon comic title dataset**.
+The dataset for English is a **[Movie title dataset](https://github.com/YadaYuki/omochi/tree/yadayuki/add-readme/cmd/seeds/data/en/movie.tsv)**, and the dataset for Japanese is a **[Doraemon comic title dataset](https://github.com/YadaYuki/omochi/blob/yadayuki/add-readme/cmd/seeds/data/ja/doraemon.tsv)**.
 
 At first, connect docker container shell by:
 
@@ -66,7 +66,7 @@ Then, seed data by:
 $ go run {path to seed.go}
 ```
 
-If you initialize with a Japanese dataset, `{path to seed.go}` should be `./cmd/seeds/en/seed.go `. On the other hand, for English, `./cmd/seeds/eng/seed.go `.
+If you initialize with a Japanese dataset, `{path to seed.go}` should be `./cmd/seeds/ja/seed.go `. On the other hand, for English, `./cmd/seeds/eng/seed.go `.
 
 
 ## 🏇 Start Application
