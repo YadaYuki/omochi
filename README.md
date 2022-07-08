@@ -14,7 +14,7 @@
 - You can search documents from RESTful API.
 - Supported language: English, Japanese.
 
-<!-- ここに概要図 -->
+<img width="720" alt="スクリーンショット 2022-07-08 11 06 05" src="https://user-images.githubusercontent.com/57289763/177902184-e72af3f7-7836-467b-8dca-ca1159dc3e5c.png">
 
 ## 🤩 Example
 
